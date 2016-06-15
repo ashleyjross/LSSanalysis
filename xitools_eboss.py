@@ -1026,7 +1026,7 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 	from matplotlib import pyplot as plt
 	ff = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
 	fdf = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
-	fd = np.loadtxt(ebossdir+'reboss'+sample+'_'+NS+version+'_0mz'+str(zmin)+'xz'+str(zmax)+'4xi.dat').transpose()
+	#fd = np.loadtxt(ebossdir+'reboss'+sample+'_'+NS+version+'_0mz'+str(zmin)+'xz'+str(zmax)+'4xi.dat').transpose()
 	nzlf = []
 	nzld = []
 	nzldd = []
@@ -1040,9 +1040,9 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 		z = ff[i]['Z']
 		if z > zmin and z < zmax:
 			zind = int(1/float(zb)*z)
-			nzlf[zind] += ff[i]['WEIGHT_FKP']
-			sumzw += z*ff[i]['WEIGHT_FKP']
-			sumw += ff[i]['WEIGHT_FKP']
+			nzlf[zind] += 1.#*ff[i]['WEIGHT_FKP']
+			sumzw += z#*ff[i]['WEIGHT_FKP']
+			sumw += 1.#*ff[i]['WEIGHT_FKP']
 	print sumzw/sumw
 	sumzwd = 0
 	sumwd = 0
@@ -1051,18 +1051,18 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 		z = fdf[i]['Z']
 		if z > zmin and z < zmax:
 			zind = int(1/float(zb)*z)
-			w = (fdf[i]['WEIGHT_NOZ']+fdf[i]['WEIGHT_CP']-1.)*fdf[i]['WEIGHT_FKP']*fdf[i]['WEIGHT_SYSTOT']
+			w = (fdf[i]['WEIGHT_NOZ']+fdf[i]['WEIGHT_CP']-1.)*fdf[i]['WEIGHT_SYSTOT']#*fdf[i]['WEIGHT_FKP']
 			nzldd[zind] += w
 			sumzwd += z*w
 			sumwd += w
 	print sumzwd/sumwd
-	for i in range(0,len(fd[0])):
-		z = fd[2][i]
-		if z > zmin and z < zmax:
-			zind = int(1/float(zb)*z)
-			nzld[zind] += fd[3][i]
+# 	for i in range(0,len(fd[0])):
+# 		z = fd[2][i]
+# 		if z > zmin and z < zmax:
+# 			zind = int(1/float(zb)*z)
+# 			nzld[zind] += fd[3][i]
 	nzlf = np.array(nzlf)/sum(nzlf)		
-	nzld = np.array(nzld)/sum(nzld)
+	#nzld = np.array(nzld)/sum(nzld)
 	nzldd = np.array(nzldd)/sum(nzldd)
 	#print nzld
 	nzl = np.arange(0,zmax,zb)
