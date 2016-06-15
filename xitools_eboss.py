@@ -53,7 +53,7 @@ def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20):
 	fo.close()
 	return True
 
-def mkran1mil(sample,NS,version,N=0,c='sci',app='.fits',compmin=0.5):
+def mkran1mil(sample,NS,version,N=0,c='sci',app='.fits',compmin=0):
 	dirout = ''
 	dir = ''
 	if c == 'sci':
@@ -114,7 +114,7 @@ def ranHealp(sample,NS,version,res=256,rad=''):
 	return True
 
 
-def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0.5):
+def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
 	if wm == 'wstar' or wm == 'cpstar':
@@ -187,6 +187,24 @@ def mkran4xi(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci'):
 	print n #just helps to know things worked properly
 	fo.close()
 	return True
+
+def mkran4xifit(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci'):
+	from random import random
+	if comp == 'sci':
+		dir = dirsci 
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
+	fo = open(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+wz+wm+'4xi.dat','w')
+	n = 0
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z > zmin and z < zmax:
+			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(f[i]['Z'])+' '+str(f[i]['WEIGHT_FKP'])+'\n')
+			n += 1.
+	print n #just helps to know things worked properly
+	fo.close()
+	return True
+
 
 def createSourcesrd_ad(file,md='deg'):
 	#takes the 4xi files and put them into the format AJR's pair-counting code uses
@@ -270,7 +288,8 @@ def createalladfilesfb(sample,NS,version,nran=1,wm='',zmin=.6,zmax=1.):
 	rf = 'reboss'+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
-		mkran4xi(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
+		#mkran4xi(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
+		mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
 		rfi = rf+str(rann)+wz+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
@@ -648,8 +667,8 @@ def covcalcxi0(r1,r2,version,sample,amp,zmin,zmax,dr=10.,sp=1.,nzbs=20,a='',v='y
 	k1 = float(fk[1].split()[0])
 	ldk = log(k1)-log(k0)
 	sumxi = 0
-	nbN = np.loadtxt('nbar-eboss_'+version+'-'+sample+'-N-eboss_'+version+'.dat').transpose()
-	nbS = np.loadtxt('nbar-eboss_'+version+'-'+sample+'-S-eboss_'+version+'.dat').transpose()
+	nbN = np.loadtxt(ebossdir+'nbar-eboss_'+version+'-'+sample+'-N-eboss_'+version+'.dat').transpose()
+	nbS = np.loadtxt(ebossdir+'nbar-eboss_'+version+'-'+sample+'-S-eboss_'+version+'.dat').transpose()
 	veff = 0
 	nl = []
 	vl = []
@@ -741,7 +760,7 @@ def mkcovxiNS(sample,version,amp,zmin,zmax,bs=10.,nzbs=20):
 	#writes our analytic covariance matrix
 	#Uses very approximate covariance, with terms added in rather ad-hoc way, DO NOT USE for actual science
 	wm = 'mz'+str(zmin)+'xz'+str(zmax)
-	fo = open('covxiNS'+sample+version+wm+str(bs)+'.dat','w')
+	fo = open(ebossdir+'covxiNS'+sample+version+wm+str(bs)+'.dat','w')
 	r0 = bs/2.
 	r1 = r0
 	while r1 < 200:
@@ -851,7 +870,10 @@ def xibao(sample,zmin,zmax,version='v1.0',wm='',bs=10,start=0,rmin=30,rmax=150.,
 	if sample == 'lrg':
 		wt = (ds[1]*1.8+1.3*dn[1])/3.1
 	if sample == 'QSO' or sample == 'QPM_QSO' or sample == 'aveQPM_QSO':
-		wt = (ds[1]+dn[1])/2.
+		if version == 'v1.2':
+			wt = (ds[1]*.52+dn[1]*.66)/(.52+.66)
+		else:
+			wt = (ds[1]+dn[1])/2.
 	if sample == 'LRGmod' or sample == 'QSOmod':
 		dn = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.06.010.015.00_10st0.dat').transpose()	
 	if sample == 'LRGmod':
@@ -1000,6 +1022,57 @@ def compmat(NS='NScomb',m=1.):
 	plt.show()
 	return True
 
+def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
+	from matplotlib import pyplot as plt
+	ff = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
+	fdf = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	fd = np.loadtxt(ebossdir+'reboss'+sample+'_'+NS+version+'_0mz'+str(zmin)+'xz'+str(zmax)+'4xi.dat').transpose()
+	nzlf = []
+	nzld = []
+	nzldd = []
+	for i in range(0,int(1/float(zb)*zmax)):
+		nzlf.append(0)
+		nzld.append(0)
+		nzldd.append(0)
+	sumzw = 0
+	sumw = 0
+	for i in range(0,len(ff)):
+		z = ff[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			nzlf[zind] += ff[i]['WEIGHT_FKP']
+			sumzw += z*ff[i]['WEIGHT_FKP']
+			sumw += ff[i]['WEIGHT_FKP']
+	print sumzw/sumw
+	sumzwd = 0
+	sumwd = 0
+
+	for i in range(0,len(fdf)):
+		z = fdf[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			w = (fdf[i]['WEIGHT_NOZ']+fdf[i]['WEIGHT_CP']-1.)*fdf[i]['WEIGHT_FKP']*fdf[i]['WEIGHT_SYSTOT']
+			nzldd[zind] += w
+			sumzwd += z*w
+			sumwd += w
+	print sumzwd/sumwd
+	for i in range(0,len(fd[0])):
+		z = fd[2][i]
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			nzld[zind] += fd[3][i]
+	nzlf = np.array(nzlf)/sum(nzlf)		
+	nzld = np.array(nzld)/sum(nzld)
+	nzldd = np.array(nzldd)/sum(nzldd)
+	#print nzld
+	nzl = np.arange(0,zmax,zb)
+	plt.plot(nzl,nzlf/nzldd,'r-')#,nzl,nzld/nzldd,'b-')
+	plt.xlim(zmin,zmax)
+	plt.xlabel('redshift')
+	plt.ylabel('normalized random density / QSO density')
+	plt.show()
+	return True	
+	
 ### Some modules to count redshift failures, etc.
 
 def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
@@ -1156,20 +1229,26 @@ def plotxiQSOvcomps(bs='10st0',v1='v0.7',v2='v1.0'):
 	return True
 
 
-def plotxiQSOv(bs='10st0',v='v1.0'):
+def plotxiQSOv(bs='10st0',v='v1.2'):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages('xiQSONS'+v+bs+'.pdf')
+	pp = PdfPages(ebossdir+'xiQSONS'+v+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	ds1 = np.loadtxt('xi0gebossQSO_S'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
-	dn1 = np.loadtxt('xi0gebossQSO_N'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
-	dna = np.loadtxt('xi0gaveQPM_QSONGC'+v+'mz0.9xz2.2'+bs+'.dat').transpose()
-	dsa = np.loadtxt('xi0gaveQPM_QSOSGC'+v+'mz0.9xz2.2'+bs+'.dat').transpose()
+	ds1 = np.loadtxt(ebossdir+'xi0gebossQSO_S'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
+	dn1 = np.loadtxt(ebossdir+'xi0gebossQSO_N'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
+	dna = np.loadtxt(ebossdir+'xi0gaveQPM_QSONGCv1.0mz0.9xz2.2'+bs+'.dat').transpose()
+	dsa = np.loadtxt(ebossdir+'xi0gaveQPM_QSOSGCv1.0mz0.9xz2.2'+bs+'.dat').transpose()
 
 	dt = np.loadtxt('/Users/ashleyross/DR12/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()
-	t1 = (ds1[1]*1.+dn1[1])/2.
+	if v == 'v1.2':
+		wn = 0.66
+		ws = .53
+	else:
+		wn = .5
+		ws = .5
+	t1 = (ds1[1]*ws+dn1[1]*wn)/(wn+ws)
 	ta = (dsa[1]*1.+dna[1])/2.
 	te = dna[2]/sqrt(2.)
 	plt.errorbar(dn1[0],dn1[0]**2.*t1,dn1[0]**2.*te,fmt='bs')
@@ -1489,11 +1568,11 @@ def plotQSONSbaolike(v='v1.0'):
 	from matplotlib import pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages('xiQSONSbaolik'+v+'.pdf')
+	pp = PdfPages(ebossdir+'xiQSONSbaolik'+v+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	db = np.loadtxt('BAOxichilQSO'+v+'0.4.dat').transpose()
-	dnb = np.loadtxt('BAOxichilQSO'+v+'nobao0.4.dat').transpose()
+	db = np.loadtxt(ebossdir+'BAOxichilQSO'+v+'0.4.dat').transpose()
+	dnb = np.loadtxt(ebossdir+'BAOxichilQSO'+v+'nobao0.4.dat').transpose()
 	chim = min(db[1])
 	plt.plot(db[0],db[1]-chim,'k-')
 	plt.plot(db[0],dnb[1]-chim,'k--')
