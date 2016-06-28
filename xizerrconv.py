@@ -1,5 +1,10 @@
 from numpy import loadtxt
 from math import *
+from EH import simulate
+from scipy.special import jn
+
+def sph_jn(l,x):
+	return sqrt(pi/(2.*x))*jn(l+.5,x)
 
 def P2(mu):
 	return .5*(3.*mu**2.-1.)
@@ -160,4 +165,160 @@ def wmod3(r,mu,mf,r0,sp=1.,gam=-1.7):
 	xi2 = xi0-3.*xi0/(3.+gam)
 	xi4 = xi0+2.5*3.*xi0/(3.+gam)-3.5*5.*xi0/(5.+gam)
 	return xi0,xi2,xi4
+
+def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=1.,beta=0.4,sfog=4.0,amc=0.0,sigt=2.5,sigr=4.,mult=1.,sigs=15.):
+	f0 = open('xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f2 = open('xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f4 = open('xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f0mc = open('xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f2mc = open('xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f4mc = open('xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	r = 10.
+
+	while r < 300:
+		xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun)
+		f0.write(str(r)+' '+str(xid[0])+'\n')
+		f2.write(str(r)+' '+str(xid[1])+'\n')
+		f4.write(str(r)+' '+str(xid[2])+'\n')
+		f0mc.write(str(r)+' '+str(xid[3])+'\n')
+		f2mc.write(str(r)+' '+str(xid[4])+'\n')
+		f4mc.write(str(r)+' '+str(xid[5])+'\n')
+		r += sp
+		if v == 'y':
+			print r
+	f0.close()
+	f2.close()
+	f4.close()
+	f0mc.close()
+	f2mc.close()
+	f4mc.close()
+	return True
+
+def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,pw='n'):
+	from scipy.integrate import quad
+	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
+	#print dir
+	mult = 1.
+	dir = 'powerspectra/'
+	if file=='Challenge_matterpower':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+	if file == 'MICE_matterpower':
+		om = 0.25
+		lam = .75
+		h = .7
+		ombhh = .044*0.7*.7	
+		nindex = .949
+
+	f = open(dir+file+'.dat').readlines()
+	if pw == 'y':
+		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
+		fo.write('# k P0 P2 P4 Psmooth\n')
+
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	pl2 = []
+	pl4 = []
+	beta0 = 0.4
+	for i in range(0,100):
+		pl2.append(P2(i/100.+.005))
+	for i in range(0,100):
+		pl4.append(P4(i/100.+.005))
+	mul = []
+	anipolyl = []
+	for i in range(0,100):
+		mu = i/100.+.005
+		mul.append(mu)		
+		anipoly = (1.+beta*mu**2.)**2.
+		anipoly2 = (1.+beta*mu**2.)**2.*pl2[i]
+		anipoly4 = (1.+beta*mu**2.)**2.*pl4[i]
+		anipolyl.append((anipoly,anipoly2,anipoly4))
+	k0 = float(f[0].split()[0])
+	k1 = float(f[1].split()[0])
+	ldk = log(k1)-log(k0)
+	#print ldk
+	xi0 = 0
+	xi2 = 0
+	xi4 = 0
+	xism0 = 0
+	xism2 = 0
+	xism4 = 0
+	#print max
+	dmk = r/10.
+	k = float(f[0].split()[0])
+	if file == 'camb_Nacc':
+		norm = 1.
+	else:
+		norm = float(f[0].split()[1])/s.Psmooth(k,0)*mult
+	#print norm
+	b = 2.
+	ff =beta*b
+	for i in range(0,len(f)-1):
+		k = float(f[i].split()[0])
+		pk = float(f[i].split()[1])*mult
+		pk0 = 0
+		pk2 = 0
+		pk4 = 0
+		pksm0 = 0
+		pksm2 = 0
+		pksm4 = 0
+		pksm = s.Psmooth(k,0)*norm
+		dpk = pk-pksm
+		for m in range(0,100):
+			#mu = (1.-mul[m])			
+			mu = mul[m]
+
+			if mun == 'n':
+				mu = (1.-mul[m])
+			if sfog > 0:
+				F = 1./(1.+k**2.*mu**2.*sfog**2./2.)**2.
+			else:
+				F = (1.+k**2.*sfog**2./2.)**2./(1.+k**2.*(1.-mu)**2.*sfog**2./2.)**2.
+			if mun == 'b':
+				mus2 = mu**2.
+				F = (1.+beta*mus2*(1.-exp(-0.5*(k*sigs)**2.)))**2.*1./(1.+k**2.*mu**2.*(sfog)**2./2.)**2.
+			#C *doesn't include damping*
+			S = mun*exp(-0.5*(k*sigs)**2.)
+			C = (1.+beta*mu*mu*(1.-S))*1./(1.+k**2.*mu**2.*(sfog)**2./2.)
+			sigv2 = (1-mu**2.)*sigt**2./4.+mu**2.*sigr**2./4.
+			damp = exp(-1.*k*k*sigv2)	
+			#damp1 = exp(-0.25*k**2.*mu**2.*sigr**2.*(1.+ff)**2.)
+			#damp2 = exp(-0.25*k**2.*(1.-mu**2.)*sigt**2.)
+			#damp3 = 1./b*S*exp(-0.5*k**2.*sigt*sigr)
+			#damp4 = (1.-exp(-0.25*k**2.*mu**2.*(2.*ff+ff**2.)*sigt*sigr))
+			#damp = damp1*damp2+damp3*damp4 	
+			
+			anipoly = anipolyl[m]
+			pk0 += C**2.*(dpk*damp**2.+pksm)
+			pk2 += (dpk*damp**2.+pksm)*pl2[m]*C**2.
+			pk4 += (dpk*damp**2.+pksm)*pl4[m]*C**2.
+			pksm0 += pksm*C**2.
+			pksm2 += pksm*pl2[m]*C**2.
+			pksm4 += pksm*pl4[m]*C**2.
+		pk0 = pk0/100.
+		pk2 = 5.*pk2/100.
+		pk4 = 9.*pk4/100.
+		pksm0 = pksm0/100.
+		pksm2 = 5.*pksm2/100.
+		pksm4 = 9.*pksm4/100.
+		if pw == 'y':
+			fo.write(str(k)+' '+str(pk0)+' '+str(pk2)+' '+str(pk4)+' '+str(pksm0)+' '+str(pksm2)+' '+str(pksm4)+' '+str(pk)+' '+str(pksm)+'\n')
+		dk = ldk*k
+		xi0 += dk*k*k*pk0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xi2 += dk*k*k*pk2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
+		xi4 += dk*k*k*pk4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
+		xism0 += dk*k*k*pksm0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xism2 += dk*k*k*pksm2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
+		xism4 += dk*k*k*pksm4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
+	if pw == 'y':
+		fo.close()
+		from matplotlib import pyplot as plt
+		from numpy import loadtxt as load
+		d = load('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat').transpose()
+		plt.xlim(0,.3)
+		plt.plot(d[0],d[-2]/d[-1])
+		plt.show()
+	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
 	
