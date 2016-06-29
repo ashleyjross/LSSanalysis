@@ -444,10 +444,15 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=2
 ###Routines below are for systematic analysis, etc.
 
 def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
+	#sample is the sample being used, e.g. 'lrg'
+	#NS is either 'N' or 'S'
+	#ver is the version, e.g., 'v1.0_IRt'
 	#sys is a string containing the name of the systematic to be tested
-	#sysmin is the minimum value of the systematic to be tested
-	#sysmax is the maximum value of the systematic to be tested
+	#sysmin is the minimum value of the systematic to be tested, ~25 is a good value to use for stars
+	#sysmax is the maximum value of the systematic to be tested, ~200 is a good value to use for stars
 	#res is Nside for the healpix map, default should be 512 for sky,seeing,air and 256 for extinction and stars
+	#zmin is the minimum redshift to use, 0.6 is minimum used for lrgs, 0.9 for qsos
+	#zmax is the maximum redshift to used, 1.0 for lrgs and 2.2 for qsos
 	from healpix import healpix, radec2thphi
 	h = healpix()
 	
