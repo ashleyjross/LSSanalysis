@@ -222,6 +222,43 @@ def mkxifile_zerrconvc_combzerr(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww='',
 	fo.close()
 	return True
 
+def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=1):
+	#Santi used zspec=0.45 to 1.2
+	from random import gauss
+	spf = 1.
+	r = rmin
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+
+	fo = open('xizconvc'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzsigl'+rsd+'sp'+str(sp)+'.dat','w')
+	
+	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
+	#sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
+	sigl = [0.029,0.029,0.035,0.049]
+	wl,dzl,rzl = zc.calcwlave(.8,sigl)
+	while r < rmax:
+		xis = 0
+		xisn = 0
+		xi,xin = zc.calcxi_zerrconv(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)
+		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
+		print r,xi,xin
+		r += sp	 
+	fo.close()
+	return True
+
+
+def compmocks(b=1.4,beta=.4):
+	from matplotlib import pyplot as plt
+	d = loadtxt('/Users/ashleyross/DESY1/xiSMlampavemu00.25.dat').transpose()
+	dth = loadtxt('xizconvcMICE_matterpowermumax0.2'+str(beta)+'06.010.0combzsiglsp5.0.dat').transpose()
+	plt.plot(d[0],d[0]**2.*d[1],'ko')
+	plt.plot(dth[0],dth[0]**2.*dth[1]*b,'k-')
+	plt.show()
+	return True
+
 
 class zerrconv:
 	def __init__(self,file='MICE_matterpower',dir='',bias=1.8,mun=0,beta=0.4,sfog=0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.,gam=-1.7):
@@ -244,8 +281,9 @@ class zerrconv:
 		
 
 	def calcwl(self,z,sigz):
-		self.ff = self.d.omz(z)**.557
-		self.betad = self.ff/self.bias
+		#self.ff = self.d.omz(z)**.557
+		#self.betad = self.ff/self.bias
+		self.betad = self.beta
 		self.betaf = self.betad/self.beta	
 
 		zmin = z-sigz*(1.+z)*5.*sqrt(2.)
@@ -263,6 +301,33 @@ class zerrconv:
 			wl.append(1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.))
 		print sum(wl)*dz
 		return wl,dzl,rzl
+
+	def calcwlave(self,z,sigzl):
+		#wl becomes average of the inputs from sigzl
+		self.betad = self.beta
+		self.betaf = self.betad/self.beta	
+
+		zmin = z-max(sigzl)*(1.+z)*5.*sqrt(2.)
+		zmax = z+max(sigzl)*(1.+z)*5.*sqrt(2.)
+		nz = 4000
+		dz = (zmax-zmin)/float(nz)
+		d0 = self.d.dc(z)
+		dzl = []
+		rzl = []
+		wl = []
+		for i in range(0,nz):
+			zb = zmin + dz/2.+dz*i
+			dzl.append(self.d.dc(zb)-d0)
+			rzl.append(self.d.dc(zb)/d0)
+			w = 0
+			for j in range(0,len(sigzl)):
+				sigz = sigzl[j]
+				w += 1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.)
+			w = w/float(len(sigzl))	
+			wl.append(w)
+		print sum(wl)*dz
+		return wl,dzl,rzl
+
 
 	def calcxi_zerrconv(self,r,wl,dzl,rzl,sp=1.,rmin=10.,rmax=300,rsd='',mumin=0,mumax=1):
 		#Santi used zspec=0.45 to 1.2
@@ -353,13 +418,14 @@ def wmod3(r,mu,mf,r0,sp=1.,gam=-1.7):
 	xi4 = xi0+2.5*3.*xi0/(3.+gam)-3.5*5.*xi0/(5.+gam)
 	return xi0,xi2,xi4
 
-def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=1.,beta=0.4,sfog=4.0,amc=0.0,sigt=2.5,sigr=4.,mult=1.,sigs=15.):
-	f0 = open('xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f2 = open('xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f4 = open('xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f0mc = open('xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f2mc = open('xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f4mc = open('xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,beta=0.4,sfog=0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.):
+	dir = 'BAOtemplates/'
+	f0 = open(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f2 = open(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f4 = open(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f0mc = open(dir+'xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f2mc = open(dir+'xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	f4mc = open(dir+'xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
 	r = 10.
 
 	while r < 300:
