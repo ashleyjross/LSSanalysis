@@ -158,6 +158,193 @@ def mkxifile_zerrconv(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',m
 # 	plt.plot(d[0]/.97,d[0]**2.*d[1]*1.3,'k-',dd[0],dd[0]**2.*dd[1],'r-')
 # 	plt.show()		
 	return True
+
+def mkxifile_zerrconvc(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=1):
+	#Santi used zspec=0.45 to 1.2
+	from random import gauss
+	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
+	wl,dzl,rzl = zc.calcwl(z,sigz)
+	spf = 1.
+	r = rmin
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+
+	fo = open('xizconvc'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigz)+rsd+'sp'+str(sp)+'.dat','w')
+	nzs = 10000
+	while r < rmax:
+		
+		xi,xin = zc.calcxi_zerrconv(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)		
+		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
+		print r,xi,xin
+		r += sp	 
+	fo.close()
+	return True
+
+def mkxifile_zerrconvc_combzerr(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=1):
+	#Santi used zspec=0.45 to 1.2
+	from random import gauss
+	spf = 1.
+	r = rmin
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+
+	fo = open('xizconvc'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzerr'+rsd+'sp'+str(sp)+'.dat','w')
+	
+	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
+	zl = [0.7,0.85,.95]
+	sigl = [0.029,0.035,0.049]
+	wxil = [0.5,.25,.25]
+	wll= []
+	dzll = []
+	rzll = []
+	for i in range(0,len(zl)):
+		wl,dzl,rzl = zc.calcwl(zl[i],sigl[i])
+		wll.append(wl)
+		dzll.append(dzl)
+		rzll.append(rzl)
+	while r < rmax:
+		xis = 0
+		xisn = 0
+		for i in range(0,len(zl)):
+			wl,dzl,rzl = wll[i],dzll[i],rzll[i]		
+			xi,xin = zc.calcxi_zerrconv(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)
+			xis += wxil[i]*xi
+			xisn += wxil[i]*xin		
+		fo.write(str(r)+' '+str(xis)+' '+str(xisn)+'\n')		
+		print r,xis,xisn
+		r += sp	 
+	fo.close()
+	return True
+
+
+class zerrconv:
+	def __init__(self,file='MICE_matterpower',dir='',bias=1.8,mun=0,beta=0.4,sfog=0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.,gam=-1.7):
+		dir = 'BAOtemplates/'
+		self.f0 = loadtxt(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		self.f2 = loadtxt(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		self.f4 = loadtxt(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		self.f0sm = loadtxt(dir+'xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		self.f2sm = loadtxt(dir+'xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		self.f4sm = loadtxt(dir+'xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat').transpose()
+		from Cosmo import distance
+		if file == 'Challenge_matterpower':
+			d = distance(.31,.69)
+		if file == 'MICE_matterpower':
+			d = distance(.25,.75)
+		self.d = d
+		self.beta = beta
+		self.bias = bias
+		self.gam = gam
+		
+
+	def calcwl(self,z,sigz):
+		self.ff = self.d.omz(z)**.557
+		self.betad = self.ff/self.bias
+		self.betaf = self.betad/self.beta	
+
+		zmin = z-sigz*(1.+z)*5.*sqrt(2.)
+		zmax = z+sigz*(1.+z)*5.*sqrt(2.)
+		nz = 4000
+		dz = (zmax-zmin)/float(nz)
+		d0 = self.d.dc(z)
+		dzl = []
+		rzl = []
+		wl = []
+		for i in range(0,nz):
+			zb = zmin + dz/2.+dz*i
+			dzl.append(self.d.dc(zb)-d0)
+			rzl.append(self.d.dc(zb)/d0)
+			wl.append(1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.))
+		print sum(wl)*dz
+		return wl,dzl,rzl
+
+	def calcxi_zerrconv(self,r,wl,dzl,rzl,sp=1.,rmin=10.,rmax=300,rsd='',mumin=0,mumax=1):
+		#Santi used zspec=0.45 to 1.2
+		#calculate just for one r
+		bias = self.bias
+		from random import gauss
+		spf = 1.
+		
+		sumw = sum(wl)
+		nz = len(wl)
+		muwt = 0
+		for i in range(int(100*mumin),int(100*mumax)):	
+			muwt += 1.
+		
+		muw = ''
+		if mumin != 0:
+			muw += 'mumin'+str(mumin)
+		if mumax != 1:
+			muw += 'mumax'+str(mumax)
+		nzs = 10000
+		sumxi = 0
+		sumxin = 0
+		mmin = int(100*mumin)
+		mmax = int(100*mumax)
+		for m in range(mmin,mmax):
+			mu = .005+0.01*m
+			summ = 0
+			summn = 0
+			rt = sqrt(1.-mu**2.)*r
+			rr = mu*r
+			for i in range(0,nz):
+				rrp = rr + dzl[i]
+				rtp = rt
+				rp = sqrt(rrp**2.+rtp**2.)
+				mup = abs(rrp/rp)
+				if rp >= 10. and rp < 299:
+					indd = int((rp-10.)/spf)
+					indu = indd + 1
+					fac = (rp-10.)/spf-indd
+					if fac > 1 or fac < 0:
+						print fac,rp,spf,indd
+					xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+					xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+					xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
+					xi0n = self.f0sm[1][indu]*fac+(1.-fac)*self.f0sm[1][indd]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+					xi2n = (self.f2sm[1][indu]*fac+(1.-fac)*self.f2sm[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+					xi4n = (self.f4sm[1][indu]*fac+(1.-fac)*self.f4sm[1][indd])*(self.betad/self.beta)**2.					
+				else:
+					if rp < 10.:
+						xi0,xi2,xi4 = wmod3(rp,mup,self.f0[1][0],10.,gam=self.gam)
+						xi0n,xi2n,xi4n = wmod3(rp,mup,self.f0sm[1][0],10.,gam=self.gam)
+						#xi2 = f2[1][0]
+						#xi4 = f4[1][0]
+						#xi2n = f2sm[1][0]
+						#xi4n = f4sm[1][0]
+
+					if rp >= 300:#input files don't go beyond 300, just using maximum value
+						xi0 = self.f0[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+						xi2 = self.f2[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+						xi4 = self.f4[1][-1]*(self.betad/self.beta)**2.					
+						xi0n = self.f0sm[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+						xi2n = self.f2sm[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+						xi4n = self.f4sm[1][-1]*(self.betad/self.beta)**2.						
+		
+						xi0,xi2,xi4 = 0,0,0	
+						xi0n,xi2n,xi4n = 0,0,0
+				if rsd == 'norsd':
+					xi2,xi4,xi2n,xi4n = 0,0,0,0
+				xip = xi0+P2(mup)*xi2+P4(mup)*xi4
+				xipn = xi0n+P2(mup)*xi2n+P4(mup)*xi4n
+				#if xip > 10:
+				#	print xip,rp,indd,indu,f4[1][indu],f4[1][indd],P4(mup),mup
+				summ += xip*wl[i]
+				summn += xipn*wl[i]
+			xi = summ/sumw#/float(nzs)#
+			xin = summn/sumw#/float(nzs)#
+			sumxi += xi
+			sumxin += xin
+		sumxi = sumxi/muwt
+		sumxin = sumxin/muwt			
+		return sumxi,sumxin
+
 	
 def wmod3(r,mu,mf,r0,sp=1.,gam=-1.7):
 	xi10 = mf
