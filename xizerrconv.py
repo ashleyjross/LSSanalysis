@@ -236,8 +236,8 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 	fo = open('xizconvc'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzsigl'+rsd+'sp'+str(sp)+'.dat','w')
 	
 	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
-	#sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
-	sigl = [0.029,0.029,0.035,0.049]
+	sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
+	#sigl = [0.029,0.029,0.035,0.049]
 	wl,dzl,rzl = zc.calcwlave(.8,sigl)
 	while r < rmax:
 		xis = 0
@@ -281,9 +281,9 @@ class zerrconv:
 		
 
 	def calcwl(self,z,sigz):
-		#self.ff = self.d.omz(z)**.557
-		#self.betad = self.ff/self.bias
-		self.betad = self.beta
+		self.ff = self.d.omz(z)**.557
+		self.betad = self.ff/self.bias
+		#self.betad = self.beta
 		self.betaf = self.betad/self.beta	
 
 		zmin = z-sigz*(1.+z)*5.*sqrt(2.)
@@ -304,7 +304,8 @@ class zerrconv:
 
 	def calcwlave(self,z,sigzl):
 		#wl becomes average of the inputs from sigzl
-		self.betad = self.beta
+		self.ff = self.d.omz(z)**.557
+		self.betad = self.ff/self.bias
 		self.betaf = self.betad/self.beta	
 
 		zmin = z-max(sigzl)*(1.+z)*5.*sqrt(2.)
