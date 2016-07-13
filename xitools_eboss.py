@@ -441,6 +441,51 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=2
 	fo.close()
 	return True
 
+def mkODmap(sample='lrg',NS='N',version='v1.0_IRt',res=256,zmin=.6,zmax=1.):
+	#make an 2D over-density map to be used for w(theta) calculation
+	from healpix import healpix,radec2thphi
+	h = healpix()
+	ff = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
+	fdf = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	nran = len(ff)
+	np = 12*res*res
+	ml = [] #pixel list for randoms/mask
+	gl = [] #pixel list for galaxies
+	for i in range(0,np):
+		ml.append(0)
+		gl.append(0)
+	for i in range(0,len(ff)):
+		ra,dec = ff[i]['RA'],ff[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = h.ang2pix_nest(res,th,phi)
+		ml[p] += 1.
+	for i in range(0,len(fdf)):
+		z = fdf[i]['Z']
+		if z > zmin and z < zmax:
+			ra,dec = fdf[i]['RA'],fdf[i]['DEC']
+			th,phi = radec2thphi(ra,dec)
+			p = h.ang2pix_nest(res,th,phi)
+			w = (fdf[i]['WEIGHT_NOZ']+fdf[i]['WEIGHT_CP']-1.)*fdf[i]['WEIGHT_FKP']*fdf[i]['WEIGHT_SYSTOT'] #standard weight to use 
+			#multiply by your own weight here
+			gl[p] += w
+	ave = sum(gl)/sum(ml)
+	print ave
+	fo = open('geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'odenspczw.dat','w') #this is the file for the code
+	ft = open('geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'rdodens.dat','w') #this is with theta,phi coordinates, in case you want to plot it
+	no = 0		
+	for i in range(0,len(ml)):
+		if ml[i] > 0:
+			th,phi = h.pix2ang_nest(res,i)
+			sra = sin(phi)
+			cra = cos(phi)
+			sdec = sin(-1.*(th-pi/2.))
+			cdec = cos(-1.*(th-pi/2.))
+			od = gl[i]/(ave*ml[i]) -1.
+			fo.write(str(sra)+' '+str(cra)+' '+str(sdec)+' '+str(cdec)+' '+str(od)+' '+str(ml[i])+'\n')
+			ft.write(str(th)+' '+str(phi)+' '+str(od)+' '+str(ml[i])+'\n')
+	ft.close()
+	fo.close()
+	
 ###Routines below are for systematic analysis, etc.
 
 def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
