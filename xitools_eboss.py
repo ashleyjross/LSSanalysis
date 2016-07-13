@@ -1077,6 +1077,28 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 	plt.ylabel('normalized random density / QSO density')
 	plt.show()
 	return True	
+
+def compextfib2(sample='lrg',NS='N',version='v1.0_IRt'):
+	fdf = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	mgl = []
+	el = []
+	for i in range(0,len(fdf)):
+		magf = luptm(fdf[i]['FIBER2FLUX'][-1],4)
+		mgl.append(magf)
+		el.append(fdf[i]['EXTINCTION'][4])
+	mgl = np.array(mgl)
+	el = np.array(el)
+	print sum(mgl)/float(len(mgl))
+	print (sum(mgl)-sum(el))/float(len(mgl))
+	print max(mgl)
+	print max(mgl-el)
+	print max(el)
+	print sum(el)/float(len(mgl))
+	from matplotlib import pyplot as plt
+	plt.hist(mgl,range=(19,21.7))
+	plt.show()
+	return True
+	
 	
 ### Some modules to count redshift failures, etc.
 
