@@ -317,8 +317,8 @@ void free_d3tensor(double ***t, long nrl, long nrh, long ncl, long nch,
 
 const int   IM1=2147483563;
 const int   IM2=2147483399;
-const float AM=(1.0/(float)IM1);
-const int   IMM1=(IM1-1);
+const float AM=(1.0/2147483563.);
+const int   IMM1=(2147483563-1);
 const int   IA1=40014;
 const int   IA2=40692;
 const int   IQ1=53668;
@@ -326,7 +326,7 @@ const int   IQ2=52774;
 const int   IR1=12211;
 const int   IR2=3791;
 const int   RAN2_NTAB=32;
-const int   NDIV=(1+IMM1/RAN2_NTAB);
+const int   NDIV=(1+(2147483563-1)/32);
 const float RAN2_EPS=1.2e-7;
 const float RAN2_RNMX=(1.0-1.2e-7);
 
@@ -336,7 +336,7 @@ float ran2(long *idum)
   long k;
   static long idum2=123456789;
   static long iy=0;
-  static long iv[RAN2_NTAB];
+  static long iv[32];
   float temp;
   
   if (*idum <= 0) {
@@ -475,40 +475,40 @@ float gammln(float xx)
 
 #define PI 3.141592654
 
-float poidev(float xm, long *idum)
-{
-  float gammln(float xx);
-  float ran2(long *idum);
-  static float sq,alxm,g,oldm=(-1.0);
-  float em,t,y;
-  
-  if (xm < 12.0) {
-    if (xm != oldm) {
-      oldm=xm;
-      g=exp(-xm);
-    }
-    em = -1;
-    t=1.0;
-    do {
-      ++em;
-      t *= ran2(idum);
-    } while (t > g);
-  } else {
-    if (xm != oldm) {
-      oldm=xm;
-      sq=sqrt(2.0*xm);
-      alxm=log(xm);
-      g=xm*alxm-gammln(xm+1.0);
-    }
-    do {
-      do {
-	y=tan(PI*ran2(idum));
-	em=sq*y+xm;
-      } while (em < 0.0);
-      em=floor(em);
-      t=0.9*(1.0+y*y)*exp(em*alxm-gammln(em+1.0)-g);
-    } while (ran2(idum) > t);
-  }
-  return em;
-}
+//float poidev(float xm, long *idum)
+//{
+//  float gammln(float xx);
+//  float ran2(long *idum);
+//  static float sq,alxm,g,oldm=(-1.0);
+//  float em,t,y;
+//  
+//  if (xm < 12.0) {
+//    if (xm != oldm) {
+//      oldm=xm;
+//      g=exp(-xm);
+//    }
+//    em = -1;
+//    t=1.0;
+//    do {
+//      ++em;
+//      t *= ran2(idum);
+//    } while (t > g);
+//  } else {
+//    if (xm != oldm) {
+//      oldm=xm;
+//      sq=sqrt(2.0*xm);
+//      alxm=log(xm);
+//      g=xm*alxm-gammln(xm+1.0);
+//    }
+//    do {
+//      do {
+//	y=tan(PI*ran2(idum));
+//	em=sq*y+xm;
+//      } while (em < 0.0);
+//      em=floor(em);
+//      t=0.9*(1.0+y*y)*exp(em*alxm-gammln(em+1.0)-g);
+//    } while (ran2(idum) > t);
+//  }
+//  return em;
+//}
 #undef PI
