@@ -387,6 +387,7 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=8
 
 def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo=''):
 	#chi2fac should be hartlap factor
+	#function is to 
 	from time import time
 	from optimize import fmin
 	b = baofit_isoN(N,xid,covd,modl,rl,sp=sp)
@@ -547,6 +548,64 @@ def findPolya(H,ci,d):
 	onei = linalg.pinv(np.dot(np.dot(H,ci),ht))
 	comb = np.dot(np.dot(onei,H),ci)
 	return np.dot(comb,d)
+
+def sigreg_c12(chilist,mina=.8,maxa=1.2,astep=.001,fac=1.):
+	#returns maximum likelihod, +/-1 chi2, +/-4 chi2, chimin
+	dir = ''
+	chil = []
+	chim = 1000
+	na = int(1/astep)
+	fl = []
+	for i in range(0,na):
+		a = mina + astep/2.+astep*i
+		chiv = chilist[i]
+		chil.append((chiv,a))
+		if chiv < chim:
+			#better to fit a parabola to get these values
+			chim = chiv	
+			im = i
+			am = a
+	a1u = 2.
+	a1d = 0
+	a2u = 2.
+	a2d = 0
+	oa = 0
+	ocd = 0
+	s0 = 0
+	s1 = 0
+	for i in range(im+1,len(chil)):
+		chid = chil[i][0] - chim
+		if chid > 1. and s0 == 0:
+			a1u = (chil[i][1]/abs(chid-1.)+oa/abs(ocd-1.))/(1./abs(chid-1.)+1./abs(ocd-1.))
+			s0 = 1
+		if chid > 4. and s1 == 0:
+			a2u = (chil[i][1]/abs(chid-4.)+oa/abs(ocd-4.))/(1./abs(chid-4.)+1./abs(ocd-4.))
+			s1 = 1
+		ocd = chid	
+		oa = chil[i][1]
+	oa = 0
+	ocd = 0
+	s0 = 0
+	s1 = 0
+	for i in range(1,im):
+		chid = chil[im-i][0] - chim
+		if chid > 1. and s0 == 0:
+			a1d = (chil[im-i][1]/abs(chid-1.)+oa/abs(ocd-1.))/(1./abs(chid-1.)+1./abs(ocd-1.))
+			s0 = 1
+		if chid > 4. and s1 == 0:
+			a2d = (chil[im-i][1]/abs(chid-4.)+oa/abs(ocd-4.))/(1./abs(chid-4.)+1./abs(ocd-4.))
+			s1 = 1
+		ocd = chid	
+		oa = chil[im-i][1]
+	if a1u < a1d:
+		a1u = 2.
+		a1d = 0
+	if a2u < a2d:
+		a2u = 2.
+		a2d = 0
+			
+	return am,a1d,a1u,a2d,a2u,chim	
+
 
 if __name__ == '__main__':
 	import sys

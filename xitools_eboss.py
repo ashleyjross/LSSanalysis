@@ -1140,8 +1140,49 @@ def compextfib2(sample='lrg',NS='N',version='v1.0_IRt'):
 	print max(el)
 	print sum(el)/float(len(mgl))
 	from matplotlib import pyplot as plt
-	plt.hist(mgl,range=(19,21.7))
+	plt.hist((mgl-el),range=(21,max(mgl-el)))
 	plt.show()
+	return True
+
+def compextfib2NS(sample='lrg',version='v1.0_IRt'):
+	fdfn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-N-eboss_'+version+'.dat.fits')
+	fdfs = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-S-eboss_'+version+'.dat.fits')
+	mgln = []
+	eln = []
+	for i in range(0,len(fdfn)):
+		magf = luptm(fdfn[i]['FIBER2FLUX'][-1],4)
+		mgln.append(magf)
+		eln.append(fdfn[i]['EXTINCTION'][4])
+	mgln = np.array(mgln)
+	eln = np.array(eln)
+	mgls = []
+	els = []
+	for i in range(0,len(fdfs)):
+		magf = luptm(fdfs[i]['FIBER2FLUX'][-1],4)
+		mgls.append(magf)
+		els.append(fdfs[i]['EXTINCTION'][4])
+	mgls = np.array(mgls)
+	els = np.array(els)
+	#from matplotlib import pyplot as plt
+	import pylab as P
+	#plt.hist((mgln-eln),range=(21,21.6),normed=1)
+	#plt.hist((mgls-els),range=(21,21.6),normed=1)
+	P.figure()
+	P.hist([(mgln-eln),(mgls-els)],range=(21,21.6),normed=1,label=['NGC','SGC'])
+	P.title('extinction correction to magnitude from flux')
+	P.legend()
+	P.show()
+	P.figure()
+	P.hist([(mgln),(mgls)],range=(21,21.7),normed=1,label=['NGC','SGC'])
+	P.title('No extinction correction to magnitude from flux')
+	P.legend()
+	P.show()
+
+	#plt.clf()
+	#plt.hist((mgln),range=(21,21.7),normed=1)
+	#plt.hist((mgls),range=(21,21.7),normed=1)
+	#plt.show()
+	#plt.clf()
 	return True
 	
 	
