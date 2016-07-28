@@ -10,10 +10,10 @@ createalladfilesfb
 
 Then just do ./suball.sh (things will probably need to be edited to make things work on whatever system you use)
 
-	pp2pt_Dmufb.c does paircounts, compiles on my machine via:
-	gcc -Wall -c utila.c
-	gcc -Wall -c pp2pt_Dmufb.c
-	gcc -Wall -o pp2pt_Dmufb pp2pt_Dmufb.o utila.o
+	pp2pt_Dmufb.c does paircounts, compiles on my machine without the -std=c99 but others have needed them:
+	gcc -Wall -c utila.c -std=c99
+	gcc -Wall -c pp2pt_Dmufb.c -std=c99
+	gcc -Wall -o pp2pt_Dmufb pp2pt_Dmufb.o utila.o -lm
 
 To put pair-counts together and write-out file:
 ppxilfile_bs
