@@ -322,7 +322,7 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=8
 		b.H[1][i] = 1./b.rl[i]
 		b.H[2][i] = 1./b.rl[i]**2.
 
-	bb = baofit_iso(xid,covd,modl,rl,rmin=rminb,rmax=rmaxb,sp=sp)
+	bb = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmaxb,sp=sp)
 	#bb is to set bias prior
 	bb.H = np.zeros((3,bb.nbin))
 	for i in range(0,bb.nbin):
@@ -554,7 +554,8 @@ def sigreg_c12(chilist,mina=.8,maxa=1.2,astep=.001,fac=1.):
 	dir = ''
 	chil = []
 	chim = 1000
-	na = int(1/astep)
+	#na = int(1/astep)
+	na = len(chilist)
 	fl = []
 	for i in range(0,na):
 		a = mina + astep/2.+astep*i

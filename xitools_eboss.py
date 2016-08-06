@@ -114,26 +114,39 @@ def ranHealp(sample,NS,version,res=256,rad=''):
 	return True
 
 
-def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0):
+def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
+	from optimize import fmin
 	if wm == 'wstar' or wm == 'cpstar':
 		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
 		b,m = findlinmb(sample,NS,version,'star',zmin,zmax)
 		h = healpix()
 	if wm == 'wdepth' or wm == 'cpdepth':
 		wsys = np.loadtxt('healdepthinm512.dat').transpose() #note, file is zipped in directory	
-		b,m = findlinmb(sample,NS,version,'depth',zmin,zmax)
+		#b,m = findlinmb(sample,NS,version,'depth',zmin,zmax)
+		ds = np.loadtxt('ngebossQSO_S'+version+'_mz0.9xz2.2gm'+str(gmin)+str(gmax)+'512vdepth.dat').transpose()
+		dn = np.loadtxt('ngebossQSO_N'+version+'_mz0.9xz2.2gm'+str(gmin)+str(gmax)+'512vdepth.dat').transpose()
+		dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+		e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+		lf = linfit(ds[0],dt,e)
+		inl = np.array([1.,0])
+		b,m = fmin(lf.chilin,inl)
+
 		h = healpix()
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
 	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app) #read galaxy/quasar file
 	no = 0
-	fo = open(dir+'geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'4xi.dat','w')
+	gw = ''
+	if gmax != 30:
+		gw = 'gx'+str(gmax)
+	fo = open(dir+'geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+gw+wm+'4xi.dat','w')
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		comp = f[i]['COMP']
-		if z > zmin and z < zmax and comp > compmin:
+		gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
+		if z > zmin and z < zmax and comp > compmin and gm < gmax:
 			no += 1
 			#w = 1.
 			#if wm == '':
@@ -163,21 +176,25 @@ def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin
 				pix2 = h.ang2pix_nest(512,th,phi)
 				ns = wsys[pix2]
 				ws = 1./(b+m*ns)
-				w = w*ws				
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*ws				
 
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 	fo.close()
 	print no
 	return True
 
-def mkran4xi(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci'):
+def mkran4xi(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30):
 	from random import random
 	if comp == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = np.loadtxt(dir+'geboss'+sample+'_'+NS+version+'_'+wz+wm+'4xi.dat').transpose()
+	gw = ''
+	if gmax != 30:
+		gw = 'gx'+str(gmax)
+
+	gf = np.loadtxt(dir+'geboss'+sample+'_'+NS+version+'_'+wz+gw+wm+'4xi.dat').transpose()
 	fr = np.loadtxt(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+'.dat').transpose()
-	fo = open(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+wz+wm+'4xi.dat','w')
+	fo = open(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+wz+gw+wm+'4xi.dat','w')
 	n = 0
 	for i in range(0,len(fr[0])):
 		indz = int(random()*len(gf[0]))
@@ -275,12 +292,16 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,nran=1,wm='',zmin=.6,zmax=1.):
+def createalladfilesfb(sample,NS,version,nran=1,wm='',zmin=.6,zmax=1.,gmax=30):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgal4xi(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax)
+	mkgal4xi(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
+	gw = ''
+	if gmax != 30:
+		gw = 'gx'+str(gmax)
+
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
+	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+gw+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
 		createSourcesrd_adJack(gf,i,'eboss'+sample+'_'+NS+version)
@@ -288,13 +309,13 @@ def createalladfilesfb(sample,NS,version,nran=1,wm='',zmin=.6,zmax=1.):
 	rf = 'reboss'+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
-		#mkran4xi(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
-		mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
-		rfi = rf+str(rann)+wz+wm
+		mkran4xi(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
+		#mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
+		rfi = rf+str(rann)+wz+gw+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
 			createSourcesrd_adJack(rfi,i,'eboss'+sample+'_'+NS+version)
-	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+wm)
+	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+gw+wm)
 	return True
 
 def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf='n',wmu = ''):
@@ -488,7 +509,7 @@ def mkODmap(sample='lrg',NS='N',version='v1.0_IRt',res=256,zmin=.6,zmax=1.):
 	
 ###Routines below are for systematic analysis, etc.
 
-def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
+def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',gmag=False):
 	#sample is the sample being used, e.g. 'lrg'
 	#NS is either 'N' or 'S'
 	#ver is the version, e.g., 'v1.0_IRt'
@@ -575,17 +596,26 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
 
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
+	zm = 0
+	nt = 0
 	for i in range (0,len(f)):
 		z = f[i]['Z']
-		if z > zmin and z < zmax:
+		gc = True
+		if gmag != False:
+			gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
+			if gm < gmag[0] or gm > gmag[1]:
+				gc = False
+		if z > zmin and z < zmax and gc:
 			no += 1
 			#w = 1.
 			#if wm == '':
 			ra,dec = f[i]['RA'],f[i]['DEC']
 			th,phi = radec2thphi(ra,dec)
 			p = int(h.ang2pix_nest(res,th,phi))
-
+			
 			w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP'] #standard weight to use if no systematic weights have been defined
+			if wm == 'fid':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT']
 			if wm == 'nfkp':
 				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.) #do this if you want to see difference FKP weights make
 			if wm == 'cp':
@@ -609,8 +639,12 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
 				ws = 1./(b+m*ns)
 				w = w*ws				
 			pixlg[p] += 1.*w
-	print no
-
+			zm += w*z
+			nt += w
+	print 'total number, weighted number'
+	print no,nt
+	print 'mean redshift'
+	print zm/nt
 	binnbs = []
 	binns = []
 	nsysbin = 10 #10 bins are being used
@@ -646,7 +680,9 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm=''):
 	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nbt/nt
 	print 'average number of objects per random is '+ str(ave)
-	fs = open('n'+'geboss'+sampl+'_'+NS+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+str(res)+'v'+sys+'.dat','w')
+	if gmag != False:
+		wm += 'gm'+str(gmag[0])+str(gmag[1])
+	fs = open(ebossdir+'n'+'geboss'+sampl+'_'+NS+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+str(res)+'v'+sys+'.dat','w')
 	xl = []
 	yl = []
 	el = []
@@ -1312,6 +1348,41 @@ def plotxiQSOvcomp(bs='10st0',v1='v0.7',v2='v1.0'):
 
 	return True
 
+def plotxiQSOcompw(bs='5st0',v='v1.3'):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xiQSONScompdepthw'+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	ds1 = np.loadtxt(ebossdir+'xi0gebossQSO_S'+v+'_mz0.9xz2.2wdepth'+bs+'.dat').transpose()
+	dn1 = np.loadtxt(ebossdir+'xi0gebossQSO_N'+v+'_mz0.9xz2.2wdepth'+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()
+	t1 = (ds1[1]*.5+dn1[1]*.66)/1.16
+	ds2 = np.loadtxt(ebossdir+'xi0gebossQSO_S'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
+	dn2 = np.loadtxt(ebossdir+'xi0gebossQSO_N'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
+	t2 = (ds2[1]*.5+dn2[1]*.66)/1.16
+	ds3 = np.loadtxt(ebossdir+'xi0gebossQSO_S'+v+'_mz0.9xz2.2gx22wdepth'+bs+'.dat').transpose()
+	dn3 = np.loadtxt(ebossdir+'xi0gebossQSO_N'+v+'_mz0.9xz2.2gx22wdepth'+bs+'.dat').transpose()
+	t3 = (ds3[1]*.5+dn3[1]*.66)/1.16
+
+	plt.plot(dn1[0],dn1[0]**2.*t1,'b-s')
+	plt.plot(dn1[0],dn1[0]**2.*t2,'r-d')
+	plt.plot(dn1[0],dn1[0]**2.*t3,'g-o')
+	plt.plot(dt[0],dt[0]**2.*dt[1]*1.3,'k:')
+	plt.xlim(20,250)
+	plt.ylim(-49,200)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	#plt.text(30,180,v1,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of quasars, 0.9 < z < 2.2')
+	pp.savefig()
+	pp.close()
+
+	return True
+
+
 def plotxiQSOvcomps(bs='10st0',v1='v0.7',v2='v1.0'):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
@@ -1652,6 +1723,88 @@ def plotQSONSvsdepth(v='v0.7'):
 	pp.savefig()
 	pp.close()
 	return True
+
+def plotQSOgmagNSvsdepth(v='v1.3'):
+	#plots N_QSO vs. i-band depth
+	from optimize import fmin
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'nQSONS'+v+'vdepth.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	ds = np.loadtxt(ebossdir+'ngebossQSO_S'+v+'_mz0.9xz2.2gm020.5512vdepth.dat').transpose()
+	dn = np.loadtxt(ebossdir+'ngebossQSO_N'+v+'_mz0.9xz2.2gm020.5512vdepth.dat').transpose()
+	dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+	e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+	plt.errorbar(ds[0],dt,e,fmt='ko')
+	lf = linfit(ds[0],dt,e)
+	inl = np.array([1.,0])
+	b0,m0 = fmin(lf.chilin,inl)
+	bl = []
+	ml = []
+	bl.append(b0)
+	ml.append(m0)
+	plt.plot(ds[0],b0+m0*ds[0],'k--')
+	ds = np.loadtxt(ebossdir+'ngebossQSO_S'+v+'_mz0.9xz2.2gm20.521.0512vdepth.dat').transpose()
+	dn = np.loadtxt(ebossdir+'ngebossQSO_N'+v+'_mz0.9xz2.2gm20.521.0512vdepth.dat').transpose()
+	dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+	e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+	plt.errorbar(ds[0],dt,e,fmt='rd')
+	lf = linfit(ds[0],dt,e)
+	inl = np.array([1.,0])
+	b0,m0 = fmin(lf.chilin,inl)
+	bl.append(b0)
+	ml.append(m0)
+	plt.plot(ds[0],b0+m0*ds[0],'r--')
+
+	ds = np.loadtxt(ebossdir+'ngebossQSO_S'+v+'_mz0.9xz2.2gm21.021.5512vdepth.dat').transpose()
+	dn = np.loadtxt(ebossdir+'ngebossQSO_N'+v+'_mz0.9xz2.2gm21.021.5512vdepth.dat').transpose()
+	dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+	e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+	plt.errorbar(ds[0],dt,e,fmt='bs')
+	lf = linfit(ds[0],dt,e)
+	inl = np.array([1.,0])
+	b0,m0 = fmin(lf.chilin,inl)
+	bl.append(b0)
+	ml.append(m0)
+	plt.plot(ds[0],b0+m0*ds[0],'b--')
+
+	ds = np.loadtxt(ebossdir+'ngebossQSO_S'+v+'_mz0.9xz2.2gm21.522.0512vdepth.dat').transpose()
+	dn = np.loadtxt(ebossdir+'ngebossQSO_N'+v+'_mz0.9xz2.2gm21.522.0512vdepth.dat').transpose()
+	dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+	e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+	plt.errorbar(ds[0],dt,e,fmt='g^')
+	lf = linfit(ds[0],dt,e)
+	inl = np.array([1.,0])
+	b0,m0 = fmin(lf.chilin,inl)
+	bl.append(b0)
+	ml.append(m0)
+	plt.plot(ds[0],b0+m0*ds[0],'g--')
+	ds = np.loadtxt(ebossdir+'ngebossQSO_S'+v+'_mz0.9xz2.2gm22.030512vdepth.dat').transpose()
+	dn = np.loadtxt(ebossdir+'ngebossQSO_N'+v+'_mz0.9xz2.2gm22.030512vdepth.dat').transpose()
+	dt = (ds[1]/ds[2]**2.+dn[1]/dn[2]**2.)/(1./ds[2]**2.+1./dn[2]**2.)
+	e = (1./(1./ds[2]**2.+1./dn[2]**2.))**.5	
+	plt.errorbar(ds[0],dt,e,fmt='^',color='purple')
+	lf = linfit(ds[0],dt,e)
+	inl = np.array([1.,0])
+	b0,m0 = fmin(lf.chilin,inl)
+	bl.append(b0)
+	ml.append(m0)
+	plt.plot(ds[0],b0+m0*ds[0],'--',color='purple')
+	plt.text(22.6,.81,r'$g < 20.5$',fontsize=18,color='k')
+	plt.text(22.6,.77,r'$20.5 < g < 21$',fontsize=18,color='r')
+	plt.text(22.6,.73,r'$21 < g < 21.5$',fontsize=18,color='b')
+	plt.text(22.6,.69,r'$21. 5 < g < 22$',fontsize=18,color='g')
+	plt.text(22.6,.65,r'$g > 22$',fontsize=18,color='purple')
+	plt.xlabel(r'5$\sigma$ $i$-band depth, averaged in Nside=512 pixels (magnitudes)',size=16)
+	plt.ylabel(r'$N_{\rm gal}/N_{\rm ran}$ (normalized)',size=16)
+	plt.ylim(.6,1.4)
+	plt.title(r'galaxy density vs. $i$-band depth for v1.3 eboss QSOs, 0.9 < z < 2.2')
+	pp.savefig()
+	pp.close()
+	return bl,ml
+
 	
 def plotLRGNSbaolike(v='v0.8_IRc'):
 	#plot bao likelihood for LRGs
