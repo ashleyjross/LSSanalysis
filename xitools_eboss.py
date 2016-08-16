@@ -1159,6 +1159,100 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 	plt.show()
 	return True	
 
+def compnzfib(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
+	from matplotlib import pyplot as plt
+	from random import random
+	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'N-eboss_'+version+'.dat.fits')
+	fs = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'S-eboss_'+version+'.dat.fits')
+	nzlf = []
+	nzld = []
+	nzldd = []
+	for i in range(0,int(1/float(zb)*zmax)):
+		nzlf.append(0)
+		nzld.append(0)
+		nzldd.append(0)
+	n = 0
+	for i in range(0,len(fn)):
+		z = fn[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			ranz = random()*1.3+.9
+			zindr = int(1/float(zb)*ranz)
+			rf = random()
+			zindf = zind
+			if rf < rz:
+				zindf = zindr
+			#w =1.
+			w = (fn[i]['WEIGHT_CP'])*fn[i]['WEIGHT_SYSTOT']#*fdf[i]['WEIGHT_FKP']
+			fid = fn[i]['FIBERID']
+			s = 0
+			if fid < 0:
+				n += 1
+				s = 1
+			if fid <= 50 and fid > 0:
+				nzlf[zind] += w
+				s =1
+			if fid >450 and fid <= 550:
+				nzlf[zind] += w
+				s =1
+			if fid > 950 and fid <=1000:
+				nzlf[zind] += w	
+				s = 1
+			if s == 0:
+				nzldd[zindf] += w
+	print n
+	for i in range(0,len(fs)):
+		z = fs[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			ranz = random()*1.3+.9
+			zindr = int(1/float(zb)*ranz)
+			rf = random()
+			zindf = zind
+			if rf < rz:
+				zindf = zindr
+			#w =1.
+			w = (fs[i]['WEIGHT_CP'])*fs[i]['WEIGHT_SYSTOT']#*fdf[i]['WEIGHT_FKP']
+			fid = fs[i]['FIBERID']
+			s = 0
+			if fid < 0:
+				s = 1
+			if fid <= 50 and fid > 0:
+				nzlf[zind] += w
+				s =1
+			if fid >450 and fid <= 550:
+				nzlf[zind] += w
+				s =1
+			if fid > 950 and fid <=1000:
+				nzlf[zind] += w	
+				s = 1
+			if s == 0:
+				nzldd[zindf] += w
+# 	for i in range(0,len(fd[0])):
+# 		z = fd[2][i]
+# 		if z > zmin and z < zmax:
+# 			zind = int(1/float(zb)*z)
+# 			nzld[zind] += fd[3][i]
+	nzfe = (np.array(nzlf))**.5/sum(nzlf)
+	nzlf = np.array(nzlf)/sum(nzlf)		
+	#nzld = np.array(nzld)/sum(nzld)
+	nzldd = np.array(nzldd)/sum(nzldd)
+		
+	#print nzld
+	nzl = np.arange(zb/2.,zmax,zb)
+	c = np.ones((len(nzl)))
+	c = c*.98
+	plt.plot(nzl,nzlf,'r-',nzl,nzldd,'b-')
+	plt.show()
+	plt.plot(nzl,c,'k:')
+	plt.errorbar(nzl,nzlf/nzldd,nzfe/nzldd,fmt='r-')#,nzl,nzld/nzldd,'b-')
+	plt.xlim(zmin-zb/2.,zmax+zb/2.)
+	plt.xlabel('redshift')
+	plt.ylabel('normalized edge fiber density / other density')
+	plt.show()
+	return True	
+
+
 def compextfib2(sample='lrg',NS='N',version='v1.0_IRt'):
 	fdf = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
 	mgl = []
@@ -1254,6 +1348,7 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 
 
 ### Below is for plots
+
 
 def plotxiLRGNS(bs='10st0',v='v0.8_IRc'):
 	#Plots comparison between NGC and SGC clustering for and to theory LRGs, no stellar density correction
