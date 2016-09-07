@@ -956,7 +956,7 @@ def xibao(sample,zmin,zmax,version='v1.0',wm='',bs=10,start=0,rmin=30,rmax=150.,
 	if sample == 'lrg':
 		wt = (ds[1]*1.8+1.3*dn[1])/3.1
 	if sample == 'QSO' or sample == 'QPM_QSO' or sample == 'aveQPM_QSO':
-		if version == 'v1.2':
+		if version == 'v1.2' or version == 'v1.5':
 			wt = (ds[1]*.52+dn[1]*.66)/(.52+.66)
 		else:
 			wt = (ds[1]+dn[1])/2.
@@ -1108,6 +1108,57 @@ def compmat(NS='NScomb',m=1.):
 	plt.show()
 	return True
 
+def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
+	from matplotlib import pyplot as plt
+	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-N'+'-eboss_'+version+'-full.dat.fits')
+	fs = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-S'+'-eboss_'+version+'-full.dat.fits')
+	nzls = []
+	nzln = []
+	for i in range(0,int(1/float(zb)*zmax)):
+		nzls.append(0)
+		nzln.append(0)
+	sumzw = 0
+	sumw = 0
+	for i in range(0,len(fn)):
+		z = fn[i]['Z']
+		im = fn[i]['IMATCH']
+		if z > zmin and z < zmax and im == 9:
+			zind = int(1/float(zb)*z)
+			nzln[zind] += 1.#*ff[i]['WEIGHT_FKP']
+			sumzw += z#*ff[i]['WEIGHT_FKP']
+			sumw += 1.#*ff[i]['WEIGHT_FKP']
+	print sumzw/sumw
+	sumzws = 0
+	sumws = 0
+
+	for i in range(0,len(fs)):
+		z = fs[i]['Z']
+		im = fs[i]['IMATCH']
+		if z > zmin and z < zmax and im == 9:
+			zind = int(1/float(zb)*z)
+			w = 1.
+			nzls[zind] += w
+			sumzws += z*w
+			sumws += w
+	print sumzws/sumws
+# 	for i in range(0,len(fd[0])):
+# 		z = fd[2][i]
+# 		if z > zmin and z < zmax:
+# 			zind = int(1/float(zb)*z)
+# 			nzld[zind] += fd[3][i]
+	nzls = np.array(nzls)/sum(nzls)/zb		
+	#nzld = np.array(nzld)/sum(nzld)
+	nzln = np.array(nzln)/sum(nzln)/zb
+	#print nzld
+	nzl = np.arange(0,zmax,zb)
+	plt.plot(nzl,nzln,'r-',nzl,nzls,'b-')
+	plt.xlim(zmin,zmax)
+	plt.xlabel('redshift')
+	plt.ylabel('normalized QSO-galaxy density')
+	plt.show()
+	return True	
+
+
 def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 	from matplotlib import pyplot as plt
 	ff = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
@@ -1161,7 +1212,7 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 
 def compnzfib(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 	from matplotlib import pyplot as plt
-	from random import random
+	from random import random,gauss
 	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'N-eboss_'+version+'.dat.fits')
 	fs = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'S-eboss_'+version+'.dat.fits')
 	nzlf = []
@@ -1250,6 +1301,63 @@ def compnzfib(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 	plt.xlabel('redshift')
 	plt.ylabel('normalized edge fiber density / other density')
 	plt.show()
+	return True	
+
+def compnzknown(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
+	from matplotlib import pyplot as plt
+	from random import random,gauss
+	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'N-eboss_'+version+'.dat.fits')
+	fs = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-'+'S-eboss_'+version+'.dat.fits')
+	nzlf = []
+	nzld = []
+	nzldd = []
+	for i in range(0,int(1/float(zb)*zmax)):
+		nzlf.append(0)
+		nzld.append(0)
+		nzldd.append(0)
+	n = 0
+	for i in range(0,len(fn)):
+		z = fn[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			#w =1.
+			w = (fn[i]['WEIGHT_CP']+fn[i]['WEIGHT_NOZ']-1.)*fn[i]['WEIGHT_SYSTOT']#*fdf[i]['WEIGHT_FKP']
+			fid = fn[i]['FIBERID']
+			nzldd[zind] += w
+			if fid < 0:
+				nzlf[zind] += w
+			if fid > 0:
+				nzld[zind] += w
+	print n
+	for i in range(0,len(fs)):
+		z = fs[i]['Z']
+		if z > zmin and z < zmax:
+			zind = int(1/float(zb)*z)
+			#w =1.
+			w = (fs[i]['WEIGHT_CP']+fs[i]['WEIGHT_NOZ']-1.)*fs[i]['WEIGHT_SYSTOT']#*fdf[i]['WEIGHT_FKP']
+			fid = fs[i]['FIBERID']
+			nzldd[zind] += w
+			if fid < 0:
+				nzlf[zind] += w
+			if fid > 0:
+				nzld[zind] += w
+	nzfe = (np.array(nzlf))**.5/sum(nzlf)
+	nzlf = np.array(nzlf)/sum(nzlf)		
+	nzld = np.array(nzld)/sum(nzld)
+	nzldd = np.array(nzldd)/sum(nzldd)
+		
+	#print nzld
+	nzl = np.arange(zb/2.,zmax,zb)
+	c = np.ones((len(nzl)))
+	c = c*.98
+	plt.plot(nzl,nzlf,'r-',nzl,nzldd,'k-',nzl,nzld,'b-')
+	plt.show()
+# 	plt.plot(nzl,c,'k:')
+# 	plt.errorbar(nzl,nzlf/nzldd,nzfe/nzldd,fmt='r-')#,nzl,nzld/nzldd,'b-')
+# 	plt.xlim(zmin-zb/2.,zmax+zb/2.)
+# 	plt.xlabel('redshift')
+# 	plt.ylabel('normalized edge fiber density / other density')
+# 	plt.show()
 	return True	
 
 
@@ -1350,7 +1458,7 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 ### Below is for plots
 
 
-def plotxiLRGNS(bs='10st0',v='v0.8_IRc'):
+def plotxiLRGNS(bs='10st0',v='v0.8_IRc',wm=''):
 	#Plots comparison between NGC and SGC clustering for and to theory LRGs, no stellar density correction
 	from matplotlib import pyplot as plt
 	from matplotlib import rc
@@ -1368,7 +1476,7 @@ def plotxiLRGNS(bs='10st0',v='v0.8_IRc'):
 	ds = np.loadtxt(ebossdir+'xi0gebosslrg_S'+v+'_mz0.6xz1.0'+bs+'.dat').transpose()
 	dn = np.loadtxt(ebossdir+'xi0gebosslrg_N'+v+'_mz0.6xz1.0'+bs+'.dat').transpose()
 	
-	t = (ds[1]*1.8+1.3*dn[1])/3.1
+	t = (ds[1]*.8+.75*dn[1])/1.55
 	plt.plot(ds[0],ds[0]**2.*ds[1],'b-s')
 	plt.plot(dn[0],dn[0]**2.*dn[1],'r-d')
 	plt.plot(dn[0],dn[0]**2.*t,'k-o')
@@ -1395,8 +1503,8 @@ def plotxiQSONS(bs='10st0',v='v0.7'):
 	plt.minorticks_on()
 	ds = np.loadtxt(ebossdir+'xi0gebossQSO_S'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
 	dn = np.loadtxt(ebossdir+'xi0gebossQSO_N'+v+'_mz0.9xz2.2'+bs+'.dat').transpose()
-	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()
-	t = (ds[1]*1.+dn[1])/2.
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()
+	t = (ds[1]*.8+dn[1])/1.8
 	plt.plot(ds[0],ds[0]**2.*ds[1],'b-s')
 	plt.plot(dn[0],dn[0]**2.*dn[1],'r-d')
 	plt.plot(dn[0],dn[0]**2.*t,'k-o')
@@ -1521,10 +1629,11 @@ def plotxiQSOv(bs='10st0',v='v1.2'):
 	dsa = np.loadtxt(ebossdir+'xi0gaveQPM_QSOSGCv1.0mz0.9xz2.2'+bs+'.dat').transpose()
 
 	dt = np.loadtxt('/Users/ashleyross/DR12/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()
-	if v == 'v1.2':
-		wn = 0.66
-		ws = .53
-	else:
+	#if v == 'v1.2':
+	wn = 0.66
+	ws = .53
+		
+	if v == 'v1.0':
 		wn = .5
 		ws = .5
 	t1 = (ds1[1]*ws+dn1[1]*wn)/(wn+ws)
