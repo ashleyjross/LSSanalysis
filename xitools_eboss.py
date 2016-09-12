@@ -1108,6 +1108,34 @@ def compmat(NS='NScomb',m=1.):
 	plt.show()
 	return True
 
+def testzweights():
+	from Cosmo import distance
+	from random import gauss
+	#test difference in recovered signal to noise with and without weighting
+	d = distance(.3,.7)
+	url = []
+	wrl = []
+	for j in range(0,1000):
+		z = .905
+		l = []
+		wl = []
+		while z < 2.2:
+			w = 1./d.D(z)
+			sigma = sqrt(1./w)
+			for i in range(0,10):
+				v = gauss(0,sigma)
+				l.append(v)
+				wl.append(w)
+			z += .01
+		u = np.mean(l)
+		wr = sum(np.array(l)*np.array(wl))/sum(wl)
+		url.append(u)
+		wrl.append(wr)
+	print len(url),len(wrl),np.mean(url),np.mean(wrl)	
+	vu = np.mean(np.array(url)**2.)-np.mean(url)**2.
+	vw = np.mean(np.array(wrl)**2.)-np.mean(wrl)**2.
+	return vu,vw
+
 def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 	from matplotlib import pyplot as plt
 	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-N'+'-eboss_'+version+'-full.dat.fits')
