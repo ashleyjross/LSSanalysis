@@ -1115,7 +1115,7 @@ def testzweights(p=1.):
 	d = distance(.3,.7)
 	url = []
 	wrl = []
-	for j in range(0,1000):
+	for j in range(0,10000):
 		z = .905
 		l = []
 		wl = []
@@ -1134,7 +1134,8 @@ def testzweights(p=1.):
 	print len(url),len(wrl),np.mean(url),np.mean(wrl)	
 	vu = np.mean(np.array(url)**2.)-np.mean(url)**2.
 	vw = np.mean(np.array(wrl)**2.)-np.mean(wrl)**2.
-	return vu,vw
+	#return vu,vw
+	return sqrt(vu/vw) #factor by which sigma should change
 
 def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 	from matplotlib import pyplot as plt
