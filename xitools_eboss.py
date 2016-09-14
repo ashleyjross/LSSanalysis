@@ -1120,8 +1120,8 @@ def testzweights(p=1.):
 		l = []
 		wl = []
 		while z < 2.2:
-			w = 1./d.D(z)**p
-			sigma = sqrt(1./w)
+			sigma = d.D(z)**p #testing how BAO scales with growth factor due to damping
+			w = 1/sigma**2.
 			for i in range(0,10):
 				v = gauss(0,sigma)
 				l.append(v)
