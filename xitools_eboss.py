@@ -1108,7 +1108,7 @@ def compmat(NS='NScomb',m=1.):
 	plt.show()
 	return True
 
-def testzweights():
+def testzweights(p=1.):
 	from Cosmo import distance
 	from random import gauss
 	#test difference in recovered signal to noise with and without weighting
@@ -1120,7 +1120,7 @@ def testzweights():
 		l = []
 		wl = []
 		while z < 2.2:
-			w = 1./d.D(z)
+			w = 1./d.D(z)**p
 			sigma = sqrt(1./w)
 			for i in range(0,10):
 				v = gauss(0,sigma)
