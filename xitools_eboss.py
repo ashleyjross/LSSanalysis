@@ -1137,6 +1137,63 @@ def testzweights(p=1.):
 	#return vu,vw
 	return sqrt(vu/vw) #factor by which sigma should change
 
+def testmuweights():
+	from Cosmo import distance
+	from random import gauss
+	#test difference in recovered signal to noise with and without weighting
+	url = []
+	wrl = []
+	for j in range(0,10000):
+		mu = .005
+		l = []
+		wl = []
+		while mu < 1.:
+			w = 1.+2.*mu**2.
+			sigma = sqrt(1./w)
+			for i in range(0,10):
+				v = gauss(0,sigma)
+				l.append(v)
+				wl.append(w)
+			mu += .01
+		u = np.mean(l)
+		wr = sum(np.array(l)*np.array(wl))/sum(wl)
+		url.append(u)
+		wrl.append(wr)
+	print len(url),len(wrl),np.mean(url),np.mean(wrl)	
+	vu = np.mean(np.array(url)**2.)-np.mean(url)**2.
+	vw = np.mean(np.array(wrl)**2.)-np.mean(wrl)**2.
+	#return vu,vw
+	return sqrt(vu/vw) #factor by which sigma should change
+
+
+def QSObaovsz(n=1.6e-05,dz=.1,zmin=.9,zmax=2.2,area=2000.):
+	from baoerr import baoerr
+	from Cosmo import distance
+	d = distance(.3,.7)
+	ol = []
+	zl = []
+	nl = []
+	nb = int((zmax-zmin+dz*.01)/dz)
+	for i in range(0,nb):
+		z = zmin+dz/2.+dz*i
+		b = 0.53+0.29*(1.+z)**2.
+		errz = baoerr(z-dz/2.,z+dz/2.,dz,.001,area,n,b)
+		print z,errz
+		ol.append(1./errz**2.)
+		zl.append(z)
+		vol = (d.dc(z+dz/2.)**3.-d.dc(z-dz/2.)**3.) #volume of shell is proportional to this
+		numbin = n*vol #number per zbin will be proportional to this
+		nl.append(numbin)
+	ivt = sum(ol)
+	errt = sqrt(1./ivt)
+	#print ol
+	ol = np.array(ol)
+	nl = np.array(nl)
+	from matplotlib import pyplot as plt
+	plt.plot(zl,ol**.5/nl,'k-')
+	plt.show()
+	return errt	
+
 def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 	from matplotlib import pyplot as plt
 	fn = fitsio.read(dirfits+'eboss_'+version+'-'+sample+'-N'+'-eboss_'+version+'-full.dat.fits')
@@ -1600,15 +1657,16 @@ def plotxiQSOcompw(bs='5st0',v='v1.3'):
 
 	plt.plot(dn1[0],dn1[0]**2.*t1,'b-s')
 	plt.plot(dn1[0],dn1[0]**2.*t2,'r-d')
-	plt.plot(dn1[0],dn1[0]**2.*t3,'g-o')
+	plt.plot(dn1[0],dn1[0]**2.*t3,'y-o')
 	plt.plot(dt[0],dt[0]**2.*dt[1]*1.3,'k:')
 	plt.xlim(20,250)
-	plt.ylim(-49,200)
+	plt.ylim(-49,150)
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
 	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
-	#plt.text(30,180,v1,color='b')
-	#plt.text(30,170,v2,color='r')
-	plt.title(r'Correlation function of quasars, 0.9 < z < 2.2')
+	plt.text(30,140,'w(depth,g)',color='b')
+	plt.text(30,130,'w(depth)',color='r')
+	plt.text(30,120,'w(depth,g); g<22',color='y')
+	plt.title(r'Correlation function of quasars, v1.3, 0.9 < z < 2.2')
 	pp.savefig()
 	pp.close()
 
