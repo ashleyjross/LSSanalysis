@@ -2142,4 +2142,35 @@ def plotQSONSbaolike(v='v1.0'):
 	pp.savefig()
 	pp.close()
 	return True
+	
+def plot3Dphotz(pimax=100.):
+	from matplotlib import pyplot as plt
+	d = np.loadtxt('/Users/ashleyross/eBOSS/3d_ps_0916_200_p01.dat').transpose()
+	nb = int(len(d[0])/200)
+	xil = []
+	rl = []
+	rpold = d[1][0]
+	xi = 0
+	for i in range(0,len(d[0])):	
+		pi = d[0][i]
 		
+		if pi < pimax:
+			rp = d[1][i]
+			if rp == rpold:
+				xi += d[2][i]
+			else:
+				xil.append(xi)
+				rl.append(rpold)
+				xi = d[2][i]	
+			rpold = rp
+	xil.append(xi)
+	rl.append(rp)
+	rl = np.array(rl)
+	xil = np.array(xil)
+	dt = np.loadtxt('/Users/ashleyross/DESY1/xizconvcrpmaxMICE_matterpowermumax0.41v1.2.30.4010.010.0combzsiglsp1.0.dat').transpose()
+	plt.plot(rl,rl**2.*xil/pimax,'ko-',dt[0],dt[0]**2.*dt[1],'r-')
+	plt.xlim(0,160)
+	plt.show()
+	
+	return True
+		  
