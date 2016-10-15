@@ -35,8 +35,10 @@ def mkRMmap(zmin,zmax,res=4096,pixmin=0,pixmax=False,wm=''):
 			ra,dec = f[i]['RA'],f[i]['DEC']
 			th,phi = radec2thphi(ra,dec)
 			p = hp.ang2pix(res,th,phi)-pixmin
-			sys = sysmap[p]
-			w = 1./(m*sys+b)
+			w = 1.
+			if wm != '':
+				sys = sysmap[p]
+				w = 1./(m*sys+b)
 			pixl[p] += w
 	return pixl
 
