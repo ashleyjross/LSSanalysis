@@ -394,52 +394,126 @@ def xisigmuplot():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages('xisigmuscale.pdf')
+	pp = PdfPages('/Users/ashleyross/DESY1/xisigmuscale.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	plt.xlabel(r'$s$ ($h^{-1}$ Mpc)',size=16)
+	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
 	plt.ylabel(r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=16)
-	d0 = load('xizconv0MICE_matterpowermumax0.20.406.010.00.029sp1.0.dat').transpose()
+	d0 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumax0.20.406.010.00.029sp1.0.dat').transpose()
 	#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
-	drp = load('xirpzconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
-	d1 = load('xizconv0MICE_matterpowermumin0.2mumax0.40.406.010.00.029sp1.0.dat').transpose()
-	d2 = load('xizconv0MICE_matterpowermumin0.4mumax0.60.406.010.00.029sp1.0.dat').transpose()
-	d3 = load('xizconv0MICE_matterpowermumin0.6mumax0.80.406.010.00.029sp1.0.dat').transpose()
-	d4 = load('xizconv0MICE_matterpowermumin0.80.406.010.00.029sp1.0.dat').transpose()
+	drp = load('/Users/ashleyross/DESY1/xirpzconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.2mumax0.40.406.010.00.029sp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.4mumax0.60.406.010.00.029sp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.6mumax0.80.406.010.00.029sp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.80.406.010.00.029sp1.0.dat').transpose()
  	#plt.plot(d0[0]*sin(acos(.1)),(d0[1]-d0[2])*1000,'k-',linewidth=3)
  	#plt.plot(d0[0]*sin(acos(.3)),(d1[1]-d1[2])*1000,'k--',linewidth=3)
  	#plt.plot(d0[0]*sin(acos(.5)),(d2[1]-d2[2])*1000,'k:',linewidth=3)
  	#plt.plot(d0[0]*sin(acos(.7)),(d3[1]-d3[2])*1000,':',color='r',linewidth=3)
  	#plt.plot(d0[0]*sin(acos(.9)),(d4[1]-d4[2])*1000,':',color='b',linewidth=3)
-	plt.plot(d0[0]*sin(acos(.05)),(d0[1]-d0[2])*1000,'k-',linewidth=3)
-	xl = [180,190]
+	plt.plot(d0[0]*sqrt(1.-.1**2.),(d0[1]-d0[2])*1000,'k-',linewidth=3)
+	xl = [104,104]
+	yl = [-.5,.5]
+	plt.plot(xl,yl,'k:')
+	xl = [130,140]
 	yl = [.36,.36]
 	plt.plot(xl,yl,'k-',linewidth=3)
-	plt.text(200,.35,r'$\mu < 0.2$',color='k')
+	plt.text(150,.35,r'$\mu < 0.2$',color='k')
 	#plt.plot(dt[0],(dt[1]-dt[2])*1000,'y-',linewidth=3)
 	#plt.plot(drp[0],(drp[1]-drp[2])*1000,'-',color='purple',linewidth=3)
-	plt.plot(d0[0]*sin(acos(.25)),(d1[1]-d1[2])*1000,'k--',linewidth=3)
+	plt.plot(d0[0]*sqrt(1.-.3**2.),(d1[1]-d1[2])*1000,'k--',linewidth=3)
 	yl = [.33,.33]
 	plt.plot(xl,yl,'k--',linewidth=3)
-	plt.text(200,.32,r'$0.2 < \mu < 0.4$',color='k')
-	plt.plot(d0[0]*sin(acos(.45)),(d2[1]-d2[2])*1000,'k:',linewidth=3)
+	plt.text(150,.32,r'$0.2 < \mu < 0.4$',color='k')
+	plt.plot(d0[0]*sqrt(1.-.5**2.),(d2[1]-d2[2])*1000,'k:',linewidth=3)
 	yl = [.29,.29]
 	plt.plot(xl,yl,'k:',linewidth=3)
-	plt.text(200,.28,r'$0.4 < \mu < 0.6$',color='k')
-	plt.plot(d0[0]*sin(acos(.65)),(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+	plt.text(150,.28,r'$0.4 < \mu < 0.6$',color='k')
+	plt.plot(d0[0]*sqrt(1.-.7**2.),(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
 	yl = [.26,.26]
 	plt.plot(xl,yl,'r-',linewidth=3)
-	plt.text(200,.25,r'$0.6 < \mu < 0.8$',color='k')
-	plt.plot(d0[0]*sin(acos(.85)),(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+	plt.text(150,.25,r'$0.6 < \mu < 0.8$',color='k')
+	plt.plot(d0[0]*sqrt(1.-.9**2.),(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
 	yl = [.23,.23]
 	plt.plot(xl,yl,'b-',linewidth=3)
-	plt.text(200,.22,r'$0.8 < \mu $',color='k')
+	plt.text(150,.22,r'$0.8 < \mu $',color='k')
 
 	plt.ylim(-.2,.4)
-	plt.xlim(30,300)
+	plt.xlim(30,200)
 	pp.savefig()
 	pp.close()
 	return True
+
+def xisigmuplotzerr(zerr):
+	import matplotlib.pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages('/Users/ashleyross/DESY1/xisigmu'+str(zerr)+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.xlabel(r'$s$ ($h^{-1}$ Mpc)',size=16)	
+	plt.ylabel(r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=16)
+	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+ 	plt.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+ 	plt.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+ 	plt.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+ 	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+ 	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+	plt.ylim(-.5,1.)
+	plt.xlim(30,300)
+
+	xl = [190,200]
+	yl = [.8,.8]
+	plt.plot(xl,yl,'k-',linewidth=3)
+	plt.text(210,.79,r'$\mu < 0.2$',color='k')
+	#plt.plot(dt[0],(dt[1]-dt[2])*1000,'y-',linewidth=3)
+	#plt.plot(drp[0],(drp[1]-drp[2])*1000,'-',color='purple',linewidth=3)
+	yl = [.74,.74]
+	plt.plot(xl,yl,'k--',linewidth=3)
+	plt.text(210,.73,r'$0.2 < \mu < 0.4$',color='k')
+	
+	yl = [.68,.68]
+	plt.plot(xl,yl,'k:',linewidth=3)
+	plt.text(210,.67,r'$0.4 < \mu < 0.6$',color='k')
+	
+	yl = [.62,.62]
+	plt.plot(xl,yl,'r-',linewidth=3)
+	plt.text(210,.61,r'$0.6 < \mu < 0.8$',color='k')
+	
+	yl = [.56,.56]
+	plt.plot(xl,yl,'b-',linewidth=3)
+	plt.text(210,.55,r'$0.8 < \mu $',color='k')
+	plt.title(r'$\sigma_z/(1+z)$ = 0.01')
+	pp.savefig()
+	pp.close()
+
+	pp = PdfPages('/Users/ashleyross/DESY1/xisigmuscale'+str(zerr)+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
+	plt.ylabel(r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=16)
+
+	plt.plot(d0[0]*sqrt(1.-.1**2.),(d0[1]-d0[2])*1000,'k-',linewidth=3)
+	plt.plot(d0[0]*sqrt(1.-.3**2.),(d1[1]-d1[2])*1000,'k--',linewidth=3)
+	plt.plot(d0[0]*sqrt(1.-.5**2.),(d2[1]-d2[2])*1000,'k:',linewidth=3)
+	plt.plot(d0[0]*sqrt(1.-.7**2.),(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+	plt.plot(d0[0]*sqrt(1.-.9**2.),(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+
+	xl = [104,104]
+	yl = [-20,20]
+	plt.plot(xl,yl,'k:')
+
+	plt.ylim(-.5,1.)
+	plt.xlim(30,200)
+	pp.savefig()
+	pp.close()
+	return True
+
 
 def xipzcompspeczplot():
 	import matplotlib.pyplot as plt
@@ -645,6 +719,28 @@ def xisigmumockcompthrsdplot(mumin,mumax,b=1.5,sfog=0,alph=1.):
 #	pp.close()
 	return True
 
+def rbaomu():
+	import matplotlib.pyplot as plt
+	import matplotlib.cm as cm
+	from matplotlib.backends.backend_pdf import PdfPages
+	import matplotlib.axes as ax
+	import numpy as np
+	from Cosmo import *
+	from numpy import loadtxt as load
+
+	pp = PdfPages('rbaomu.pdf')
+	d = load('/Users/ashleyross/DESY1/xizconvrbao504MICE_matterpower0.406.010.0combzsiglsp1.0.dat').transpose()
+	plt.plot(d[0],d[1],'k-',linewidth=5)
+	r0 = d[1][0]
+	rpp = r0/(1.-d[0]**2.)**.5
+	plt.plot(d[0],rpp,'k:',linewidth=2)
+	plt.xlabel(r'$\mu$',size=16)
+	plt.ylabel(r'$r_{\rm BAO}$ ($h^{-1}$Mpc)',size=16)
+	plt.xlim(0,0.8)
+	plt.ylim(100,200)
+	pp.savefig()
+	pp.close()
+	return True
 
 def BAOerrplot(wo='test',BOSS=True,MGS=False,wz=False,sdss=False,df6=False,des=True,eboss=False,desi=False):
 	import matplotlib.pyplot as plt

@@ -53,7 +53,7 @@ def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20):
 	fo.close()
 	return True
 
-def mkran1mil(sample,NS,version,N=0,c='sci',app='.fits',compmin=0):
+def mkran1mil(sample,NS,version,cm='',N=0,c='sci',app='.fits',compmin=0):
 	dirout = ''
 	dir = ''
 	if c == 'sci':
@@ -61,31 +61,34 @@ def mkran1mil(sample,NS,version,N=0,c='sci',app='.fits',compmin=0):
 		dirout = dir
 	minc = N*10**6
 	maxc = (N+1)*10**6 #will become relevant once files are big enough
-	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran'+app)#[minc:maxc]
+	f = fitsio.read(dir+cm+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran'+app)#[minc:maxc]
 	if maxc > len(f):
 		maxc = len(f)
 	#f = fitsio.FITS(dir+'eboss_'+version+'-'+sample+'-'+NS+'eboss_'+version+'.ran'+app)[1]
 	no = 0
-	fo = open(dirout+'reboss'+sample+'_'+NS+version+'_'+str(N)+'.dat','w')
+	fo = open(dirout+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+'.dat','w')
 	#for i in range(0,len(f)):		
 	for i in range(minc,maxc):
-		comp = f[i]['COMP']
-		if comp > compmin:
-			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+'\n') #rest of the information comes from matching to galaxy catalog, this gives set of randoms matching angular footprint
+		#comp = f[i]['COMP']
+		#if comp > compmin:
+		fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+'\n') #rest of the information comes from matching to galaxy catalog, this gives set of randoms matching angular footprint
+		#else:
+		#	no += 1
 		#fo.write(str(float(f[i]['RA']))+' '+str(float(f[i]['DEC']))+'\n') #to be used if opened and read from fitsio.FITS
+	print no
 	fo.close()
 	return True
 
-def mkjackf(sample,NS,version,Njack=20):
+def mkjackf(sample,NS,version,cm='',Njack=20):
 	#defines jack-knifes
-	mf = open('ranHeal_pix256eboss'+sample+'_'+NS+version+'.dat').readlines()
-	fo = open('jackhpixeboss'+sample+'_'+NS+version+str(Njack)+'.dat','w')
+	mf = open('ranHeal_pix256eboss'+cm+sample+'_'+NS+version+'.dat').readlines()
+	fo = open('jackhpixeboss'+cm+sample+'_'+NS+version+str(Njack)+'.dat','w')
 	for i in range(0,Njack-1):
 		fo.write(str(mf[(len(mf)/Njack)*(i+1)].split()[0])+'\n')
 	fo.close()
 	return True
 
-def ranHealp(sample,NS,version,res=256,rad=''):
+def ranHealp(sample,NS,version,cm='',res=256,rad=''):
 	#pixelizes random file to create jack-knifes
 	import gzip
 	dir = dirsci
@@ -98,7 +101,7 @@ def ranHealp(sample,NS,version,res=256,rad=''):
 	np = 12*res**2
 	for i in range(0,np):
 		pixl.append(0)
-	f = open(dirsci+'reboss'+sample+'_'+NS+version+'_0'+'.dat')	
+	f = open(dirsci+'reboss'+cm+sample+'_'+NS+version+'_0'+'.dat')	
 	for line in f:
 		if line[0] != '#' and line[1] != '#' and line.split()[0] != 'az(d)':
 			ln = line.split()
@@ -106,7 +109,7 @@ def ranHealp(sample,NS,version,res=256,rad=''):
 			th,phi = radec2thphi(ra,dec)
 			p = int(h.ang2pix_nest(res,th,phi))
 			pixl[p] += 1.
-	fo = open('ranHeal_pix'+str(res)+'eboss'+sample+'_'+NS+version+'.dat','w')
+	fo = open('ranHeal_pix'+str(res)+'eboss'+cm+sample+'_'+NS+version+'.dat','w')
 	for i in range(0,len(pixl)):
 		if pixl[i] > 0:
 			fo.write(str(i)+' '+str(pixl[i])+'\n')
@@ -114,7 +117,7 @@ def ranHealp(sample,NS,version,res=256,rad=''):
 	return True
 
 
-def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30):
+def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
 	from optimize import fmin
@@ -136,12 +139,12 @@ def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin
 		h = healpix()
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
-	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app) #read galaxy/quasar file
+	f = fitsio.read(dir+cm+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app) #read galaxy/quasar file
 	no = 0
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
-	fo = open(dir+'geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+gw+wm+'4xi.dat','w')
+	fo = open(dir+'geboss'+cm+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+gw+wm+'4xi.dat','w')
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		comp = f[i]['COMP']
@@ -183,7 +186,7 @@ def mkgal4xi(sample,NS,version,zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin
 	print no
 	return True
 
-def mkran4xi(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30):
+def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30):
 	from random import random
 	if comp == 'sci':
 		dir = dirsci 
@@ -192,9 +195,9 @@ def mkran4xi(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30):
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
 
-	gf = np.loadtxt(dir+'geboss'+sample+'_'+NS+version+'_'+wz+gw+wm+'4xi.dat').transpose()
-	fr = np.loadtxt(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+'.dat').transpose()
-	fo = open(dir+'reboss'+sample+'_'+NS+version+'_'+str(N)+wz+gw+wm+'4xi.dat','w')
+	gf = np.loadtxt(dir+'geboss'+cm+sample+'_'+NS+version+'_'+wz+gw+wm+'4xi.dat').transpose()
+	fr = np.loadtxt(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+'.dat').transpose()
+	fo = open(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+wz+gw+wm+'4xi.dat','w')
 	n = 0
 	for i in range(0,len(fr[0])):
 		indz = int(random()*len(gf[0]))
@@ -292,29 +295,29 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,nran=1,wm='',zmin=.6,zmax=1.,gmax=30):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax=30):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgal4xi(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
+	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+gw+wm
+	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+gw+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
-		createSourcesrd_adJack(gf,i,'eboss'+sample+'_'+NS+version)
+		createSourcesrd_adJack(gf,i,'eboss'+cm+sample+'_'+NS+version)
 
-	rf = 'reboss'+sample+'_'+NS+version+'_'
+	rf = 'reboss'+cm+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
-		mkran4xi(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
+		mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax)
 		#mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
 		rfi = rf+str(rann)+wz+gw+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
-			createSourcesrd_adJack(rfi,i,'eboss'+sample+'_'+NS+version)
+			createSourcesrd_adJack(rfi,i,'eboss'+cm+sample+'_'+NS+version)
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+gw+wm)
 	return True
 
@@ -1540,6 +1543,49 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 	print nt,nzf/nt,ncp/nt
 	return True
 
+def visinspectQSOcomp():
+	f = fitsio.FITS('/Users/ashleyross/fitsfiles/DR14Q_v1_1.fits')
+	nt = 0
+	nvi = 0
+	std = 0
+	zi = []
+	zp = []
+	zdl = []
+	dmin = -4.
+	dmax = 4.
+	sp = .01
+	nzb = int((dmax-dmin+sp/10.)/sp)
+	zdl = np.zeros((nzb))
+	nb = 0
+	for i in range(0,526359):
+		tf = f[1]['EBOSS_TARGET1'][i][0]
+		if tf & 2**10 > 0:
+			nt += 1.
+			zvi = f[1]['Z_VI'][i][0]
+			if zvi > .01 and zvi < 10.:
+				nvi += 1.
+				std += (zvi-f[1]['Z_PIPE'][i][0])**2.
+				zi.append(zvi)
+				zp.append(f[1]['Z_PIPE'][i][0])
+				zd = zvi - 	f[1]['Z_PIPE'][i][0]
+				if zd > dmin and zd < dmax and abs(zd) > 0.01:
+					ind = int((zd-dmin)/sp)
+					zdl[ind] += 1.					
+					nb += 1.
+	print nb
+	print nt
+	print nvi,sqrt(std/nvi)
+	zl = np.arange(dmin+sp/2.,dmax+sp/2.,.01)
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	import pylab
+	pylab.ion()
+	plt.clf()
+	plt.minorticks_on()
+	plt.plot(zl,zdl,'k-')
+	#plt.save()
+	return True
+	#return zi,zp
 
 ### Below is for plots
 
@@ -1575,6 +1621,78 @@ def plotxiLRGNS(bs='10st0',v='v0.8_IRc',wm=''):
 	plt.text(30,170,'NGC',color='r')
 	plt.text(30,160,'Combined',color='k')
 	plt.title(r'Correlation function of v0.8_IRc eboss only LRGs, 0.6 < z < 1.0')
+	pp.savefig()
+	pp.close()
+	return True
+
+def plotxiCLRGNScomb(bs='5st0',wm='',v='v1.5_IRt'):
+	#Plots comparison between NGC and SGC clustering for and to theory LRGs, no stellar density correction
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xicLRGNScomb'+v+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()
+	#cov = np.loadtxt(ebossdir+'covxiNSlrgv0.8_IRcmz0.6xz1.010.dat')
+	#et = []
+	#for i in range(0,len(cov)):
+	#	et.append(sqrt(cov[i][i]))
+	#plt.fill_between(dt[0],dt[0]**2.*(dt[1]*2.-et),dt[0]**2.*(dt[1]*2.+et),color='0.75')
+	#plt.plot(dt[0],dt[0]**2.*dt[1]*2.,'k:')
+	ds = np.loadtxt(ebossdir+'xi0gebosscmass-lrg_S'+v+'_mz0.6xz1.0'+bs+'.dat').transpose()
+	dn = np.loadtxt(ebossdir+'xi0gebosscmass-lrg_N'+v+'_mz0.6xz1.0'+bs+'.dat').transpose()
+	
+	t = (ds[1]*.54+.63*dn[1])/(.63+.54)
+	#plt.plot(ds[0],ds[0]**2.*ds[1],'b-s')
+	#plt.plot(dn[0],dn[0]**2.*dn[1],'r-d')
+	plt.plot(dn[0],dn[0]**2.*t,'k-o')
+	plt.plot(dt[0],dt[0]**2.*dt[1]*2.1,'k:')
+	plt.xlim(20,200)
+	plt.ylim(-49,120)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	#plt.text(30,180,'SGC',color='b')
+	#plt.text(30,170,'NGC',color='r')
+	plt.text(120,100,'N+S Combined',color='k')
+	plt.title(r'Correlation function of v1.5 CMASS + eboss LRGs, 0.6 < z < 1.0')
+	pp.savefig()
+	pp.close()
+	return True
+
+def plotnzCLRG():
+	ds = np.loadtxt(ebossdir+'nbar-cmass-eboss_v1.5_IRt-lrg-S-eboss_v1.5_IRt.dat').transpose()
+	dn = np.loadtxt(ebossdir+'nbar-cmass-eboss_v1.5_IRt-lrg-N-eboss_v1.5_IRt.dat').transpose()
+	nt = (ds[3]+dn[3])/2.
+	dse = np.loadtxt(ebossdir+'nbar-eboss_v1.5_IRt-lrg-S-eboss_v1.5_IRt.dat').transpose()
+	dne = np.loadtxt(ebossdir+'nbar-eboss_v1.5_IRt-lrg-N-eboss_v1.5_IRt.dat').transpose()
+	nte = (dse[3]+dne[3])/2.
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	#pp = PdfPages(ebossdir+'nzcmassLRGv1.5.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.plot(ds[0],nt,'k-',ds[0],nte,'r-')
+	plt.xlim(0.5,1.1)
+	plt.ylim(0,.0003)
+	plt.show()
+	return True
+
+def plotnzQSO():
+	ds = np.loadtxt(ebossdir+'nbar-eboss_v1.5-QSO-S-eboss_v1.5.dat').transpose()
+	dn = np.loadtxt(ebossdir+'nbar-eboss_v1.5-QSO-N-eboss_v1.5.dat').transpose()
+	nt = (ds[3]+dn[3])/2.*1.e5
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'nzQSOv1.5.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.plot(ds[0],nt,'k-')
+	plt.xlim(0.5,2.5)
+	#plt.ylim(0,.0003)
+	plt.ylabel(r'$10^{5}$ $n$ ($h^{3}$Mpc$^{-3}$)',size=16)
+	plt.xlabel('redshift',size=16)
+
 	pp.savefig()
 	pp.close()
 	return True
