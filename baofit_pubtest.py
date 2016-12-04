@@ -3,7 +3,7 @@ import numpy.linalg as linalg
 from math import *
 
 class baofit_iso:
-	def __init__(self,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.):
+	def __init__(self,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,cov2 = ''):
 		#xid and covd are the data vector and the covariance matrix and should be matched in length
 		#modl is the BAO template, assumed to have spacing sp between 10 and 300 mpc/h
 		#rl is the list of r values matching xid and covd
@@ -35,6 +35,9 @@ class baofit_iso:
 		#		mt[i-mini][j-mini] = covd[i][j]
 		mt = covd[mini:mini+self.nbin,mini:mini+self.nbin]
 		self.invt = linalg.pinv(mt)
+		if cov2 != '':
+			mt2 = cov2[mini:mini+self.nbin,mini:mini+self.nbin]
+			self.invt += linalg.pinv(mt2)
 		self.ximodmin = 10. #minimum of template
 		self.modl = modl
 						
@@ -310,11 +313,11 @@ class baofit_isoN:
 		return chit
 
 
-def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo=''):
+def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo='',cov2=''):
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
-	b = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmax,sp=sp)
+	b = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmax,sp=sp,cov2=cov2)
 	b.Bp = Bp
 	b.H = np.zeros((3,b.nbin))
 	for i in range(0,b.nbin):
@@ -322,7 +325,7 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=8
 		b.H[1][i] = 1./b.rl[i]
 		b.H[2][i] = 1./b.rl[i]**2.
 
-	bb = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmaxb,sp=sp)
+	bb = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmaxb,sp=sp,cov2=cov2)
 	#bb is to set bias prior
 	bb.H = np.zeros((3,bb.nbin))
 	for i in range(0,bb.nbin):

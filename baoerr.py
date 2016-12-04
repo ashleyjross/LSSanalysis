@@ -1,5 +1,6 @@
 from math import *
 from numpy import loadtxt as load
+diro = '/Users/ashleyross/DESY1/'
 
 def baoerr(zmin,zmax,dz,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15):
 	#based on Seo & Eisenstein 2007
@@ -453,18 +454,27 @@ def xisigmuplotzerr(zerr):
 	plt.minorticks_on()
 	plt.xlabel(r'$s$ ($h^{-1}$ Mpc)',size=16)	
 	plt.ylabel(r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=16)
-	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
-	#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
-	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
-	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
-	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
-	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	if zerr == 0.029:
+		d0 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumax0.20.406.010.00.029sp1.0.dat').transpose()
+		#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+		drp = load('/Users/ashleyross/DESY1/xirpzconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+		d1 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.2mumax0.40.406.010.00.029sp1.0.dat').transpose()
+		d2 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.4mumax0.60.406.010.00.029sp1.0.dat').transpose()
+		d3 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.6mumax0.80.406.010.00.029sp1.0.dat').transpose()
+		d4 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.80.406.010.00.029sp1.0.dat').transpose()
+	else:	
+		d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+		#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+		d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+		d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+		d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+		d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
  	plt.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
  	plt.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
  	plt.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
  	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
  	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
-	plt.ylim(-.5,1.)
+	plt.ylim(-.2,.4)
 	plt.xlim(30,300)
 
 	xl = [190,200]
@@ -488,9 +498,15 @@ def xisigmuplotzerr(zerr):
 	yl = [.56,.56]
 	plt.plot(xl,yl,'b-',linewidth=3)
 	plt.text(210,.55,r'$0.8 < \mu $',color='k')
-	plt.title(r'$\sigma_z/(1+z)$ = 0.01')
+	plt.title(r'$\sigma_z/(1+z)$ = '+str(zerr))
 	pp.savefig()
 	pp.close()
+	d0 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
 
 	pp = PdfPages('/Users/ashleyross/DESY1/xisigmuscale'+str(zerr)+'.pdf')
 	plt.clf()
@@ -498,17 +514,22 @@ def xisigmuplotzerr(zerr):
 	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
 	plt.ylabel(r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=16)
 
-	plt.plot(d0[0]*sqrt(1.-.1**2.),(d0[1]-d0[2])*1000,'k-',linewidth=3)
-	plt.plot(d0[0]*sqrt(1.-.3**2.),(d1[1]-d1[2])*1000,'k--',linewidth=3)
-	plt.plot(d0[0]*sqrt(1.-.5**2.),(d2[1]-d2[2])*1000,'k:',linewidth=3)
-	plt.plot(d0[0]*sqrt(1.-.7**2.),(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
-	plt.plot(d0[0]*sqrt(1.-.9**2.),(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+# 	plt.plot(d0[0]*sqrt(1.-.1**2.),(d0[1]-d0[2])*1000,'k-',linewidth=3)
+# 	plt.plot(d0[0]*sqrt(1.-.3**2.),(d1[1]-d1[2])*1000,'k--',linewidth=3)
+# 	plt.plot(d0[0]*sqrt(1.-.5**2.),(d2[1]-d2[2])*1000,'k:',linewidth=3)
+# 	plt.plot(d0[0]*sqrt(1.-.7**2.),(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+# 	plt.plot(d0[0]*sqrt(1.-.9**2.),(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+	plt.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+	plt.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+	plt.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
 
 	xl = [104,104]
 	yl = [-20,20]
 	plt.plot(xl,yl,'k:')
 
-	plt.ylim(-.5,1.)
+	plt.ylim(-.2,.4)
 	plt.xlim(30,200)
 	pp.savefig()
 	pp.close()
@@ -617,7 +638,7 @@ def xisigmumockcompthplot():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages('xisigmumockcompth.pdf')
+	pp = PdfPages('xisigmumockcompthnohimu.pdf')
 	plt.clf()
 	plt.minorticks_on()
 	plt.xlabel(r'$s$ ($h^{-1}$ Mpc)',size=16)
@@ -635,12 +656,12 @@ def xisigmumockcompthplot():
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm1[1],dm0[0][:40]**2.*dm1[2]/25.,fmt='rd',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm2[1],dm0[0][:40]**2.*dm2[2]/25.,fmt='b^',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/25.,fmt='gs',linewidth=3)
-	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/25.,fmt='y<',linewidth=3)
+	#plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/25.,fmt='y<',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1],dm0[0][:40]**2.*dm0[2]/25.,fmt='ko',linewidth=3)
  	plt.plot(d0[0],d0[0]**2.*d1[1]*1.4,'r-',linewidth=3)
  	plt.plot(d0[0],d0[0]**2.*d2[1]*1.4,'b-',linewidth=3)
  	plt.plot(d0[0],d0[0]**2.*d3[1]*1.4,'g-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d4[1]*1.4,'y-',linewidth=3)
+ 	#plt.plot(d0[0],d0[0]**2.*d4[1]*1.4,'y-',linewidth=3)
  	plt.plot(d0[0],d0[0]**2.*d0[1]*1.4,'k-',linewidth=3)
  	plt.text(40,5,r'$\mu < 0.2$',color='k')
  	plt.text(40,3,r'$0.2 < \mu < 0.4$',color='r')
@@ -651,6 +672,47 @@ def xisigmumockcompthplot():
 	pp.savefig()
 	pp.close()
 	return True
+
+def xirpsigmumockcompthplot():
+	import matplotlib.pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(diro+'xirpsigmumockcompthnohimu.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi_{\perp}$',size=16)
+	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	dm0 = load(diro+'xiaverpsqmumax0.2.dat').transpose()
+	dm1 = load(diro+'xiaverpsqmumin0.2mumax0.4.dat').transpose()
+	dm2 = load(diro+'xiaverpsqmumin0.4mumax0.6.dat').transpose()
+	dm3 = load(diro+'xiaverpsqmumin0.6mumax0.8.dat').transpose()
+	dm4 = load(diro+'xiaverpsqmumin0.8.dat').transpose()
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm1[1]+1.,dm0[0][:40]**2.*dm1[2]/sqrt(504.),fmt='rd',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm2[1],dm0[0][:40]**2.*dm2[2]/sqrt(504.),fmt='b^',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/sqrt(504.),fmt='gs',linewidth=3)
+	#plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='y<',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1]+2.,dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='ko',linewidth=3)
+ 	plt.plot(d0[0],d0[0]**2.*d1[1]*1.48+1.,'r-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d2[1]*1.48,'b-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d3[1]*1.48,'g-',linewidth=2)
+ 	#plt.plot(d0[0],d0[0]**2.*d4[1]*1.48,'y-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d0[1]*1.48+2.,'k-',linewidth=2)
+ 	plt.text(40,2.5,r'$\mu < 0.2$',color='k',size=16)
+ 	plt.text(40,1,r'$0.2 < \mu < 0.4$',color='r',size=16)
+ 	plt.text(40,-.5,r'$0.4 < \mu < 0.6$',color='b',size=16)
+ 	plt.text(40,-2,r'$0.6 < \mu < 0.8$',color='g',size=16)
+ 	#plt.text(40,-3.5,r'$0.8 < \mu$',color='y',size=16)
+	plt.ylim(-5,17)
+	plt.xlim(30,200)
+	pp.savefig()
+	pp.close()
+	return True
+
 
 def xisigmulampcompthplot():
 	import matplotlib.pyplot as plt
