@@ -38,7 +38,7 @@ def maskd(res):
 
 def mkRMmap(zmin,zmax,res=4096,pixmin=0,pixmax=False,wm='',wo=''):
 	if pixmax == False:
-		npix = 12*res*res
+		npix = 12*res*res- pixmin
 	else:
 		npix = 1+pixmax-pixmin	
 	pixl = np.zeros((npix))
