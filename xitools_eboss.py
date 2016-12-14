@@ -54,7 +54,7 @@ def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20):
 	fo.close()
 	return True
 
-def mkran1mil(sample,NS,version,cm='',N=0,c='sci',app='.fits',compmin=0):
+def mkran1mil(sample,NS,version,cm='',N=0,c='sci',app='.ran.fits',compmin=0):
 	dirout = ''
 	dir = ''
 	if c == 'sci':
@@ -62,11 +62,13 @@ def mkran1mil(sample,NS,version,cm='',N=0,c='sci',app='.fits',compmin=0):
 		dirout = dir
 	minc = N*10**6
 	maxc = (N+1)*10**6 #will become relevant once files are big enough
-	f = fitsio.read(dir+cm+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran'+app)#[minc:maxc]
+	f = fitsio.read(dir+cm+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+app)#[minc:maxc]
 	if maxc > len(f):
 		maxc = len(f)
 	#f = fitsio.FITS(dir+'eboss_'+version+'-'+sample+'-'+NS+'eboss_'+version+'.ran'+app)[1]
 	no = 0
+	#if app == '.2.ran.fits':
+	#	N = N+2
 	fo = open(dirout+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+'.dat','w')
 	#for i in range(0,len(f)):		
 	for i in range(minc,maxc):
@@ -444,7 +446,8 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 				ne = wext[pix2]
 				we = 1./(me*ne+be)
 				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*ws*we				
-				
+			if wm == 'nw':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']	
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 	fo.close()
 	print no
@@ -2344,6 +2347,32 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 	print nt,nzf/nt,ncp/nt
 	return True
 
+def compdecreg(sample='QSO',version='v1.6',NS='S',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2):
+	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	fr = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
+	ngh = 0
+	nrh = 0
+	ngl = 0
+	nrl = 0
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z > zmin and z < zmax:
+			w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT']
+			if f[i]['DEC'] > 10:
+				ngh += w
+			else:
+				ngl += w
+	for i in range(0,len(fr)):
+		z = fr[i]['Z']
+		if z > zmin and z < zmax:
+			if fr[i]['DEC'] > 10:
+				nrh += 1.
+			else:
+				nrl += 1.
+	print ngl/nrl,ngh/nrh
+	return True
+
+
 def visinspectQSOcomp():
 	f = fitsio.FITS('/Users/ashleyross/fitsfiles/DR14Q_v1_1.fits')
 	nt = 0
@@ -2408,18 +2437,25 @@ def plotreg(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-180,ramax=180,dec
 	plt.show()
 	return True
 
-def plotregetalam(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-90,ramax=90,decmin=0,decmax=360,dir='/Users/ashleyross/fitsfiles/'):
+def plotregetalam(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-90,ramax=90,decmin=0,decmax=360,depthmin=0,dir='/Users/ashleyross/fitsfiles/',immin=0):
 	from matplotlib import pyplot as plt
 	from stripeDR8 import radec2le
+	from healpix import radec2thphi, healpix
+	h = healpix()
 	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	wsys = np.loadtxt(dirsys+'healdepthinm512.dat').transpose()
 	ral = []
 	decl = []
 	for i in range(0,len(f)):
 		ra = f[i]['RA']
 		dec = f[i]['DEC']
-		eta,lam = radec2le(ra,dec)
-		ral.append(eta)
-		decl.append(lam)
+		im = f[i]['IMATCH']
+		th,phi = radec2thphi(ra,dec)
+		p = h.ang2pix_nest(512,th,phi)		
+		if wsys[p] > depthmin and im >= immin:
+			eta,lam = radec2le(ra,dec)
+			ral.append(eta)
+			decl.append(lam)
 	print max(ral),max(decl)	
 	plt.plot(ral,decl,'k,')
 	plt.xlim(ramin,ramax)
@@ -2427,6 +2463,78 @@ def plotregetalam(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-90,ramax=90
 	plt.show()
 	return True
 
+
+def plotdepthmap(ramin=-180,ramax=180,decmin=-20,decmax=90,size=1,smin=21):
+	from healpix import radec2thphi, healpix,thphi2radec
+	from matplotlib import pyplot as plt
+	import matplotlib.cm as cm
+	h = healpix()
+	wsys = np.loadtxt(dirsys+'healdepthinm512.dat').transpose()
+	ral = []
+	decl = []
+	wl = []
+	for i in range(0,len(wsys)):
+		if wsys[i] < 24:
+			th,phi = h.pix2ang_nest(512,i)
+			ra,dec = thphi2radec(th,phi)
+			if ra > 180:
+				ra = ra -360
+			ral.append(ra)
+			decl.append(dec)
+			wl.append(wsys[i])
+	map = plt.scatter(ral,decl,c=wl,s=size,cmap=cm.rainbow,lw=0,vmin=smin)
+	cbar = plt.colorbar(map)
+	plt.xlim(ramin,ramax)
+	plt.ylim(decmin,decmax)
+	plt.show()
+	return True
+
+
+def plotzhistplvi(zmin=.8,zmax=2.2,nb=100,mn=-.2,mx=.2,sig=.001,dir='/Users/ashleyross/fitsfiles/'):
+	from matplotlib import pyplot as plt
+	import matplotlib.mlab as mlab
+	f = fitsio.read(dir+'sequels_v1.61-QSO-N-sequels_v1.61.dat.fits')
+	hst = np.zeros((nb))
+	nout = 0
+	nt = 0
+	std = 0
+	stdno = 0
+	ntno = 0
+	for i in range(0,len(f)):
+		if f[i]['Z_VI'] > 0 and f[i]['Z_PL'] > zmin and f[i]['Z_PL'] < zmax and f[i]['ZWARNING'] <= 0:
+			df = f[i]['Z_VI']- f[i]['Z_PL']
+			if df < mx and df > mn:
+				stdno += (f[i]['Z_VI']- f[i]['Z_PL'])**2.
+				ntno += 1.
+			if df >= mx:
+				df = mx-(mx-mn)/(10.*nb)
+				nout += 1.
+			if df <= mn:
+				df = mn+(mx-mn)/(10.*nb)
+				nout += 1.	
+			nt += 1.
+			std += (f[i]['Z_VI']- f[i]['Z_PL'])**2.	
+			bn = int(nb*((df-mn)/(mx-mn)))
+			hst[bn] += 1
+	sp = (mx-mn)/float(nb)		
+	xl = np.arange(mn+sp/2.,mx,sp)
+	lzl = []
+	stdc = 0
+	norm = 0
+	for i in range(0,len(xl)):
+		lzi = pi*sqrt(stdno/ntno)*.17*(1.+(xl[i]/(sqrt(stdno/ntno)*.17))**2.)
+		lzl.append(1./lzi)
+		norm += 1./lzi
+		stdc += xl[i]**2./lzi
+	print nout,nt,ntno,sqrt(std/nt),sqrt(stdno/(ntno)),sqrt(stdc/norm)
+	plt.plot(xl,hst/(sum(hst)*sp),'k-')
+	#plt.plot(xl,mlab.normpdf(xl, 0, sqrt(stdno/(ntno))),'r-')
+	plt.plot(xl,lzl,'r-')
+	plt.plot(xl,mlab.normpdf(xl, 0, sig),'b-')
+	plt.xlabel(r'$Z_{VI}-Z_{PL}$')
+	plt.ylabel('N')
+	plt.show()
+	return True
 
 def plotxiLRGNS(bs='10st0',v='v0.8_IRc',wm=''):
 	#Plots comparison between NGC and SGC clustering for and to theory LRGs, no stellar density correction
@@ -2680,7 +2788,10 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 	pp = PdfPages(ebossdir+'xi'+str(mom)+'QSO'+NS+'compEZcut'+muw+v+wm+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	if wm == 'gri22depthi22' or wm == 'gri22depthi22wdepthimag' or wm == 'gri22depthi22ext0.15wdepthimagext' or wm == 'gri22depthi22ext0.15wdepthext':
+	if wm == 'gri22':
+		if NS == 'S':
+			fac = 51671/53693.
+	if wm == 'gri22depthi22' or wm == 'gri22depthi22wdepthimag' or wm == 'gri22depthi22ext0.15wdepthimagext' or wm == 'gri22depthi22ext0.15wdepthext' or wm == 'gri22depthi22nw':
 		if NS == 'S':
 			fac = 47494/53693.
 		if NS == 'N':
@@ -2731,7 +2842,7 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 		if NS == 'N':
 			fac = .997
 					
-	d = (np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'.dat').transpose()+np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'_1.dat').transpose())/2.
+	d = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'.dat').transpose()
 	dnc = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+muwd+bs+'.dat').transpose()
 	ave = np.loadtxt(ebossdir+'xiave'+mom+'EZPZ'+NS+'GC'+muw+bs+'.dat').transpose()
 	cov = np.loadtxt(ebossdir+'covEZPZ'+mom+NS+'GC'+muw+bs+'.dat')[mini:maxi,mini:maxi]*norm**4.
@@ -3955,7 +4066,7 @@ def plotumgmap(sampl,NS,ver,zmin,zmax,res=64,wm='',gri22=''):
 			zm += w*z
 			nt += w
 
-def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,des=False,desy1=False,eboss=False,desi=False):
+def BAOrelPlanck(wo='QSOpLRGDR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=False,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -4062,6 +4173,13 @@ def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,
 		xl = [1.5]
 		yl = [1.012]
 		el = [0.039]
+		plt.errorbar(xl,yl,el,fmt='o',markeredgecolor='b',markersize=7,elinewidth=1.75,color='b')
+
+	if LRGDR14:
+		plt.text(.76,1.025,'DR14 LRGs',fontsize=18,color='b')
+		xl = [.75]
+		yl = [1.005]
+		el = [0.021]
 		plt.errorbar(xl,yl,el,fmt='o',markeredgecolor='b',markersize=7,elinewidth=1.75,color='b')
 
 	if des:
