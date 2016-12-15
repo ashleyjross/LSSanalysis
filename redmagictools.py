@@ -40,7 +40,8 @@ def mkRMmap(zmin,zmax,res=4096,pixmin=0,pixmax=False,wm='',wo=''):
 	if pixmax == False:
 		npix = 12*res*res- pixmin
 	else:
-		npix = 1+pixmax-pixmin	
+		npix = 1+pixmax-pixmin
+		assert pixmax < 12*res*res, "size of pixl array won't match with the resolution of the sample map"
 	pixl = np.zeros((npix))
 	f = fitsio.read(inputdir+samp+'_sample.fits.gz')
 	if wo != '':
