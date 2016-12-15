@@ -625,7 +625,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
-def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf='n',wmu = ''):
+def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = ''):
 	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
 	from numpy import zeros
 	from time import time
@@ -653,10 +653,10 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	RRnormt = 0
 	pl = []
 #	pl.append((0,0,0,0))
-	if wf == 'y':
-		fD = open('DDcounts'+file+'.dat','w')
-		fDR = open('DRcounts'+file+'.dat','w')
-		fR = open('RRcounts'+file+'.dat','w')
+	if wf:
+		fD = open(dirsci+'paircounts/Paircounts_'+file+'.dat','w')
+		#fDR = open('DRcounts'+file+'.dat','w')
+		#fR = open('RRcounts'+file+'.dat','w')
 	nmut = 0
 	for i in range(0,nmubin):
 		mu = i/float(nmubin)+.5/float(nmubin)
@@ -704,21 +704,23 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		
 	#print RRnl
 	
-	if wf == 'y':
-		fD.write(str(DDnormt)+'\n')
-		fDR.write(str(DRnormt)+'\n')
-		fR.write(str(RRnormt)+'\n')
+	if wf:
+		fD.write('#normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
+		fD.write('#r_center mu_center DD DR RR\n')
+		#fD.write(str(DDnormt)+'\n')
+		#fDR.write(str(DRnormt)+'\n')
+		#fR.write(str(RRnormt)+'\n')
 		for j in range(0,100):
 			for i in range(0,rmax):
-				fD.write(str(DDnl[j+100*i])+' ')
-				fDR.write(str(DRnl[j+100*i])+' ')
-				fR.write(str(RRnl[j+100*i])+' ')
-			fD.write('\n')
-			fDR.write('\n')
-			fR.write('\n')
+				fD.write(str(.5+i)+' '+str(.01*j+.005)+' '+str(DDnl[j+100*i]/DDnormt)+' '+str(DRnl[j+100*i]/DRnormt)+' '+str(RRnl[j+100*i]/RRnormt)+'\n')
+				#fDR.write(str(DRnl[j+100*i])+' ')
+				#fR.write(str(RRnl[j+100*i])+' ')
+			#fD.write('\n')
+			#fDR.write('\n')
+			#fR.write('\n')
 		fD.close()
-		fDR.close()
-		fR.close()
+		#fDR.close()
+		#fR.close()
 	xil = zeros((nbin),'f')
 	for i in range(start,rmax,bs):
 		xi = 0
@@ -755,7 +757,7 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=2
 	#for quadrupole, set mom = 1, for hexadecapole set mom = 2, ect. (odd moments not supported)
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
-	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu)
+	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=True)
 	print ans
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
@@ -2791,6 +2793,8 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 	if wm == 'gri22':
 		if NS == 'S':
 			fac = 51671/53693.
+		if NS == 'N':
+			fac = 68488/71576.0	
 	if wm == 'gri22depthi22' or wm == 'gri22depthi22wdepthimag' or wm == 'gri22depthi22ext0.15wdepthimagext' or wm == 'gri22depthi22ext0.15wdepthext' or wm == 'gri22depthi22nw':
 		if NS == 'S':
 			fac = 47494/53693.
@@ -2836,11 +2840,23 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 			fac = 43360/53693.
 		if NS == 'N':
 			fac = 68488/71576.0
-	if wm == 'depthi22':
+	if wm == 'depthi22' or wm == 'depthi22wdepthext':
 		if NS == 'S':
 			fac = 49412/53693.
 		if NS == 'N':
-			fac = .997
+			fac = 71348/71576.0
+
+	if wm == 'depthi22.1' or wm == 'depthi22.1wdepthext':
+		if NS == 'S':
+			fac = 45195/53693.
+		if NS == 'N':
+			fac = 71348/71576.0
+	if wm == 'depthi21.9' or wm == 'depthi21.9wdepthext':
+		if NS == 'S':
+			fac = 52041/53693.
+		if NS == 'N':
+			fac = 71348/71576.0
+
 					
 	d = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'.dat').transpose()
 	dnc = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+muwd+bs+'.dat').transpose()
