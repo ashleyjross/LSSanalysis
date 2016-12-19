@@ -132,7 +132,7 @@ def mkmap(band,sys,type='coaddweights3_mean',res=4096,pixmin=0,pixmax=-999,pr=1.
 		f = fitsio.read(inputdir+samp+'_mask.fits.gz')
 		starl = []
 		if pixmax == -999:
-			npix = 12*res*res
+			npix = 12*res*res-pixmin
 		else:
 			npix = 1+pixmax-pixmin	
 		for i in range(0,npix):
@@ -287,7 +287,7 @@ def putngalvsysjack(band,sys,type='coaddweights3_mean',zmin=0,zmax=2,smin=-999,s
 		if len(sysl[i]) < njack:
 			for k in range(0,len(sysl[i])):
 				std += (sysl[i][k]/sysl[i+1][k]/mt-mean)**2.
-				std = sqrt(std/(len(sysl[i])-1.))/sqrt(len(sysl[i])-1.)
+			std = sqrt(std/(len(sysl[i])-1.))/sqrt(len(sysl[i])-1.)   # I think it should be outside the loop?
 		else:
 			jkf = len(sysl[i])//njack
 			for k in range(0,njack):
