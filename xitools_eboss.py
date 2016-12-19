@@ -202,10 +202,11 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	return True
 
 
-def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30,gri22='gri22',extc=False,depthc=False,decmax=False):
+def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30,gri22='gri22',znudge=False,wmin=False,extc=False,depthc=False,depthextc=False,decmax=False):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
 	from optimize import fmin
+	from random import random
 	if wm == 'wstar' or wm == 'cpstar':
 		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
 		b,m = findlinmb(sample,NS,version,'star',zmin,zmax,dir='')
@@ -279,15 +280,34 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 		dthw += 'depthi'+str(depthc)
 		dmap = np.loadtxt('healdepthinm512.dat').transpose()
 		h = healpix()	
+	if depthextc:
+		dthw += 'depthexti'+str(depthextc)
+		dmap = np.loadtxt('healdepthinm512.dat').transpose()
+		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751*1.698
+		h = healpix()	
+	if wmin:
+		dthw += 'wmin'+str(wmin)
+		dmap = np.loadtxt('healdepthinm512.dat').transpose()
+		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751
+		b,m = findlinmb(sample,NS,version,'depth',.8,2.2,wm='nosys'+gri22,dir='')
+		be,me = findlinmb(sample,NS,version,'ext',.8,2.2,wm='wdepth'+gri22,dir='')
+		
+		h = healpix()	
+
 	if extc:
 		dthw += 'ext'+str(extc)
 		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751
 		h = healpix()
 	if decmax:
 		dthw += 'decx'+str(decmax)		
+	if znudge:
+		dthw += 'znudge'	
 	fo = open(dir+'geboss'+cm+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+gw+gri22+dthw+wm+'4xi.dat','w')
 	for i in range(0,len(f)):
 		z = f[i]['Z']
+		if znudge:
+			if len(str(z)) <= 5:
+				z += .001*random()-.0005
 		comp = f[i]['COMP']
 		gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
 		c = 1
@@ -302,6 +322,26 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 			pix2 = h.ang2pix_nest(512,th,phi)
 			if dmap[pix2] < depthc:
 				c = 0		
+		if depthextc:
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			th,phi = radec2thphi(ra,dec)
+			pix2 = h.ang2pix_nest(512,th,phi)
+			pixe = h.ang2pix_nest(256,th,phi)
+			if dmap[pix2]-dmape[pixe] < depthextc:
+				c = 0		
+		if wmin:
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			th,phi = radec2thphi(ra,dec)
+			pix2 = h.ang2pix_nest(512,th,phi)
+			pixe = h.ang2pix_nest(256,th,phi)
+			ns = dmap[pix2]
+			ws = (b+m*ns)
+			ext = dmape[pixe]
+			we = (be+me*ext)
+
+			if ws*we < wmin:
+				c = 0		
+
 		if extc:
 			ra,dec = f[i]['RA'],f[i]['DEC']
 			th,phi = radec2thphi(ra,dec)
@@ -453,25 +493,41 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 	print no
 	return True
 
-def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30,gri22='',depthc=False,extc=False,decmax=False):
+def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	from random import random
 	from healpix import healpix, radec2thphi
 	if comp == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gw = ''
+	print depthextc
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
 	if depthc:
 		gri22 += 'depthi'+str(depthc)
 		dmap = np.loadtxt('healdepthinm512.dat').transpose()	
 		h = healpix()
+	if depthextc:
+		gri22 += 'depthexti'+str(depthextc)
+		dmap = np.loadtxt('healdepthinm512.dat').transpose()
+		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751*1.698
+		h = healpix()	
+	if wmin:		
+		dmap = np.loadtxt('healdepthinm512.dat').transpose()
+		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751
+		b,m = findlinmb(sample,NS,version,'depth',.8,2.2,wm='nosys'+gri22,dir='')
+		be,me = findlinmb(sample,NS,version,'ext',.8,2.2,wm='wdepth'+gri22,dir='')
+		gri22 += 'wmin'+str(wmin)
+		h = healpix()	
+
 	if extc:
 		gri22 += 'ext'+str(extc)
 		dmape = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751
 		h = healpix()	
 	if decmax:
 		gri22 += 'decx'+str(decmax)
+	if znudge:
+		gri22 += 'znudge'	
 	gf = np.loadtxt(dir+'geboss'+cm+sample+'_'+NS+version+'_'+wz+gw+gri22+wm+'4xi.dat').transpose()
 	fr = np.loadtxt(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+'.dat').transpose()
 	fo = open(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+wz+gw+gri22+wm+'4xi.dat','w')
@@ -484,6 +540,26 @@ def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax
 			pix2 = h.ang2pix_nest(512,th,phi)
 			if dmap[pix2] < depthc:
 				c = 0		
+		if depthextc:
+			ra,dec = fr[0][i],fr[1][i]
+			th,phi = radec2thphi(ra,dec)
+			pix2 = h.ang2pix_nest(512,th,phi)
+			pixe = h.ang2pix_nest(256,th,phi)
+			if dmap[pix2]-dmape[pixe] < depthextc:
+				c = 0		
+		if wmin:
+			ra,dec = fr[0][i],fr[1][i]
+			th,phi = radec2thphi(ra,dec)
+			pix2 = h.ang2pix_nest(512,th,phi)
+			pixe = h.ang2pix_nest(256,th,phi)
+			ns = dmap[pix2]
+			ws = (b+m*ns)
+			ext = dmape[pixe]
+			we = (be+me*ext)
+
+			if ws*we < wmin:
+				c = 0		
+
 		if extc:
 			ra,dec = fr[0][i],fr[1][i]
 			th,phi = radec2thphi(ra,dec)
@@ -590,10 +666,10 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax=30,gri22='',depthc=False,extc=False,decmax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax=30,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,depthc=depthc,extc=extc,decmax=decmax)
+	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -603,10 +679,16 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	sysw += gri22
 	if depthc:
 		sysw += 'depthi'+str(depthc)
+	if depthextc:
+		sysw += 'depthexti'+str(depthextc)
+	if wmin:
+		sysw += 'wmin'+str(wmin)	
 	if extc:
 		sysw += 'ext'+str(extc)
 	if decmax:
 		sysw += 'decx'+str(decmax)	
+	if znudge:
+		sysw += 'znudge'	
 	sysw += wm
 	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+sysw#gw+gri22+wm
 	createSourcesrd_ad(gf)
@@ -616,7 +698,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	rf = 'reboss'+cm+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
-		mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,depthc=depthc,extc=extc,decmax=decmax)
+		mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		#mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
 		rfi = rf+str(rann)+wz+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
@@ -633,7 +715,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	rf = 'reboss'+sample+'_'+NS+version+'_'
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
-
+	fl = sample+'_'+NS+version+'_'+wz+wm
 	DDnl = []	
 	DDnorml = 0
 	DDnormt = 0
@@ -654,7 +736,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	pl = []
 #	pl.append((0,0,0,0))
 	if wf:
-		fD = open(dirsci+'paircounts/Paircounts_'+file+'.dat','w')
+		fD = open(dirsci+'paircounts/Paircounts_'+fl+'.dat','w')
 		#fDR = open('DRcounts'+file+'.dat','w')
 		#fR = open('RRcounts'+file+'.dat','w')
 	nmut = 0
@@ -752,12 +834,12 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	return xil
 
 
-def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,nranf=1,njack=20,mumin=0,mumax=1.,wmu=''):
+def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,nranf=1,njack=20,mumin=0,mumax=1.,wmu='',wf=False):
 	#write out xi to a file, no jack-knife errors
 	#for quadrupole, set mom = 1, for hexadecapole set mom = 2, ect. (odd moments not supported)
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
-	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=True)
+	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf)
 	print ans
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
@@ -2790,6 +2872,7 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 	pp = PdfPages(ebossdir+'xi'+str(mom)+'QSO'+NS+'compEZcut'+muw+v+wm+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
+	fac = 1.
 	if wm == 'gri22':
 		if NS == 'S':
 			fac = 51671/53693.
@@ -2840,22 +2923,34 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 			fac = 43360/53693.
 		if NS == 'N':
 			fac = 68488/71576.0
-	if wm == 'depthi22' or wm == 'depthi22wdepthext':
+	if wm == 'depthi22' or wm == 'depthi22wdepthext' or wm == 'depthi22znudge':
 		if NS == 'S':
 			fac = 49412/53693.
 		if NS == 'N':
 			fac = 71348/71576.0
+
+	if wm == 'depthexti22' or wm == 'depthexti22wdepthext':
+		if NS == 'S':
+			fac = 45012/53693.
+		if NS == 'N':
+			fac = 70936/71576.0
 
 	if wm == 'depthi22.1' or wm == 'depthi22.1wdepthext':
 		if NS == 'S':
 			fac = 45195/53693.
 		if NS == 'N':
 			fac = 71348/71576.0
+	if wm == 'wmin0.9' or wm == 'wmin0.9wdepthext':
+		if NS == 'S':
+			fac = 43954/53693.
+		if NS == 'N':
+			fac = 69055/71576.0
+
 	if wm == 'depthi21.9' or wm == 'depthi21.9wdepthext':
 		if NS == 'S':
 			fac = 52041/53693.
 		if NS == 'N':
-			fac = 71348/71576.0
+			fac = 70412/71576.0
 
 					
 	d = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'.dat').transpose()
