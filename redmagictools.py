@@ -289,7 +289,7 @@ def putngalvsysjack(band,sys,type='coaddweights3_mean',zmin=0,zmax=2,smin=-999,s
 				std += (sysl[i][k]/sysl[i+1][k]/mt-mean)**2.
 				std = sqrt(std/(len(sysl[i])-1.))/sqrt(len(sysl[i])-1.)
 		else:
-			jkf = len(sysl[i])/njack
+			jkf = len(sysl[i])//njack
 			for k in range(0,njack):
 				ng = 0
 				npix = 0
