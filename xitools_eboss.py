@@ -202,7 +202,7 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	return True
 
 
-def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30,gri22='gri22',znudge=False,wmin=False,extc=False,depthc=False,depthextc=False,decmax=False):
+def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30,zpl=False,gri22='gri22',znudge=False,wmin=False,extc=False,depthc=False,depthextc=False,decmax=False):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
 	from optimize import fmin
@@ -267,7 +267,7 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 		inl = np.array([1.,0])
 		b,m = fmin(lf.chilin,inl)
 		h = healpix()
-
+		
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
 	f = fitsio.read(dir+cm+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app) #read galaxy/quasar file
@@ -302,9 +302,14 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 		dthw += 'decx'+str(decmax)		
 	if znudge:
 		dthw += 'znudge'	
+	if zpl:
+		dthw += 'zpl'
 	fo = open(dir+'geboss'+cm+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+gw+gri22+dthw+wm+'4xi.dat','w')
 	for i in range(0,len(f)):
 		z = f[i]['Z']
+		if zpl:
+			if z == f[i]['Z_VI']:
+				z = f[i]['Z_PL']
 		if znudge:
 			if len(str(z)) <= 5:
 				z += .001*random()-.0005
@@ -493,7 +498,7 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',c
 	print no
 	return True
 
-def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
+def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax=30,zpl=False,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	from random import random
 	from healpix import healpix, radec2thphi
 	if comp == 'sci':
@@ -527,7 +532,9 @@ def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',gmax
 	if decmax:
 		gri22 += 'decx'+str(decmax)
 	if znudge:
-		gri22 += 'znudge'	
+		gri22 += 'znudge'
+	if zpl:
+		gri22 += 'zpl'		
 	gf = np.loadtxt(dir+'geboss'+cm+sample+'_'+NS+version+'_'+wz+gw+gri22+wm+'4xi.dat').transpose()
 	fr = np.loadtxt(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+'.dat').transpose()
 	fo = open(dir+'reboss'+cm+sample+'_'+NS+version+'_'+str(N)+wz+gw+gri22+wm+'4xi.dat','w')
@@ -666,10 +673,10 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax=30,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
+	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -689,6 +696,8 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 		sysw += 'decx'+str(decmax)	
 	if znudge:
 		sysw += 'znudge'	
+	if zpl:
+		sysw += 'zpl'	
 	sysw += wm
 	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+sysw#gw+gri22+wm
 	createSourcesrd_ad(gf)
@@ -698,7 +707,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	rf = 'reboss'+cm+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
-		mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
+		mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		#mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
 		rfi = rf+str(rann)+wz+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
@@ -706,6 +715,107 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 			createSourcesrd_adJack(rfi,i,'eboss'+cm+sample+'_'+NS+version)
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
+
+def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,njack=20,fa='',md='qpm_qso',mdr='qpm_random',zmin=.8,zmax=2.2,pp=False):
+	#mom get multiplied by two, so mom=1 is quadrupole
+	from numpy import zeros
+	from time import time
+	DDnl = []	
+	DDnorml = 0
+	DDnormt = 0
+	DRnl = []
+	DRnorml = 0
+	DRnormt = 0
+	RRnl = []
+	RRnl0 = []
+	nbin = rmax/bs
+	nmubin = 100
+	for i in range(0,rmax*nmubin):
+		DDnl.append(0)
+		DRnl.append(0)
+		RRnl.append(0)
+		RRnl0.append(0)
+	RRnorml = 0
+	RRnormt = 0
+	pl = []
+	print file,zmin,zmax,NS,v
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	rf0 = 'r'+mdr+'_'+NS+v+'_'
+	gfr = 'g'+md+file+NS+v+wz
+	for i in range(0,nmubin):
+		mu = i/float(nmubin)+.5/float(nmubin)
+		mub = int(mu*nmubin)
+		#print mu
+		pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
+	#print len(pl)
+	fdp = open(gfr+gfr+'2ptdmu.dat').readlines()
+	DDnormt += float(fdp[0])
+	for k in range(1,len(fdp)):
+		dp = float(fdp[k])
+		DDnl[k-1] += dp
+
+	for N in range(0,nranf):
+#		if N != 2:
+		#try:
+		#	fdnp = open('r'+md+'_'+NS+'_'+str(N)+rb+file+'2ptdmu.dat').readlines()
+		#except:
+		fdnp = open(gfr+rf0+str(N)+wz+'2ptdmu.dat').readlines()
+		DRnormt += float(fdnp[0])
+		for k in range(1,len(fdp)):
+			dr = float(fdnp[k])
+			DRnl[k-1] += dr
+		fr = open(rf0+str(N)+wz+'_all2ptdmu.dat').readlines()
+		RRnormt += float(fr[0])
+		for k in range(1,len(fdp)):
+			rbin = int((k-1)/100.)
+			rp = float(fr[k])
+			RRnl[k-1] += rp
+
+				
+					
+	xil = zeros((nbin),'f')
+	#for i in range(0,nbin):
+	#print DDnormt,DRnormt,RRnormt
+	r = start+bs/2.
+	for i in range(start,rmax,bs):
+		xi = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+		for j in range(0,nmubin):
+			rr0 = 0
+			dd = 0
+			dr = 0
+			rr = 0
+
+			for k in range(0,bs):
+				bin = nmubin*(i+k)+j			
+				if bin < len(RRnl):
+					#if RRnl[bin] == 0:
+					#	pass
+						
+					#else:
+					dd += DDnl[bin]#*pl[bin][mom]
+					rr += RRnl[bin]#*pl[bin][mom]
+					dr += DRnl[bin]#*pl[bin][mom]#/RRnl[bin]
+			ddt += dd
+			rrt += rr
+			drt += dr
+			if rr != 0:		
+				xi += pl[j][mom]/float(nmubin)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+		#print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+		#if rr0 > 0:
+		#	xi = (dd/DDnormt-2.*dr/DRnormt+rr/RRnormt)*RRnormt/rr0
+		#else:
+		#	xi = 0
+		if i/bs < nbin:
+			xil[i/bs] = xi
+		if pp == True:
+			#r = start+bs/2.+i*bs
+			print r,sqrt(1./ddt)*r	
+		r += bs	
+	return xil
+
 
 def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = ''):
 	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
@@ -1618,34 +1728,34 @@ def doallBAOqsomocks(sig=1,covmd='mock',bs=10):
 	chia = chia/n
 	return ma,sa,siga,chia,n
 
-def putallBAOqsomocks(sig=1,covmd='mock',bs=10):
-	d = np.loadtxt('BAOmockQPM_QSOv1.0'+covmd+str(bs)+'.dat')
-	ma = 0
-	sa = 0
-	siga = 0
-	chia = 0
-	n = 0
-	print len(d)
-	for i in range(0,len(d)):
-		a = d[i]
-		if sig == 1:
-			s1b = float(a[1]),float(a[2])
-		if sig == 2:
-			s1b = float(a[3]),float(a[4])	
-		if s1b[0] > .8 and s1b[1] < 1.2:
+# def putallBAOqsomocks(sig=1,covmd='mock',bs=10):
+# 	d = np.loadtxt('BAOmockQPM_QSOv1.0'+covmd+str(bs)+'.dat')
+# 	ma = 0
+# 	sa = 0
+# 	siga = 0
+# 	chia = 0
+# 	n = 0
+# 	print len(d)
+# 	for i in range(0,len(d)):
+# 		a = d[i]
+# 		if sig == 1:
+# 			s1b = float(a[1]),float(a[2])
+# 		if sig == 2:
+# 			s1b = float(a[3]),float(a[4])	
+# 		if s1b[0] > .8 and s1b[1] < 1.2:
+# 
+# 			ma += a[0]
+# 			sa += a[0]**2.
+# 			siga += (float(a[2])-float(a[1]))/2.
+# 			chia += a[-1]
+# 			n += 1.
+# 	ma = ma/n
+# 	sa = sqrt(sa/n-ma**2.)
+# 	siga = siga/n
+# 	chia = chia/n
+# 	return ma,sa,siga,chia,n
 
-			ma += a[0]
-			sa += a[0]**2.
-			siga += (float(a[2])-float(a[1]))/2.
-			chia += a[-1]
-			n += 1.
-	ma = ma/n
-	sa = sqrt(sa/n-ma**2.)
-	siga = siga/n
-	chia = chia/n
-	return ma,sa,siga,chia,n
-
-def putallBAOEZPZqsomocks(N=1000,sig=1,covmd='EZmock',bs=5,start=0,version='v1.3',mb='',Bp=0.4):
+def putallBAOqsomocks(N=1000,sig=1,mock='qpm_qso',covmd='EZmock',bs=5,start=0,version='v1.6',mb='',Bp=0.4):
 	ma = 0
 	sa = 0
 	siga = 0
@@ -1662,7 +1772,7 @@ def putallBAOEZPZqsomocks(N=1000,sig=1,covmd='EZmock',bs=5,start=0,version='v1.3
 			fl += '0'
 		fl += str(i)
 
-		a = sigreg_c12('BAOxichilQSOEZPZ'+fl+version+covmd+mb+str(Bp)+bsst)
+		a = sigreg_c12('BAOxichil'+mock+fl+version+covmd+mb+str(Bp)+bsst)
 		if sig == 1:
 			s1b = float(a[1]),float(a[2])
 		if sig == 2:
@@ -1696,9 +1806,18 @@ def xibao(sample,zmin,zmax,version='v1.3',wm='',bs=5,start=0,rmin=30,rmax=180.,m
 	if sample == 'QPM_QSO':	
 		dn = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'NGC'+version+wz+wm+bsst+'.dat').transpose()
 		ds = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'SGC'+version+wz+wm+bsst+'.dat').transpose()
+	if sample == 'qpm_qso':	
+		ebossdir=''
+		dn = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'ngc'+version+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'sgc'+version+wz+wm+bsst+'.dat').transpose()
+		wt = (ds[1]*.52+dn[1]*.66)/(.52+.66)
 	if sample == 'aveQPM_QSO':	
 		dn = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'NGC'+version+wz+wm+bsst+'.dat').transpose()
 		ds = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'SGC'+version+wz+wm+bsst+'.dat').transpose()
+	if sample == 'aveqpm_qso':	
+		dn = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'ngc'+version+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'sgc'+version+wz+wm+bsst+'.dat').transpose()
+		wt = (ds[1]*.52+dn[1]*.66)/(.52+.66)
 	if sample == 'QSOEZPZ':	
 		dn = np.loadtxt(dirscio+'xi02EZmockNGC'+mockn+bsst+'.dat').transpose()
 		ds = np.loadtxt(dirscio+'xi02EZmockSGC'+mockn+bsst+'.dat').transpose()
@@ -2431,29 +2550,207 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 	print nt,nzf/nt,ncp/nt
 	return True
 
-def compdecreg(sample='QSO',version='v1.6',NS='S',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2):
+def compdecreg(sample='QSO',version='v1.6',NS='S',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2,wm='',gri22=''):
+	from healpix import healpix,radec2thphi
 	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
 	fr = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran.fits')
 	ngh = 0
 	nrh = 0
 	ngl = 0
 	nrl = 0
+	ncph = 0
+	ncpl = 0
+	nzfh = 0
+	nzfl = 0
+	nwsh = 0
+	nwsl = 0
+	ngth = 0
+	ngtl = 0
+	nrth = 0
+	nrtl = 0
+	nzvih = 0
+	nzvil = 0
+	umgh = 0
+	umgl = 0
+	umgvh = 0
+	umgvl = 0
+	if wm == 'wdepthext':
+		wsys = np.loadtxt(dirsys+'healdepthinm512.dat').transpose()	
+		b,m = findlinmb(sample,NS,version,'depth',.8,2.2,wm='nosys'+gri22,dir=ebossdir)
+		be,me = findlinmb(sample,NS,version,'ext',.8,2.2,wm='wdepth'+gri22,dir=ebossdir)
+		wext = np.loadtxt(dirsys+'healSFD_r_'+str(256)+'_fullsky.dat')/2.751
+		h = healpix()
+
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		if z > zmin and z < zmax:
+			um = f[i]['MODELMAG'][0]-f[i]['EXTINCTION'][0]
+			gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
 			w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT']
+			wss = f[i]['WEIGHT_SYSTOT']
+			if wm == 'wdepthext':
+				th,phi = radec2thphi(f[i]['RA'],f[i]['DEC'])
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				pixe = h.ang2pix_nest(256,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				ext = wext[pixe]
+				we = 1./(be+me*ext)
+				wss = ws*we
+				w = w*wss			
+			zv = 0
+			if f[i]['Z_VI'] == z:
+				zv = 1.
 			if f[i]['DEC'] > 10:
 				ngh += w
+				ngth += 1.
+				ncph += f[i]['WEIGHT_CP']
+				nzfh += f[i]['WEIGHT_NOZ']
+				nwsh += wss
+				nzvih += zv
+				umgh += um-gm
+				umgvh += (um-gm)**2.
 			else:
 				ngl += w
+				ngtl += 1.
+				ncpl += f[i]['WEIGHT_CP']
+				nzfl += f[i]['WEIGHT_NOZ']
+				nwsl += wss
+				nzvil += zv
+				umgl += um-gm
+				umgvl += (um-gm)**2.
+
 	for i in range(0,len(fr)):
 		z = fr[i]['Z']
 		if z > zmin and z < zmax:
 			if fr[i]['DEC'] > 10:
-				nrh += 1.
+				nrh += fr[i]['WEIGHT_FKP']
+				nrth += 1.
 			else:
-				nrl += 1.
-	print ngl/nrl,ngh/nrh
+				nrl += fr[i]['WEIGHT_FKP']
+				nrtl += 1.
+	umgl = umgl/ngtl
+	umgvl = sqrt(umgvl/ngtl-umgl*umgl)
+	umgh = umgh/ngth
+	umgvh = sqrt(umgvh/ngth-umgh*umgh)
+	print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
+	return True
+
+def compQSONS(sample='QSO',version='v1.6',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2,wm='',gri22=''):
+	from healpix import healpix,radec2thphi
+	fn = fitsio.read(dir+'eboss_'+version+'-'+sample+'-N'+'-eboss_'+version+'.dat.fits')
+	fs = fitsio.read(dir+'eboss_'+version+'-'+sample+'-S'+'-eboss_'+version+'.dat.fits')
+	frn = fitsio.read(dir+'eboss_'+version+'-'+sample+'-N'+'-eboss_'+version+'.2.ran.fits')
+	frs = fitsio.read(dir+'eboss_'+version+'-'+sample+'-S'+'-eboss_'+version+'.2.ran.fits')
+	ngh = 0
+	nrh = 0
+	ngl = 0
+	nrl = 0
+	ncph = 0
+	ncpl = 0
+	nzfh = 0
+	nzfl = 0
+	nwsh = 0
+	nwsl = 0
+	ngth = 0
+	ngtl = 0
+	nrth = 0
+	nrtl = 0
+	nzvih = 0
+	nzvil = 0
+	umgh = 0
+	umgl = 0
+	umgvh = 0
+	umgvl = 0
+	if wm == 'wdepthext':
+		wsys = np.loadtxt(dirsys+'healdepthinm512.dat').transpose()	
+		b,m = findlinmb(sample,NS,version,'depth',.8,2.2,wm='nosys'+gri22,dir=ebossdir)
+		be,me = findlinmb(sample,NS,version,'ext',.8,2.2,wm='wdepth'+gri22,dir=ebossdir)
+		wext = np.loadtxt(dirsys+'healSFD_r_'+str(256)+'_fullsky.dat')/2.751
+		h = healpix()
+
+	for i in range(0,len(fn)):
+		z = fn[i]['Z']
+		if z > zmin and z < zmax:
+			w = (fn[i]['WEIGHT_NOZ']+fn[i]['WEIGHT_CP']-1.)*fn[i]['WEIGHT_FKP']*fn[i]['WEIGHT_SYSTOT']
+			wss = fn[i]['WEIGHT_SYSTOT']
+			um = fn[i]['MODELMAG'][0]-fn[i]['EXTINCTION'][0]
+			gm = fn[i]['MODELMAG'][1]-fn[i]['EXTINCTION'][1]
+
+			if wm == 'wdepthext':
+				th,phi = radec2thphi(fn[i]['RA'],fn[i]['DEC'])
+				w = (fn[i]['WEIGHT_NOZ']+fn[i]['WEIGHT_CP']-1.)*fn[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				pixe = h.ang2pix_nest(256,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				ext = wext[pixe]
+				we = 1./(be+me*ext)
+				wss = ws*we
+				w = w*wss			
+			zv = 0
+			if fn[i]['Z_VI'] == z:
+				zv = 1.
+			ngh += w
+			ngth += 1.
+			ncph += fn[i]['WEIGHT_CP']
+			nzfh += fn[i]['WEIGHT_NOZ']
+			nwsh += wss
+			nzvih += zv
+			umgh += um-gm
+			umgvh += (um-gm)**2.
+	for i in range(0,len(fs)):
+		z = fs[i]['Z']
+		if z > zmin and z < zmax:
+			w = (fs[i]['WEIGHT_NOZ']+fs[i]['WEIGHT_CP']-1.)*fs[i]['WEIGHT_FKP']*fs[i]['WEIGHT_SYSTOT']
+			wss = fs[i]['WEIGHT_SYSTOT']
+			um = fs[i]['MODELMAG'][0]-fs[i]['EXTINCTION'][0]
+			gm = fs[i]['MODELMAG'][1]-fs[i]['EXTINCTION'][1]
+
+			if wm == 'wdepthext':
+				th,phi = radec2thphi(fs[i]['RA'],fs[i]['DEC'])
+				w = (fs[i]['WEIGHT_NOZ']+fs[i]['WEIGHT_CP']-1.)*fs[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				pixe = h.ang2pix_nest(256,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				ext = wext[pixe]
+				we = 1./(be+me*ext)
+				wss = ws*we
+				w = w*wss			
+			zv = 0
+			if fs[i]['Z_VI'] == z:
+				zv = 1.
+			ngl += w
+			ngtl += 1.
+			ncpl += fs[i]['WEIGHT_CP']
+			nzfl += fs[i]['WEIGHT_NOZ']
+			nwsl += wss
+			nzvil += zv
+			umgl += um-gm
+			umgvl += (um-gm)**2.
+
+	nrh = float(len(frn))
+	nrl = float(len(frs))
+	nrth = nrh
+	nrtl = nrl
+	#for i in range(0,len(fr)):
+	#	z = fr[i]['Z']
+	#	if z > zmin and z < zmax:
+	#		if fr[i]['DEC'] > 10:
+	#			nrh += fr[i]['WEIGHT_FKP']
+	#			nrth += 1.
+	#		else:
+	#			nrl += fr[i]['WEIGHT_FKP']
+	#			nrtl += 1.
+	umgl = umgl/ngtl
+	umgvl = sqrt(umgvl/ngtl-umgl*umgl)
+	umgh = umgh/ngth
+	umgvh = sqrt(umgvh/ngth-umgh*umgh)
+
+	print ngl,nrtl,ngh,nrth
+	print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
 	return True
 
 
@@ -2504,18 +2801,32 @@ def visinspectQSOcomp():
 ### Below is for plots
 
 
-def plotreg(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-180,ramax=180,decmin=-90,decmax=90,dir='/Users/ashleyross/fitsfiles/'):
+def plotreg(sample='QSO',version='v1.6',NS='S',md='ran',zmin=.8,zmax=2.2,ramin=-180,ramax=180,decmin=-90,decmax=90,dir='/Users/ashleyross/fitsfiles/'):
 	from matplotlib import pyplot as plt
 	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat.fits')
+	fr = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.2.ran.fits')
 	ral = []
 	decl = []
 	for i in range(0,len(f)):
-		ra = f[i]['RA']
-		if ra > 180:
-			ra -= 360
-		ral.append(ra)
-		decl.append(f[i]['DEC'])
-	plt.plot(ral,decl,'k,')
+		z = f[i]['Z']
+		if z > zmin and z < zmax:
+			ra = f[i]['RA']
+			if NS == 'S':
+				if ra > 180:
+					ra -= 360
+			ral.append(ra)
+			decl.append(f[i]['DEC'])
+	rarl = []
+	decrl = []
+	for i in range(0,len(fr)):
+		ra = fr[i]['RA']
+		if NS == 'S':
+			if ra > 180:
+				ra -= 360
+		rarl.append(ra)
+		decrl.append(fr[i]['DEC'])
+	plt.plot(rarl,decrl,'k,')
+	plt.plot(ral,decl,'ro',markeredgecolor='r',markersize=1)
 	plt.xlim(ramin,ramax)
 	plt.ylim(decmin,decmax)
 	plt.show()
@@ -2856,7 +3167,7 @@ def plotxiQSONScompEZone(NS,mom='0',bs='5st0',v='v1.5',mini=4,maxi=40,wm='',mumi
 
 	return True
 
-def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gri22depthi22ext0.15wdepthext',mumin=0,mumax=1):
+def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gri22depthi22ext0.15wdepthext',mumin=0,mumax=1,covm='qpm'):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -2869,7 +3180,7 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 		muw += 'xmu'+str(mumax)	
 		muwd += 'mux'+str(mumax)
 	norm = 1./float(mumax-mumin)
-	pp = PdfPages(ebossdir+'xi'+str(mom)+'QSO'+NS+'compEZcut'+muw+v+wm+bs+'.pdf')
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'QSO'+NS+'comp'+covm+'cut'+muw+v+wm+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
 	fac = 1.
@@ -2955,8 +3266,16 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 					
 	d = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+wm+muwd+bs+'.dat').transpose()
 	dnc = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_'+NS+v+'_mz0.9xz2.2'+muwd+bs+'.dat').transpose()
-	ave = np.loadtxt(ebossdir+'xiave'+mom+'EZPZ'+NS+'GC'+muw+bs+'.dat').transpose()
-	cov = np.loadtxt(ebossdir+'covEZPZ'+mom+NS+'GC'+muw+bs+'.dat')[mini:maxi,mini:maxi]*norm**4.
+	if covm == 'EZ':
+		ave = np.loadtxt(ebossdir+'xiave'+mom+'EZPZ'+NS+'GC'+muw+bs+'.dat').transpose()
+		cov = np.loadtxt(ebossdir+'covEZPZ'+mom+NS+'GC'+muw+bs+'.dat')[mini:maxi,mini:maxi]*norm**4.
+	if covm == 'qpm':
+		NSM = 'sgc'
+		if NS == 'N':
+			NSM = 'ngc'
+		ave = np.loadtxt(ebossdir+'xiave'+mom+'gqpm_qso'+NSM+'v1.6mz0.8xz2.2'+bs+'.dat').transpose()
+		cov = np.loadtxt(ebossdir+'cov'+mom+'qpm_qsov1.6'+NSM+bs+'.dat')[mini:maxi,mini:maxi]*norm**4.
+
 	diff = ave[1][mini:maxi]*norm**2.-d[1][mini:maxi]
 	diffnc = ave[1][mini:maxi]*norm**2.-dnc[1][mini:maxi]
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)*fac
@@ -4023,16 +4342,29 @@ def plot3Dphotz(b=1.,mumax=.8,pimax=1000.):
 	
 	return True
 
-def plotumgmap(sampl,NS,ver,zmin,zmax,res=64,wm='',gri22=''):
-	from healpix import healpix,radec2thphi
+def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=180,decmin=-90,decmax=90,res=64,wm='',gri22='',smin=-5,smax=5,size=1):
+	from healpix import healpix,radec2thphi,thphi2radec
 	h = healpix()
 
 	npo = 12*res**2
 	pixlg = []
+	pixlug = []
 	pixlr = []
+	ral = []
+	decl = []
+
 	for i in range(0,npo):
 		pixlg.append(0)
+		pixlug.append(0)
 		pixlr.append(0)
+		th,phi = h.pix2ang_nest(res,i)
+		ra,dec = thphi2radec(th,phi)
+		if NS == 'S':
+			if ra > 180:
+				ra = ra -360
+		ral.append(ra)
+		decl.append(dec)
+
 
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.ran.fits') #read galaxy/quasar file
 	nr = 0
@@ -4043,7 +4375,13 @@ def plotumgmap(sampl,NS,ver,zmin,zmax,res=64,wm='',gri22=''):
 		pixlr[p] += 1.
 		nr += 1.
 	print nr
-
+	sumr = 0
+	sump = 0
+	for i in range(0,len(pixlr)):
+		if pixlr[i] > 0:
+			sumr += pixlr[i]
+			sump += 1.
+	print sumr/sump
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
 	zm = 0
@@ -4051,6 +4389,7 @@ def plotumgmap(sampl,NS,ver,zmin,zmax,res=64,wm='',gri22=''):
 	for i in range (0,len(f)):
 		z = f[i]['Z']
 		gc = True
+		um = f[i]['MODELMAG'][0]-f[i]['EXTINCTION'][0]
 		gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
 		rm = f[i]['MODELMAG'][2]-f[i]['EXTINCTION'][2]
 		im = f[i]['MODELMAG'][3]-f[i]['EXTINCTION'][3]
@@ -4174,9 +4513,472 @@ def plotumgmap(sampl,NS,ver,zmin,zmax,res=64,wm='',gri22=''):
 				we = 1./(be+me*ne)
 				w = w*ws*we
 			pixlg[p] += 1.*w
+			pixlug[p] += 1.*w*(um-gm)
 			zm += w*z
 			nt += w
+	pug = []
+	ralug = []
+	declug = []
+	no = 0
+	nor = 0
+	for i in range(0,len(pixlg)):
+		if pixlr[i] > .1*sumr/sump:#100.:
+			if pixlg[i] == 0:
+				print i,pixlr[i],ral[i],decl[i]
+				pug.append(-.2)
+				ralug.append(ral[i])
+				declug.append(decl[i])
+			else:
+				pug.append(pixlug[i]/pixlg[i])
+				ralug.append(ral[i])
+				declug.append(decl[i])
+				if pixlug[i]/pixlg[i] < 0.06 or pixlug[i]/pixlg[i] > .32:
+					no += pixlg[i]
+					nor += pixlr[i]		
+		#else:
+		#	pug.append(-99)
+	print no,nor
+	if nor > 0:
+		print no/nor,sum(pixlg)/sum(pixlr)	
+	from matplotlib import pyplot as plt
+	import matplotlib.cm as cm
+	map = plt.scatter(ralug,declug,c=pug,s=size,cmap=cm.rainbow,lw=0,edgecolors='none',vmin=smin,vmax=smax)
+	cbar = plt.colorbar(map)
+	#plt.xlim(ramin,ramax)
+	#plt.ylim(decmin,decmax)
+	plt.show()
+	return True
 
+def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=180,decmin=-90,decmax=90,res=16,wm='',gri22='',smin=-5,smax=5,size=1):
+	from stripeDR8 import radec2le,ang2pix,pix2etalam,le2radec
+	#h = healpix()
+
+	npo = 36*13*res**2
+	pixlg = []
+	pixlug = []
+	pixlr = []
+	ral = []
+	decl = []
+
+	for i in range(0,npo):
+		pixlg.append(0)
+		pixlug.append(0)
+		pixlr.append(0)
+		eta,lam = pix2etalam(res,i)
+		ra,dec = le2radec(lam,eta)
+		if NS == 'S':
+			if ra > 180:
+				ra = ra -360
+		ral.append(ra)
+		decl.append(dec)
+
+
+	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.ran.fits') #read galaxy/quasar file
+	nr = 0
+	for i in range (0,len(f)):
+		ra,dec = f[i]['RA'],f[i]['DEC']
+		lam,eta = radec2le(ra,dec)
+		p = int(ang2pix(res,lam,eta))
+		pixlr[p] += 1.
+		nr += 1.
+	print nr
+	sumr = 0
+	sump = 0
+	for i in range(0,len(pixlr)):
+		if pixlr[i] > 0:
+			sumr += pixlr[i]
+			sump += 1.
+	print sumr/sump
+	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
+	no = 0
+	zm = 0
+	nt = 0
+	umgl = []
+	nugb = 0
+	for i in range (0,len(f)):
+		z = f[i]['Z']
+		gc = True
+		um = f[i]['MODELMAG'][0]-f[i]['EXTINCTION'][0]
+		gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
+		rm = f[i]['MODELMAG'][2]-f[i]['EXTINCTION'][2]
+		im = f[i]['MODELMAG'][3]-f[i]['EXTINCTION'][3]
+		c = 1
+		if gri22 == 'gri22':
+			if gm > 22 or rm > 22 or im > 22:
+				c = 0
+
+		if z > zmin and z < zmax and c == 1 and gc:
+			no += 1
+			#w = 1.
+			#if wm == '':
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			lam,eta = radec2le(ra,dec)
+			p = int(ang2pix(res,lam,eta))
+
+			#th,phi = radec2thphi(ra,dec)
+			#p = int(h.ang2pix_nest(res,th,phi))
+			
+			w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT'] #weight in current catalog
+			if wm == 'nosys':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP'] #compare to result with no systematic weights
+			if wm == 'fid':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT']
+			if wm == 'nfkp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.) #do this if you want to see difference FKP weights make
+			if wm == 'cp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+			if wm == 'st':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_STAR']*f[i]['WEIGHT_FKP']
+			if wm == 'see':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']*f[i]['WEIGHT_FKP']
+			if wm == 'seenfkp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']
+			if wm == 'stsee':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']*f[i]['WEIGHT_STAR']*f[i]['WEIGHT_FKP']
+			if wm == 'wstar':
+				pix2 = h.ang2pix_nest(256,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				w = w*ws
+			if wm == 'wdepth':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				w = w*ws				
+			if wm == 'wdepthgmag':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+					
+				if gm < 20.75:
+					slp = (slpl[1]-slpl[0])/.5
+					b = slpl[0] - 20.25*slp
+					m = gm*slp+b
+				if gm >= 20.75 and gm < 21.25:
+					slp = (slpl[2]-slpl[1])/.5
+					b = slpl[1] - 20.75*slp
+					m = gm*slp+b
+				if gm >= 21.25 and gm < 21.75:
+					slp = (slpl[3]-slpl[2])/.5
+					b = slpl[2] - 21.25*slp
+					m = gm*slp+b
+					if m > slpl[3]:
+						print m,hm,b,slp
+				if gm >= 21.75:
+					slp = (slpl[4]-slpl[3])/.5
+					b = slpl[3] - 21.75*slp
+					m = gm*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				w = w*ws
+			if wm == 'wdepthimag':
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+				if im < 20.25:
+					slp = (ml[1]-ml[0])/.5
+					b = ml[0] - 19.75*slp
+					m = im*slp+b
+				if im >= 20.25 and im < 20.75:
+					slp = (ml[2]-ml[1])/.5
+					b = ml[1] - 20.25*slp
+					m = im*slp+b
+				if im >= 20.75 and im < 21.25:
+					slp = (ml[3]-ml[2])/.5
+					b = ml[2] - 20.75*slp
+					m = im*slp+b
+				if gm >= 21.25:
+					slp = (ml[4]-ml[3])/.5
+					b = ml[3] - 21.25*slp
+					m = im*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*ws				
+
+			if wm == 'wdepthgmagext':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+					
+				if gm < 20.75:
+					slp = (slpl[1]-slpl[0])/.5
+					b = slpl[0] - 20.25*slp
+					m = gm*slp+b
+				if gm >= 20.75 and gm < 21.25:
+					slp = (slpl[2]-slpl[1])/.5
+					b = slpl[1] - 20.75*slp
+					m = gm*slp+b
+				if gm >= 21.25 and gm < 21.75:
+					slp = (slpl[3]-slpl[2])/.5
+					b = slpl[2] - 21.25*slp
+					m = gm*slp+b
+					if m > slpl[3]:
+						print m,hm,b,slp
+				if gm >= 21.75:
+					slp = (slpl[4]-slpl[3])/.5
+					b = slpl[3] - 21.75*slp
+					m = gm*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				pix2 = h.ang2pix_nest(256,th,phi)
+				ne = wext[pix2]
+				we = 1./(be+me*ne)
+				w = w*ws*we
+			if abs(um-gm) < 2.:
+				pixlg[p] += 1.*w
+				pixlug[p] += 1.*w*(um-gm)
+				zm += w*z
+				nt += w
+				umgl.append(um-gm)
+			else:
+				nugb += 1.
+				print z
+	print nugb				
+	pug = []
+	ralug = []
+	declug = []
+	no = 0
+	nor = 0
+	for i in range(0,len(pixlg)):
+		if pixlr[i] > .5*sumr/sump:#100.:
+			if pixlg[i] == 0:
+				print i,pixlr[i],ral[i],decl[i]
+				pug.append(-.2)
+				ralug.append(ral[i])
+				declug.append(decl[i])
+			else:
+				pug.append(pixlug[i]/pixlg[i])
+				ralug.append(ral[i])
+				declug.append(decl[i])
+				if pixlug[i]/pixlg[i] < 0.0 or pixlug[i]/pixlg[i] > .26:
+					no += pixlg[i]
+					nor += pixlr[i]		
+		#else:
+		#	pug.append(-99)
+	print no,nor
+	if nor > 0:
+		print no/nor,sum(pixlg)/sum(pixlr)	
+	from matplotlib import pyplot as plt
+	import matplotlib.cm as cm
+	plt.hist(umgl)
+	plt.show()
+	map = plt.scatter(ralug,declug,c=pug,s=size,cmap=cm.rainbow,lw=0,edgecolors='none',vmin=smin,vmax=smax)
+	cbar = plt.colorbar(map)
+	#plt.xlim(ramin,ramax)
+	#plt.ylim(decmin,decmax)
+	plt.show()
+	plt.hist(pug)
+	plt.show()
+	return True
+
+
+def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=180,decmin=-90,decmax=90,res=64,wm='',gri22='',smin=-5,smax=5,size=1):
+	from healpix import healpix,radec2thphi,thphi2radec
+	h = healpix()
+
+	npo = 12*res**2
+	pixlg = []
+	pixlz = []
+	pixlr = []
+	ral = []
+	decl = []
+
+	for i in range(0,npo):
+		pixlg.append(0)
+		pixlz.append(0)
+		pixlr.append(0)
+		th,phi = h.pix2ang_nest(res,i)
+		ra,dec = thphi2radec(th,phi)
+		if NS == 'S':
+			if ra > 180:
+				ra = ra -360
+		ral.append(ra)
+		decl.append(dec)
+
+
+	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.ran.fits') #read galaxy/quasar file
+	nr = 0
+	for i in range (0,len(f)):
+		ra,dec = f[i]['RA'],f[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = int(h.ang2pix_nest(res,th,phi))
+		pixlr[p] += 1.
+		nr += 1.
+	print nr
+	sumr = 0
+	sump = 0
+	for i in range(0,len(pixlr)):
+		if pixlr[i] > 0:
+			sumr += pixlr[i]
+			sump += 1.
+	print sumr/sump
+	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
+	no = 0
+	zm = 0
+	nt = 0
+	for i in range (0,len(f)):
+		z = f[i]['Z']
+		gc = True
+		um = f[i]['MODELMAG'][0]-f[i]['EXTINCTION'][0]
+		gm = f[i]['MODELMAG'][1]-f[i]['EXTINCTION'][1]
+		rm = f[i]['MODELMAG'][2]-f[i]['EXTINCTION'][2]
+		im = f[i]['MODELMAG'][3]-f[i]['EXTINCTION'][3]
+		c = 1
+		if gri22 == 'gri22':
+			if gm > 22 or rm > 22 or im > 22:
+				c = 0
+
+		if z > zmin and z < zmax and c == 1 and gc:
+			no += 1
+			#w = 1.
+			#if wm == '':
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			th,phi = radec2thphi(ra,dec)
+			p = int(h.ang2pix_nest(res,th,phi))
+			
+			w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT'] #weight in current catalog
+			if wm == 'nosys':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP'] #compare to result with no systematic weights
+			if wm == 'fid':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*f[i]['WEIGHT_SYSTOT']
+			if wm == 'nfkp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.) #do this if you want to see difference FKP weights make
+			if wm == 'cp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+			if wm == 'st':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_STAR']*f[i]['WEIGHT_FKP']
+			if wm == 'see':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']*f[i]['WEIGHT_FKP']
+			if wm == 'seenfkp':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']
+			if wm == 'stsee':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_SEEING']*f[i]['WEIGHT_STAR']*f[i]['WEIGHT_FKP']
+			if wm == 'wstar':
+				pix2 = h.ang2pix_nest(256,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				w = w*ws
+			if wm == 'wdepth':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				w = w*ws				
+			if wm == 'wdepthgmag':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+					
+				if gm < 20.75:
+					slp = (slpl[1]-slpl[0])/.5
+					b = slpl[0] - 20.25*slp
+					m = gm*slp+b
+				if gm >= 20.75 and gm < 21.25:
+					slp = (slpl[2]-slpl[1])/.5
+					b = slpl[1] - 20.75*slp
+					m = gm*slp+b
+				if gm >= 21.25 and gm < 21.75:
+					slp = (slpl[3]-slpl[2])/.5
+					b = slpl[2] - 21.25*slp
+					m = gm*slp+b
+					if m > slpl[3]:
+						print m,hm,b,slp
+				if gm >= 21.75:
+					slp = (slpl[4]-slpl[3])/.5
+					b = slpl[3] - 21.75*slp
+					m = gm*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				w = w*ws
+			if wm == 'wdepthimag':
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+				if im < 20.25:
+					slp = (ml[1]-ml[0])/.5
+					b = ml[0] - 19.75*slp
+					m = im*slp+b
+				if im >= 20.25 and im < 20.75:
+					slp = (ml[2]-ml[1])/.5
+					b = ml[1] - 20.25*slp
+					m = im*slp+b
+				if im >= 20.75 and im < 21.25:
+					slp = (ml[3]-ml[2])/.5
+					b = ml[2] - 20.75*slp
+					m = im*slp+b
+				if gm >= 21.25:
+					slp = (ml[4]-ml[3])/.5
+					b = ml[3] - 21.25*slp
+					m = im*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']*ws				
+
+			if wm == 'wdepthgmagext':
+				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']
+				pix2 = h.ang2pix_nest(512,th,phi)
+				ns = wsys[pix2]
+					
+				if gm < 20.75:
+					slp = (slpl[1]-slpl[0])/.5
+					b = slpl[0] - 20.25*slp
+					m = gm*slp+b
+				if gm >= 20.75 and gm < 21.25:
+					slp = (slpl[2]-slpl[1])/.5
+					b = slpl[1] - 20.75*slp
+					m = gm*slp+b
+				if gm >= 21.25 and gm < 21.75:
+					slp = (slpl[3]-slpl[2])/.5
+					b = slpl[2] - 21.25*slp
+					m = gm*slp+b
+					if m > slpl[3]:
+						print m,hm,b,slp
+				if gm >= 21.75:
+					slp = (slpl[4]-slpl[3])/.5
+					b = slpl[3] - 21.75*slp
+					m = gm*slp+b
+				bw = 1.-node*m
+				ws = 1./(bw+m*ns)
+				pix2 = h.ang2pix_nest(256,th,phi)
+				ne = wext[pix2]
+				we = 1./(be+me*ne)
+				w = w*ws*we
+			pixlg[p] += 1.*w
+			pixlz[p] += 1.*w*z
+			zm += w*z
+			nt += w
+	pz = []
+	ralz = []
+	declz = []
+	no = 0
+	nor = 0
+	for i in range(0,len(pixlg)):
+		if pixlr[i] > .1*sumr/sump:#100.:
+			if pixlg[i] == 0:
+				print i,pixlr[i],ral[i],decl[i]
+				pz.append(.8)
+				ralug.append(ral[i])
+				declug.append(decl[i])
+			else:
+				pz.append(pixlz[i]/pixlg[i])
+				ralz.append(ral[i])
+				declz.append(decl[i])
+				if pixlz[i]/pixlg[i] < 1.2 or pixlz[i]/pixlg[i] > 1.8:
+					no += pixlg[i]
+					nor += pixlr[i]		
+		#else:
+		#	pug.append(-99)
+	print no,nor
+	if nor > 0:
+		print no/nor,sum(pixlg)/sum(pixlr)	
+	from matplotlib import pyplot as plt
+	import matplotlib.cm as cm
+	map = plt.scatter(ralz,declz,c=pz,s=size,cmap=cm.rainbow,lw=0,edgecolors='none')#,vmin=smin,vmax=smax)
+	cbar = plt.colorbar(map)
+	#plt.xlim(ramin,ramax)
+	#plt.ylim(decmin,decmax)
+	plt.show()
+	return True			
+	
 def BAOrelPlanck(wo='QSOpLRGDR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=False,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
@@ -4342,6 +5144,6 @@ if __name__ == '__main__':
 	#do bao fit on EZ mocks
 	import sys
 	nm = str(sys.argv[1])
-	xibao('QSOEZPZ',0.9,2.2,version='v1.3',wm='',bs=8,start=0,rmin=30,rmax=180.,mb='',Bp=.4,v='n',mockn=nm,covmd='EZmock')
+	xibao('qpm_qso',0.8,2.2,version='v1.6',wm='',bs=5,start=0,rmin=30,rmax=180.,mb='',Bp=.4,v='n',mockn=nm,covmd='EZmock')
 	
 	  
