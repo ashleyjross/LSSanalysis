@@ -253,7 +253,7 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 	fo.close()
 	return True
 
-def mkxifile_zerrconvcrp_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu'):
+def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu'):
 	#Santi used zspec=0.45 to 1.2
 	from random import gauss
 	spf = 1.
@@ -263,13 +263,17 @@ def mkxifile_zerrconvcrp_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
-
-	fo = open('xizconvcrp'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzsigl'+rsd+'sp'+str(sp)+'.dat','w')
+	if sigl == '':
+		sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
+		szo = 'DESY1'
+	else:
+		szo = str(sigl[0])	
+	fo = open('xizconvcrp'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzsigl'+szo+rsd+'sp'+str(sp)+'.dat','w')
 	
 	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
 	#sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
 	#sigl = [0.029,0.029,0.035,0.049]
-	sigl = [0.029]
+	#sigl = [0.029]
 	wl,dzl,rzl = zc.calcwlave(.8,sigl)
 	while r < rmax:
 		xis = 0
@@ -570,7 +574,7 @@ class zerrconv:
 						#xi2n = f2sm[1][0]
 						#xi4n = f4sm[1][0]
 
-					if rp >= 300:#input files don't go beyond 300, just using maximum value
+					if rp >= 299:#input files don't go beyond 300, just using maximum value
 						xi0 = self.f0[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 						xi2 = self.f2[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 						xi4 = self.f4[1][-1]*(self.betad/self.beta)**2.					
@@ -590,8 +594,12 @@ class zerrconv:
 				summn += xipn*wl[i]
 			xi = summ/sumw#/float(nzs)#
 			xin = summn/sumw#/float(nzs)#
-			sumxi += xi*dw[1][m]/dw0
-			sumxin += xin*dw[1][m]/dw0
+			if muweight == '':
+				sumxi += xi
+				sumxin += xin
+			else:	
+				sumxi += xi*dw[1][m]/dw0
+				sumxin += xin*dw[1][m]/dw0
 		sumxi = sumxi/muwt
 		sumxin = sumxin/muwt
 		print mumaxt,rrmaxt,m,mu			

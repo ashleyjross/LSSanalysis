@@ -1,29 +1,36 @@
 from math import *
 from numpy import loadtxt as load
+import numpy as np
 diro = '/Users/ashleyross/DESY1/'
 
-def baoerr(zmin,zmax,dz,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15):
+def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15,cosm='Planck'):
 	#based on Seo & Eisenstein 2007
 	from Cosmo import distance
 	from numpy import ones
-	fo = open('Fmufiles/FdaHvsmu_z'+str(zmin)+str(zmax)+'_zerr'+str(sigz)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
-	d = distance(.3,.7)
+	wo = False
+	if num < 1:
+		fo = open('Fmufiles/FdaHvsmu_z'+str(zmin)+str(zmax)+'_zerr'+str(sigz)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
+		wo = True
 	
 	Pbao_list =  [ 9.034, 14.52, 12.63, 9.481, 7.409, 6.397, 5.688, 4.804, 3.841, 3.108,
     2.707, 2.503, 2.300, 2.014, 1.707, 1.473, 1.338, 1.259, 1.174, 1.061,
     0.9409, 0.8435, 0.7792, 0.7351, 0.6915, 0.6398, 0.5851, 0.5376, 0.5018, 0.4741,
     0.4484, 0.4210, 0.3929, 0.3671, 0.3456, 0.3276, 0.3112, 0.2950, 0.2788, 0.2635,
     0.2499, 0.2379, 0.2270, 0.2165, 0.2062, 0.1965, 0.1876, 0.1794, 0.1718, 0.1646]
-	
-	BAO_POWER = 0.18961E+04   # /* The power spectrum at k=0.2h Mpc^-1 for sigma8=0.8 and Planck cosmo */
-	BAO_SILK = 7.57
-	BAO_AMP = 0.5 #approximate
+	if cosm == 'Planck':
+		BAO_POWER = 0.18961E+04   # /* The power spectrum at k=0.2h Mpc^-1 for sigma8=0.8 and Planck cosmo */
+		BAO_SILK = 7.50#based on footnote in Seo & Eisenstein and 2015 Plik from Table 1 of Planck 2015 cosmo paper
+		BAO_AMP = 0.39 #approximate, check this
+		om = 0.3
+	if cosm == 'WMAP3': #as given in Seo & Eisenstein 2007
+		BAO_POWER = 0.17713E+04 #from the MICE_matterpower.dat file
+		BAO_SILK = 8.38
+		BAO_AMP = 0.5817
+		om = 0.25
+	d = distance(om,1.-om)
 	mustep = 0.01
 	KSTEP = .01
 	fsky = area/(360*360./pi)
-	#Sigma_z = (d.dc(z+0.01)-d.dc(z))/.01*sigz
-	nz = int((zmax+.0001-zmin)/float(dz))
-	#print nz
 	dtot = 0
 	neff = 0
 	kl = []
@@ -33,102 +40,256 @@ def baoerr(zmin,zmax,dz,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=
 		kl.append(k)
 		keffl.append(0)
 
-	for i in range(0,nz):
-		z = zmin+i*(zmax-zmin)/float(nz)+.5*(zmax-zmin)/float(nz)
-		z1 = z-.5*(zmax-zmin)/float(nz)
-		z2 = z+.5*(zmax-zmin)/float(nz)
-		sigzdampl = BAOdampsigz(z,sigz)
-		dr = d.dc(z2)-d.dc(z1)
-		volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)/1.e9
-		if dampz == 'n':
-			sigzdampl = ones((len(Pbao_list)))
-		Dg = d.D(z)
-		f = d.omz(z)**.557
-		#print f
-		beta = f/bias
-		#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
-		Sig0 = 10.4*sig8*Dg*recon_fac
-		Sigma_perp = Sig0
-		Sigma_par = Sig0*(1.+f)
-		Sigma_perp2 = Sigma_perp*Sigma_perp
-		Sigma_par2 = Sigma_par*Sigma_par
-	#	print Sigma_perp,Sigma_par
+	z = (zmax+zmin)/2.
+	print z
+	z1 = zmin
+	z2 = zmax
+	sigzdampl = BAOdampsigz(z,sigz)
+	dr = d.dc(z2)-d.dc(z1)
+	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
+	if num > 1:
+		num = num/volume
+		print num
+	if dampz == 'n':
+		sigzdampl = ones((len(Pbao_list)))
+	Dg = d.D(z)
+	f = d.omz(z)**.557
+	#print f
+	beta = f/bias
+	#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
+	Sig0 = 10.4*sig8*Dg*recon_fac
+	Sigma_perp = Sig0
+	Sigma_par = Sig0*(1.+f)
+	Sigma_perp2 = Sigma_perp*Sigma_perp
+	Sigma_par2 = Sigma_par*Sigma_par
+#	print Sigma_perp,Sigma_par
 
-		Sigma_z = d.cHz(z)*sigz
-		Sigma_zb = Sigma_z/d.dc(z)*105. #percentage distance error multiplied by BAO scale
-		#print Sigma_zb
-		Sigma_z2 = Sigma_z*Sigma_z
-		#print Sigma_z2
-		sigma8 = bias*Dg
-		#print sigma8
-		
-		power = sigma8*sigma8*BAO_POWER
-		#print power,sigma8**2.
-		nP = num*power
-		#print nP
-		Silk_list  = []
+	Sigma_z = d.cHz(z)*sigz
+	Sigma_zb = Sigma_z/d.dc(z)*105. #percentage distance error multiplied by BAO scale
+	#print Sigma_zb
+	Sigma_z2 = Sigma_z*Sigma_z
+	print Sigma_z2
+	sigma8 = bias*Dg
+	#print sigma8
 	
+	power = sigma8*sigma8*BAO_POWER
+	#print power,sigma8**2.
+	nP = num*power
+	#print nP
+	Silk_list  = []
+
+	for i in range(0,len(Pbao_list)):
+		k=0.5*KSTEP+KSTEP*i
+		Silk_list.append(exp(-2.0*pow(k*BAO_SILK,1.40))*k*k*sigzdampl[i]**2.)
+	mu = .5*mustep
+	sumt = 0
+	sumW1 = 0
+	sumW2 = 0
+	monosum = 0
+	Fdd = Fdh = Fhh = 0.0
+	while mu<1:
+		mu2 = mu*mu
+		redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
+		tmp = 1.0/(nP*redshift_distort)
+		Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2#+Sigma_zb*Sigma_zb/2.
+		sum = 0
 		for i in range(0,len(Pbao_list)):
 			k=0.5*KSTEP+KSTEP*i
-			Silk_list.append(exp(-2.0*pow(k*BAO_SILK,1.40))*k*k*sigzdampl[i]**2.)
-		mu = .5*mustep
-		sumt = 0
-		sumW1 = 0
-		sumW2 = 0
-		monosum = 0
-		Fdd = Fdh = Fhh = 0.0
-		while mu<1:
-			mu2 = mu*mu
-			redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
-			tmp = 1.0/(nP*redshift_distort)
-			Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2+Sigma_zb*Sigma_zb/2.
-			sum = 0
-			for i in range(0,len(Pbao_list)):
-				k=0.5*KSTEP+KSTEP*i
-				try:
-					tmpz = Pbao_list[i]+tmp*exp(k*k*Sigma_z2*mu2)
-					Fmu = Silk_list[i]*exp(-k*k*Sigma2_tot)/tmpz/tmpz
-					sum += Fmu
-					keffl[i] += Fmu
-				except:
-					pass
-					#print k,mu
-			neff += exp(-1.*keff**2.*Sigma_z2*mu2)*num*mustep
+			try:
+				tmpz = Pbao_list[i]+tmp*exp(k*k*Sigma_z2*mu2)
+				#print redshift_distort/exp(k*k*Sigma_z2*mu2)
+				Fmu = Silk_list[i]*exp(-k*k*Sigma2_tot)/tmpz/tmpz
+				sum += Fmu
+				keffl[i] += Fmu
+			except:
+				pass
+				#print k,mu
+		neff += exp(-1.*keff**2.*Sigma_z2*mu2)*num*mustep
+		if wo:
 			fo.write(str(mu)+' '+str(sum)+'\n')
-			Fdd += sum*(1.-mu2)*(1.-mu2)
-			Fdh += sum*(1.-mu2)*mu2
-			Fhh += sum*mu2*mu2
-			sumt += sum
-			monosum += 1./sum
-			if mu < 0.5:
-				sumW1 += sum
-			if mu > 0.5:
-				sumW2 += sum
-			mu += mustep
-		r = Fdh/sqrt(Fhh*Fdd)
-		#Fdd *= BAO_AMP*BAO_AMP/8.0/pi/pi*1.0e9*KSTEP*mustep*volume
-		#Fhh *= BAO_AMP*BAO_AMP/8.0/pi/pi*1.0e9*KSTEP*mustep*volume
-		#sumt *= BAO_AMP*BAO_AMP/8.0/pi/pi*1.0e9*KSTEP*mustep*volume
-		#monosum /= BAO_AMP*BAO_AMP/8.0/pi/pi*1.0e9*KSTEP*volume
-		Fdd *= BAO_AMP*BAO_AMP*1.0e9*KSTEP*mustep*volume/2.
-		Fhh *= BAO_AMP*BAO_AMP*1.0e9*KSTEP*mustep*volume/2.
-		sumt *= BAO_AMP*BAO_AMP*1.0e9*KSTEP*mustep*volume/2.
-		monosum /= BAO_AMP*BAO_AMP*1.0e9*KSTEP*volume
-		monosum *= mustep
-		Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
-		Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
-		Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
-		#print Drms,Hrms,Rrms,r,z1,z2
-		dtot += sumt
+		Fdd += sum*(1.-mu2)*(1.-mu2)
+		Fdh += sum*(1.-mu2)*mu2
+		Fhh += sum*mu2*mu2
+		sumt += sum
+		monosum += 1./sum
+		if mu < 0.5:
+			sumW1 += sum
+		if mu > 0.5:
+			sumW2 += sum
+		mu += mustep
+	r = Fdh/sqrt(Fhh*Fdd)
+	Fdd *= BAO_AMP*BAO_AMP*KSTEP*mustep*volume 
+	Fhh *= BAO_AMP*BAO_AMP*KSTEP*mustep*volume
+	sumt *= BAO_AMP*BAO_AMP*KSTEP*mustep*volume
+	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
+	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
+	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
+	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	dtot = sumt
 	keff = 0
 	wkeff = 0
 	for i in range(0,len(keffl)):
 		keff += kl[i]*keffl[i]
 		wkeff += keffl[i]
-	#print neff,keff/wkeff
+	print neff,keff/wkeff
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
 	#return Drms,Hrms,Rrms,r,1./sqrt(sumt),sqrt(monosum),1./sqrt(sumW1),1./sqrt(sumW2)
+
+def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz='y',keff=.15,cosm='Challenge',kmin=.02,kmax=.3):
+	#based on Seo & Eisenstein 2007, but using input linear power spectrum as the signal
+	#inputs are stored in the powerspectra folder; Challenge is the fiducial BOSS DR12 power spectrum and MICE is the MICE one
+	from Cosmo import distance
+	from numpy import ones
+	from EH import simulate
+	#fo = open('Fmufiles/FdaHvsmu_z'+str(zmin)+str(zmax)+'_zerr'+str(sigz)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
+	
+	pf = load('powerspectra/'+cosm+'_matterpower.dat').transpose()
+	k_list = pf[0]
+	P_list = pf[1]
+	if cosm == 'Challenge':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+	if cosm == 'MICE': 
+		om = 0.25
+		lam = .75
+		h = .7
+		ombhh = .044*0.7*.7	
+		nindex = .949
+	if cosm == 'WMAP3': 
+		om = 0.24
+		lam = .76
+		h = .73
+		ombhh = .0223	
+		nindex = .949
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	BAO_list = []
+	for i in range(0,len(k_list)):
+		k = k_list[i]
+		dpk = P_list[i]-s.Psmooth(k,0)
+		BAO_list.append(dpk)
+	if vis == 'y':
+		from matplotlib import pyplot as plt
+		plt.plot(k_list,BAO_list)
+		plt.xlim(kmin,kmax)
+		plt.show()	
+	BAO_list = np.array(BAO_list)	
+	d = distance(om,1.-om)
+	mustep = 0.01
+	fsky = area/(360*360./pi)
+	dtot = 0
+	neff = 0
+	keffl = np.zeros((len(k_list)))
+	z = (zmax+zmin)/2.
+	print z
+	z1 = zmin
+	z2 = zmax
+	#sigzdampl = BAOdampsigz(z,sigz)
+	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
+	#if dampz == 'n':
+	#	sigzdampl = ones((len(Pbao_list)))
+	Dg = d.D(z)
+	f = d.omz(z)**.557
+	beta = f/bias
+
+	#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
+	Sig0 = 10.4*sig8*Dg*recon_fac
+	Sigma_perp = Sig0
+	Sigma_par = Sig0*(1.+f)
+	print Sigma_perp,Sigma_par
+	Sigma_perp2 = Sigma_perp*Sigma_perp
+	Sigma_par2 = Sigma_par*Sigma_par
+
+	Sigma_z = d.cHz(z)*sigz
+	Sigma_z2 = Sigma_z*Sigma_z
+	print Sigma_z2
+
+	Pkamp = bias*Dg
+	power = Pkamp*Pkamp
+	BAO_list = BAO_list*power
+	P_list = P_list*power
+	nP_list = num**P_list
+	
+	mu = .5*mustep
+	sumt = 0
+	sumW1 = 0
+	sumW2 = 0
+	monosum = 0
+	Fdd = Fdh = Fhh = 0.0
+
+
+	k0 = k_list[0]
+	k1 = k_list[1]
+	ldk = log(k1)-log(k0)
+
+	while mu<1:
+		mu2 = mu*mu
+		redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
+		#redshift_distort = 1.
+		Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2#+Sigma_zb*Sigma_zb/2.
+		sum = 0
+		for i in range(0,len(BAO_list)):		
+			k=k_list[i]
+			if k > kmin and k < kmax:
+				Rmu = redshift_distort*exp(-1.*k*k*Sigma_z2*mu2)
+				Rmup = redshift_distort*exp(-1.*k_list[i+1]*k_list[i+1]*Sigma_z2*mu2)
+				dk = ldk*k
+				kvol = dk*k*k/(4.*pi**2.)
+				sig = BAO_list[i]*Rmu*exp(-.5*k*k*Sigma2_tot)
+				dsigdlk = (sig-BAO_list[i+1]*Rmup*exp(-.5*k_list[i+1]*k_list[i+1]*Sigma2_tot))/ldk 
+				noiseV = (P_list[i]*Rmu+1./num)#/kvol
+				#Fmu = (sig/noiseV)**2.*kvol
+				Fmu = (dsigdlk/noiseV)**2.*kvol
+				sum += Fmu
+				keffl[i] += Fmu 
+		neff += exp(-1.*keff**2.*Sigma_z2*mu2)*num*mustep
+#		fo.write(str(mu)+' '+str(sum)+'\n')
+		Fdd += sum*(1.-mu2)*(1.-mu2)
+		Fdh += sum*(1.-mu2)*mu2
+		Fhh += sum*mu2*mu2
+		sumt += sum
+		monosum += 1./sum
+		if mu < 0.5:
+			sumW1 += sum
+		if mu > 0.5:
+			sumW2 += sum
+		mu += mustep
+	
+	r = Fdh/sqrt(Fhh*Fdd)
+	Fdd *= mustep*volume
+	Fhh *= mustep*volume
+	sumt *= mustep*volume
+	print sqrt(sumt)
+	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
+	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
+	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
+	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	dtot = sumt
+	keff = 0
+	wkeff = 0
+	for i in range(0,len(keffl)):
+		k = k_list[i]
+		if k > kmin and k < kmax:
+			keff += k_list[i]*keffl[i]
+			wkeff += keffl[i]
+	print neff,keff/wkeff
+	#print 'total BAO error '+str(sqrt(1.0/dtot))
+	return sqrt(1.0/dtot)
+
+
+def errvsig(num,sigmin=.01,sigmax=.06,sigstep=.001,zmin=.75,zmax=.85,bias=1.8,dampz='y'):
+	fo = open('Fmufiles/errvsig'+str(zmin)+str(zmax)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
+	nsig = int((sigmax+sigstep*.01-sigmin)/sigstep)
+	for i in range(0,nsig):
+		sigz = sigmin+i*sigstep+sigstep/2.
+		err = baoerr(zmin,zmax,.1,sigz,1400.,num,bias,dampz=dampz)
+		fo.write(str(sigz)+' '+str(1./err**2.)+' '+str(err)+'\n')
+	fo.close()
+	return True
+
 
 def baoerr_comp2(z,sigz,sigz2,num,num2,bias,bias2,sig8=0.8,recon_fac=1.):
 	from Cosmo import distance
@@ -371,7 +532,7 @@ def plot_Fvmusig3():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages('/Users/ashleyross/Dropbox/zerrBAOpaper/Fvmusigz3.pdf')
+	pp = PdfPages('/Users/ashleyross/Dropbox/zerrBAOpaper/Fvmusigz3prmld.pdf')
 	plt.clf()
 	plt.minorticks_on()
 	plt.xlabel(r'$\mu$',size=16)
@@ -381,12 +542,26 @@ def plot_Fvmusig3():
 	d0 = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat').transpose()
 	dc = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.001_10e3n1.0_b1.8n.dat').transpose()	
 	ds = load('Fmufiles/FmuobsdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat').transpose()
+	dr = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.02_10e3n0.4_b2.0n.dat').transpose()
+	dl = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.001_10e3n0.01_b1.8n.dat').transpose()	
 	#plt.yscale('log')
 	plt.plot(d0[0],d0[1]/d0[1][0],'k-',linewidth=4)
+	plt.text(.012,.28,r'$\sigma_{zf}=0.03$',color='k',size=14)
+	plt.text(.012,.33,r'$n=10^{-3}$',color='k',size=14)
+	plt.plot(dr[0],dr[1]/d0[1][0],'r-',linewidth=4)
+	plt.text(.2,.33,r'$\sigma_{zf}=0.02$',color='r',size=14)
+	plt.text(.2,.38,r'$n=4\times10^{-4}$',color='r',size=14)
+	plt.plot(dl[0],dl[1]/dl[1][-1]*1.15,'b--',linewidth=4)
+	plt.text(.83,.95,r'$\sigma_{zf}=0.001$',color='b',size=14)
+	plt.text(.85,1.,r'$n=10^{-5}$',color='b',size=14)
 	plt.plot(d0[0],dc[1]/d0[1][0],'k--',linewidth=4)
+	plt.text(.25,1.05,r'$\sigma_{zf}=0.001$',color='k',size=14)
+	plt.text(.25,1.1,r'$n=10^{-3}$',color='k',size=14)
 	plt.plot(d0[0],ds[1]*sum(d0[1]/d0[1][0])/sum(ds[1]),'k:',linewidth=4)
-	plt.ylabel('Relative Information', fontsize=18)
-	plt.xlabel(r'$\mu$',fontsize=18)
+	plt.text(.55,.2,r'Apparent $\mu$, $n=10^{-3}$',size=14)
+	plt.text(.73,.15,r'$\sigma_{zf}=0.03$',color='k',size=14)
+	plt.ylabel('Relative BAO Information', fontsize=18)
+	plt.xlabel(r'$\mu$ (Cosine of angle to line-of-sight)',fontsize=16)
 	pp.savefig()
 	pp.close()
 	return True
@@ -475,6 +650,8 @@ def xisigmuplotzerr(zerr):
  	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
  	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
 	plt.ylim(-.2,.4)
+	if zerr == 0.02:
+		plt.ylim(-.2,.5)
 	plt.xlim(30,300)
 
 	xl = [190,200]
@@ -501,12 +678,12 @@ def xisigmuplotzerr(zerr):
 	plt.title(r'$\sigma_z/(1+z)$ = '+str(zerr))
 	pp.savefig()
 	pp.close()
-	d0 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d0 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
 	#dt = load('xizconvmuwMICE_matterpower0.406.010.00.029sp5.0.dat').transpose()
-	d1 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
-	d2 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
-	d3 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
-	d4 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
 
 	pp = PdfPages('/Users/ashleyross/DESY1/xisigmuscale'+str(zerr)+'.pdf')
 	plt.clf()
@@ -530,7 +707,182 @@ def xisigmuplotzerr(zerr):
 	plt.plot(xl,yl,'k:')
 
 	plt.ylim(-.2,.4)
+	if zerr == 0.02:
+		plt.ylim(-.2,.5)
 	plt.xlim(30,200)
+	pp.savefig()
+	pp.close()
+	return True
+
+def xisigmuplot6pan():
+	import matplotlib.pyplot as plt
+	import matplotlib as mpl
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	from pylab import *
+	from numpy import loadtxt as load
+	import numpy as np
+	pp = PdfPages('/Users/ashleyross/DESY1/xisigmu6pan.pdf')
+	
+	fig = plt.figure(figsize=(8.5,8))
+	zerr = 0.01
+	#fig.tick_params(axis='both', which='major', labelsize=12)
+	mpl.rcParams['xtick.labelsize'] = 10
+	mpl.rcParams['ytick.labelsize'] = 9
+	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+
+	xl = [104,104]
+	yl = [-20,20]
+
+	ax = fig.add_subplot(2,3,1)
+	cnr = [145,289,.35,.9]
+	cxl = [cnr[0],cnr[1]]
+	cyl = [cnr[2],cnr[2]]
+	ax.plot(cxl,cyl,'k-')
+	cyl = [cnr[3],cnr[3]]
+	ax.plot(cxl,cyl,'k-')
+	cxl = [cnr[0],cnr[0]]
+	cyl = [cnr[2],cnr[3]]
+	ax.plot(cxl,cyl,'k-')
+	cxl = [cnr[1],cnr[1]]
+	ax.plot(cxl,cyl,'k-')
+	lxl = [150,169]
+	lxll = [145,175]
+	ax.text(173,.8,r'$\mu<0.2$',size=10)
+	lyl = [.83,.83]
+	ax.plot(lxl,lyl,'k-',linewidth=3)
+	ax.text(173,.7,r'$0.2<\mu<0.4$',size=10)
+	lyl = [.73,.73]
+	ax.plot(lxll,lyl,'k--',linewidth=3)
+	ax.text(173,.6,r'$0.4<\mu<0.6$',size=10)
+	lyl = [.63,.63]
+	ax.plot(lxl,lyl,'k:',linewidth=3)
+	ax.text(173,.5,r'$0.6<\mu<0.8$',size=10)
+	lyl = [.53,.53]
+	ax.plot(lxl,lyl,'r-',linewidth=3)
+	ax.text(173,.4,r'$\mu>0.8$',size=10)
+	lyl = [.43,.43]
+	ax.plot(lxl,lyl,'b-',linewidth=3)
+
+	
+	ax.set_xlim(40,300)
+	ax.set_ylim(-.5,1.)
+	ax.minorticks_on()
+	ax.plot(xl,yl,'k:')
+ 	ax.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+ 	ax.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+ 	ax.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+ 	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+ 	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+	
+	ax.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax.set_title(r'$\sigma_z /(1+z) = 0.01$')
+
+	ax2 = fig.add_subplot(2,3,4)
+	ax2.minorticks_on()
+# 	for tick in ax2.xaxis.get_major_ticks():
+	ax2.set_ylabel(r'                                                                        $10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=12)
+	ax2.set_xlim(30,200)
+	ax2.set_ylim(-.5,1.)
+	ax2.plot(xl,yl,'k:')
+ 	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'k-',linewidth=3)
+ 	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'k--',linewidth=3)
+ 	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,'k:',linewidth=3)
+ 	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color='r',linewidth=3)
+ 	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color='b',linewidth=3)	
+	ax2.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax2.get_xlim()
+	ax2.xaxis.set_ticks(np.arange(start, end, 40))
+
+	zerr = 0.02
+	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+
+	ax3 = fig.add_subplot(2,3,2)
+	ax3.minorticks_on()
+	ax3.set_xlim(40,300)
+	ax3.set_ylim(-.2,.5)
+	ax3.plot(xl,yl,'k:')
+ 	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+ 	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+ 	ax3.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+ 	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+ 	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)	
+	ax3.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax3.set_title(r'$\sigma_z /(1+z) = 0.02$')
+
+	ax4 = fig.add_subplot(2,3,5)
+	ax4.minorticks_on()
+	ax4.set_xlim(30,200)
+	ax4.set_ylim(-.2,.5)
+	ax4.plot(xl,yl,'k:')
+ 	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'k-',linewidth=3)
+ 	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'k--',linewidth=3)
+ 	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,'k:',linewidth=3)
+ 	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color='r',linewidth=3)
+ 	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color='b',linewidth=3)	
+	ax4.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax4.get_xlim()
+	ax4.xaxis.set_ticks(np.arange(start, end, 40))
+
+
+	zerr = 0.029
+	d0 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumax0.20.406.010.00.029sp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.2mumax0.40.406.010.00.029sp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.4mumax0.60.406.010.00.029sp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.6mumax0.80.406.010.00.029sp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.80.406.010.00.029sp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+
+
+	ax5 = fig.add_subplot(2,3,3)
+	ax5.minorticks_on()
+	ax5.set_xlim(40,300)
+	ax5.set_ylim(-.15,.35)
+	ax5.plot(xl,yl,'k:')
+ 	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+ 	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+ 	ax5.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+ 	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+ 	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)	
+	ax5.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax5.set_title(r'$\sigma_z /(1+z) = 0.029$')
+
+	ax6 = fig.add_subplot(2,3,6)
+	ax6.minorticks_on()
+	ax6.set_xlim(30,200)
+	ax6.set_ylim(-.15,.35)
+	ax6.plot(xl,yl,'k:')
+ 	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'k-',linewidth=3)
+ 	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'k--',linewidth=3)
+ 	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,'k:',linewidth=3)
+ 	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color='r',linewidth=3)
+ 	ax6.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color='b',linewidth=3)	
+	ax6.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax6.get_xlim()
+	ax6.xaxis.set_ticks(np.arange(start, end, 40))
+	fig.subplots_adjust(wspace=.25)
 	pp.savefig()
 	pp.close()
 	return True
@@ -677,16 +1029,21 @@ def xirpsigmumockcompthplot():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages(diro+'xirpsigmumockcompthnohimu.pdf')
+	pp = PdfPages(diro+'xirpsigmumockcompthnohimusig55.pdf')
 	plt.clf()
 	plt.minorticks_on()
 	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
 	plt.ylabel(r'$s^2\xi_{\perp}$',size=16)
-	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
-	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
-	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
-	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
-	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+# 	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+# 	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+# 	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+# 	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+# 	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.405.05.0combzsigl0.029sp1.0.dat').transpose()
+	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.405.05.0combzsigl0.029sp1.0.dat').transpose()
+	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.405.05.0combzsigl0.029sp1.0.dat').transpose()
+	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
+	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
 	dm0 = load(diro+'xiaverpsqmumax0.2.dat').transpose()
 	dm1 = load(diro+'xiaverpsqmumin0.2mumax0.4.dat').transpose()
 	dm2 = load(diro+'xiaverpsqmumin0.4mumax0.6.dat').transpose()
@@ -695,18 +1052,18 @@ def xirpsigmumockcompthplot():
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm1[1]+1.,dm0[0][:40]**2.*dm1[2]/sqrt(504.),fmt='rd',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm2[1],dm0[0][:40]**2.*dm2[2]/sqrt(504.),fmt='b^',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/sqrt(504.),fmt='gs',linewidth=3)
-	#plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='y<',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='y<',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1]+2.,dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='ko',linewidth=3)
  	plt.plot(d0[0],d0[0]**2.*d1[1]*1.48+1.,'r-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d2[1]*1.48,'b-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d3[1]*1.48,'g-',linewidth=2)
- 	#plt.plot(d0[0],d0[0]**2.*d4[1]*1.48,'y-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d4[1]*1.48,'y-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d0[1]*1.48+2.,'k-',linewidth=2)
  	plt.text(40,2.5,r'$\mu < 0.2$',color='k',size=16)
  	plt.text(40,1,r'$0.2 < \mu < 0.4$',color='r',size=16)
  	plt.text(40,-.5,r'$0.4 < \mu < 0.6$',color='b',size=16)
  	plt.text(40,-2,r'$0.6 < \mu < 0.8$',color='g',size=16)
- 	#plt.text(40,-3.5,r'$0.8 < \mu$',color='y',size=16)
+ 	plt.text(40,-3.5,r'$0.8 < \mu$',color='y',size=16)
 	plt.ylim(-5,17)
 	plt.xlim(30,200)
 	pp.savefig()
@@ -820,6 +1177,12 @@ def BAOerrplot(wo='test',BOSS=True,MGS=False,wz=False,sdss=False,df6=False,des=T
 	ax.Axes.axis(ax0,'auto')
 	plt.tick_params(axis='both', which='major', labelsize=15)
 	#x = pe[0]
+	pe = np.loadtxt('/Users/ashleyross/DR7VAC/DVordPlanck.txt').transpose()
+	x = pe[0]
+	y=np.ones(len(x))
+	yu = np.zeros(len(x))
+	yd = np.zeros(len(x))
+
 	x=np.arange(0.02,2.,0.01)
 	y=np.ones(len(x))
 	if df6:
@@ -890,3 +1253,5 @@ def BAOerrplot(wo='test',BOSS=True,MGS=False,wz=False,sdss=False,df6=False,des=T
 	pp.close()
 	return True
 
+if __name__ == '__main__':
+	xisigmuplot6pan()
