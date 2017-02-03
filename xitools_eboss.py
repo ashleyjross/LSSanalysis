@@ -1097,6 +1097,40 @@ def fitallQSOvdepthNSgri(NS,v,sys='depth',wm='nosys',gri22='',dir=''):
 		bnl.append(bn)
 	return mnl,bnl	
 
+def mksysmapran(res):
+	#make healpix systematic maps from eBOSSrandoms.ran.fits, in nested format
+	from healpix import healpix, radec2thphi
+	h = healpix()
+	nc = 1+5+1+1+5+5 #one column for nran, 5 for skyflux, 1 for aimass, 1 for EB-V, 5 for depth, 5 for PSF
+	nrow = 12*res*res #number of healpix pixels in full sky
+	d = np.zeros((nrow,nc))
+	f = fitsio.read(dirfits+'eBOSSrandoms.ran.fits')
+	for i in range(0,len(f)):
+		ra,dec = f[i]['RA'],f[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = h.ang2pix_nest(res,th,phi)
+		d[p][0] += 1.
+		for j in range(0,5):
+			d[p][1+j] += f[i]['SKYFLUX'][j]
+		d[p][6] += 	f[i]['AIRMASS']
+		d[p][7] += 	f[i]['EB_MINUS_V']
+		for j in range(0,5):
+			d[p][8+j] += f[i]['IMAGE_DEPTH'][j]
+		for j in range(0,5):
+			d[p][13+j] += f[i]['PSF_FWHM'][j]
+	print 'filled data table'
+	fo = open(ebossdir+'healmap_eBOSS_nested_'+str(res)+'.dat','w')
+	fo.write('# pix SKYFLUX_u SKYFLUX_g SKYFLUX_r SKYFLUX_i SKYFLUX_z AIRMASS EB_MINUS_V IMAGE_DEPTH_u IMAGE_DEPTH_g IMAGE_DEPTH_r IMAGE_DEPTH_i IMAGE_DEPTH_z PSF_FWHM_u PSF_FWHM_g PSF_FWHM_r PSF_FWHM_i PSF_FWHM_z\n')
+	for i in range(0,nrow):
+		if d[i][0] != 0:
+			fo.write(str(i)+' ')
+			for j in range(1,nc):
+				fo.write(str(d[i][j]/d[i][0])+' ')
+			fo.write('\n')
+	fo.close()
+	return True
+		
+		
 
 def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22=''):
 	#sample is the sample being used, e.g. 'lrg'
@@ -5060,7 +5094,7 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 	plt.show()
 	return True			
 	
-def BAOrelPlanck(wo='QSOpLRGDR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=False,eboss=False,desi=False):
+def BAOrelPlanck(wo='QSO4SH',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=False,des=False,desy1=False,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -5163,9 +5197,10 @@ def BAOrelPlanck(wo='QSOpLRGDR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=T
 		el = [0.013,0.026,0.021]
 		plt.errorbar(xl,yl,el,fmt='D',markeredgecolor='r',markersize=7,elinewidth=1.75,color='r')
 	if QSODR14:
-		plt.text(1.2,.96,'DR14 quasars',fontsize=18,color='b')
+		plt.text(1.2,.95,'DR14 quasars',fontsize=18,color='b')
+		plt.text(1.2,.94,'(predicted)',fontsize=18,color='b')
 		xl = [1.5]
-		yl = [1.012]
+		yl = [1.0]
 		el = [0.039]
 		plt.errorbar(xl,yl,el,fmt='o',markeredgecolor='b',markersize=7,elinewidth=1.75,color='b')
 

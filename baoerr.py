@@ -12,21 +12,22 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 		fo = open('Fmufiles/FdaHvsmu_z'+str(zmin)+str(zmax)+'_zerr'+str(sigz)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
 		wo = True
 	
-	Pbao_list =  [ 9.034, 14.52, 12.63, 9.481, 7.409, 6.397, 5.688, 4.804, 3.841, 3.108,
-    2.707, 2.503, 2.300, 2.014, 1.707, 1.473, 1.338, 1.259, 1.174, 1.061,
-    0.9409, 0.8435, 0.7792, 0.7351, 0.6915, 0.6398, 0.5851, 0.5376, 0.5018, 0.4741,
-    0.4484, 0.4210, 0.3929, 0.3671, 0.3456, 0.3276, 0.3112, 0.2950, 0.2788, 0.2635,
-    0.2499, 0.2379, 0.2270, 0.2165, 0.2062, 0.1965, 0.1876, 0.1794, 0.1718, 0.1646]
+	#Pbao_list =  [ 9.034, 14.52, 12.63, 9.481, 7.409, 6.397, 5.688, 4.804, 3.841, 3.108,
+    #2.707, 2.503, 2.300, 2.014, 1.707, 1.473, 1.338, 1.259, 1.174, 1.061,
+    #0.9409, 0.8435, 0.7792, 0.7351, 0.6915, 0.6398, 0.5851, 0.5376, 0.5018, 0.4741,
+    #0.4484, 0.4210, 0.3929, 0.3671, 0.3456, 0.3276, 0.3112, 0.2950, 0.2788, 0.2635,
+    #0.2499, 0.2379, 0.2270, 0.2165, 0.2062, 0.1965, 0.1876, 0.1794, 0.1718, 0.1646]
+	Pbao_list = [14.10, 20.19, 16.17, 11.49, 8.853, 7.641, 6.631, 5.352, 4.146, 3.384, 3.028, 2.799, 2.479, 2.082, 1.749, 1.551, 1.446, 1.349, 1.214, 1.065, 0.9455, 0.8686, 0.8163, 0.7630, 0.6995, 0.6351, 0.5821, 0.5433, 0.5120, 0.4808, 0.4477, 0.4156, 0.3880, 0.3655, 0.3458, 0.3267, 0.3076, 0.2896, 0.2734, 0.2593, 0.2464, 0.2342, 0.2224, 0.2112, 0.2010, 0.1916, 0.1830, 0.1748, 0.1670, 0.1596]
 	if cosm == 'Planck':
 		BAO_POWER = 0.18961E+04   # /* The power spectrum at k=0.2h Mpc^-1 for sigma8=0.8 and Planck cosmo */
 		BAO_SILK = 7.50#based on footnote in Seo & Eisenstein and 2015 Plik from Table 1 of Planck 2015 cosmo paper
 		BAO_AMP = 0.39 #approximate, check this
-		om = 0.3
+		om = 0.31
 	if cosm == 'WMAP3': #as given in Seo & Eisenstein 2007
-		BAO_POWER = 0.17713E+04 #from the MICE_matterpower.dat file
+		BAO_POWER = 0.17410E+04 #from the WMAP3_matterpower.dat file
 		BAO_SILK = 8.38
 		BAO_AMP = 0.5817
-		om = 0.25
+		om = 0.24
 	d = distance(om,1.-om)
 	mustep = 0.01
 	KSTEP = .01
@@ -41,10 +42,10 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 		keffl.append(0)
 
 	z = (zmax+zmin)/2.
-	print z
+	#print z
 	z1 = zmin
 	z2 = zmax
-	sigzdampl = BAOdampsigz(z,sigz)
+	
 	dr = d.dc(z2)-d.dc(z1)
 	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
 	if num > 1:
@@ -52,12 +53,14 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 		print num
 	if dampz == 'n':
 		sigzdampl = ones((len(Pbao_list)))
+	else:
+		sigzdampl = BAOdampsigz(z,sigz)	
 	Dg = d.D(z)
 	f = d.omz(z)**.557
 	#print f
 	beta = f/bias
 	#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
-	Sig0 = 10.4*sig8*Dg*recon_fac
+	Sig0 = 9.4*sig8/.9*Dg*recon_fac
 	Sigma_perp = Sig0
 	Sigma_par = Sig0*(1.+f)
 	Sigma_perp2 = Sigma_perp*Sigma_perp
@@ -68,7 +71,7 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 	Sigma_zb = Sigma_z/d.dc(z)*105. #percentage distance error multiplied by BAO scale
 	#print Sigma_zb
 	Sigma_z2 = Sigma_z*Sigma_z
-	print Sigma_z2
+	#print Sigma_z2
 	sigma8 = bias*Dg
 	#print sigma8
 	
@@ -124,19 +127,140 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
 	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
 	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
-	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	#print Drms,Hrms,Rrms,r,z1,z2,volume,z
 	dtot = sumt
 	keff = 0
 	wkeff = 0
 	for i in range(0,len(keffl)):
 		keff += kl[i]*keffl[i]
 		wkeff += keffl[i]
-	print neff,keff/wkeff
+	#print neff,keff/wkeff
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
 	#return Drms,Hrms,Rrms,r,1./sqrt(sumt),sqrt(monosum),1./sqrt(sumW1),1./sqrt(sumW2)
 
-def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz='y',keff=.15,cosm='Challenge',kmin=.02,kmax=.3):
+def baoerr_input(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15,cosm='WMAP3',kmax=.5):
+	#based on Seo & Eisenstein 2007
+	from Cosmo import distance
+	from numpy import ones
+	
+	#Pbao_list =  [ 9.034, 14.52, 12.63, 9.481, 7.409, 6.397, 5.688, 4.804, 3.841, 3.108,
+    #2.707, 2.503, 2.300, 2.014, 1.707, 1.473, 1.338, 1.259, 1.174, 1.061,
+    #0.9409, 0.8435, 0.7792, 0.7351, 0.6915, 0.6398, 0.5851, 0.5376, 0.5018, 0.4741,
+    #0.4484, 0.4210, 0.3929, 0.3671, 0.3456, 0.3276, 0.3112, 0.2950, 0.2788, 0.2635,
+    #0.2499, 0.2379, 0.2270, 0.2165, 0.2062, 0.1965, 0.1876, 0.1794, 0.1718, 0.1646]
+	#Pbao_list = [14.10, 20.19, 16.17, 11.49, 8.853, 7.641, 6.631, 5.352, 4.146, 3.384, 3.028, 2.799, 2.479, 2.082, 1.749, 1.551, 1.446, 1.349, 1.214, 1.065, 0.9455, 0.8686, 0.8163, 0.7630, 0.6995, 0.6351, 0.5821, 0.5433, 0.5120, 0.4808, 0.4477, 0.4156, 0.3880, 0.3655, 0.3458, 0.3267, 0.3076, 0.2896, 0.2734, 0.2593, 0.2464, 0.2342, 0.2224, 0.2112, 0.2010, 0.1916, 0.1830, 0.1748, 0.1670, 0.1596]
+	if cosm == 'Challenge':
+		BAO_POWER = 0.18961E+04   # /* The power spectrum at k=0.2h Mpc^-1 for sigma8=0.8 and Planck cosmo */
+		BAO_SILK = 7.50#based on footnote in Seo & Eisenstein and 2015 Plik from Table 1 of Planck 2015 cosmo paper
+		BAO_AMP = 0.39 #approximate, check this
+		om = 0.31
+	if cosm == 'WMAP3': #as given in Seo & Eisenstein 2007
+		BAO_POWER = 0.17410E+04 #from the WMAP3_matterpower.dat file
+		BAO_SILK = 8.38
+		BAO_AMP = 0.5817
+		om = 0.24
+	pf = load('powerspectra/'+cosm+'_matterpower.dat').transpose()
+	kl = pf[0]
+
+	k0 = kl[0]
+	k1 = kl[1]
+	ldk = log(k1)-log(k0)
+
+	Pbao_list = pf[1]/BAO_POWER
+	d = distance(om,1.-om)
+	mustep = 0.01
+	fsky = area/(360*360./pi)
+	dtot = 0
+	neff = 0
+
+	z = (zmax+zmin)/2.
+	print z
+	z1 = zmin
+	z2 = zmax
+	
+	dr = d.dc(z2)-d.dc(z1)
+	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
+	if num > 1:
+		num = num/volume
+		print num
+	if dampz == 'n':
+		sigzdampl = ones((len(Pbao_list)))
+	else:
+		sigzdampl = BAOdampsigz(z,sigz)	
+	Dg = d.D(z)
+	f = d.omz(z)**.557
+	#print f
+	beta = f/bias
+	#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
+	Sig0 = 9.4*sig8/.9*Dg*recon_fac
+	Sigma_perp = Sig0
+	Sigma_par = Sig0*(1.+f)
+	Sigma_perp2 = Sigma_perp*Sigma_perp
+	Sigma_par2 = Sigma_par*Sigma_par
+#	print Sigma_perp,Sigma_par
+
+	Sigma_z = d.cHz(z)*sigz
+	Sigma_zb = Sigma_z/d.dc(z)*105. #percentage distance error multiplied by BAO scale
+	#print Sigma_zb
+	Sigma_z2 = Sigma_z*Sigma_z
+	print Sigma_z2
+	sigma8 = bias*Dg
+	#print sigma8
+	
+	power = sigma8*sigma8*BAO_POWER
+	#print power,sigma8**2.
+	nP = num*power
+	print nP
+	Silk_list  = []
+
+	for i in range(0,len(Pbao_list)):
+		k=kl[i]
+		Silk_list.append(exp(-2.0*pow(k*BAO_SILK,1.40))*k*k*sigzdampl[i]**2.)
+	mu = .5*mustep
+	sumt = 0
+	sumW1 = 0
+	sumW2 = 0
+	monosum = 0
+	Fdd = Fdh = Fhh = 0.0
+	while mu<1:
+		mu2 = mu*mu
+		redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
+		tmp = 1.0/(nP*redshift_distort)
+		Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2#+Sigma_zb*Sigma_zb/2.
+		sum = 0
+		for i in range(0,len(Pbao_list)):
+			k=kl[i]
+			try:
+				tmpz = Pbao_list[i]+tmp*exp(k*k*Sigma_z2*mu2)
+				#print redshift_distort/exp(k*k*Sigma_z2*mu2)
+				Fmu = Silk_list[i]*exp(-k*k*Sigma2_tot)/tmpz/tmpz
+				sum += Fmu*k*ldk
+				keffl[i] += Fmu
+			except:
+				pass
+				#print k,mu
+		neff += exp(-1.*keff**2.*Sigma_z2*mu2)*num*mustep
+		Fdd += sum*(1.-mu2)*(1.-mu2)
+		Fdh += sum*(1.-mu2)*mu2
+		Fhh += sum*mu2*mu2
+		sumt += sum
+		mu += mustep
+	r = Fdh/sqrt(Fhh*Fdd)
+	Fdd *= BAO_AMP*BAO_AMP*mustep*volume 
+	Fhh *= BAO_AMP*BAO_AMP*mustep*volume
+	sumt *= BAO_AMP*BAO_AMP*mustep*volume
+	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
+	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
+	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
+	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	dtot = sumt
+	#print 'total BAO error '+str(sqrt(1.0/dtot))
+	return sqrt(1.0/dtot)
+	#return Drms,Hrms,Rrms,r,1./sqrt(sumt),sqrt(monosum),1./sqrt(sumW1),1./sqrt(sumW2)
+
+
+def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz='y',keff=.15,cosm='Challenge',kmin=0,kmax=.5):
 	#based on Seo & Eisenstein 2007, but using input linear power spectrum as the signal
 	#inputs are stored in the powerspectra folder; Challenge is the fiducial BOSS DR12 power spectrum and MICE is the MICE one
 	from Cosmo import distance
@@ -196,7 +320,7 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	beta = f/bias
 
 	#Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
-	Sig0 = 10.4*sig8*Dg*recon_fac
+	Sig0 = 9.4*sig8/.9*Dg*recon_fac
 	Sigma_perp = Sig0
 	Sigma_par = Sig0*(1.+f)
 	print Sigma_perp,Sigma_par
@@ -211,8 +335,22 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	power = Pkamp*Pkamp
 	BAO_list = BAO_list*power
 	P_list = P_list*power
-	nP_list = num**P_list
-	
+	nP_list = num*P_list
+	for i in range(0,len(nP_list)):
+		if k_list[i] > .2:
+			print nP_list[i]
+			break
+
+	k0 = k_list[0]
+	k1 = k_list[1]
+	ldk = log(k1)-log(k0)
+
+	dBAOdlk = []
+	for i in range(0,len(BAO_list)-1):		
+		k=(k_list[i]+k_list[i+1])/2.
+		dsigdlk = (BAO_list[i]-BAO_list[i+1])/ldk 
+		dBAOdlk.append(dsigdlk)
+
 	mu = .5*mustep
 	sumt = 0
 	sumW1 = 0
@@ -220,31 +358,33 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	monosum = 0
 	Fdd = Fdh = Fhh = 0.0
 
-
-	k0 = k_list[0]
-	k1 = k_list[1]
-	ldk = log(k1)-log(k0)
-
 	while mu<1:
 		mu2 = mu*mu
 		redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
 		#redshift_distort = 1.
 		Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2#+Sigma_zb*Sigma_zb/2.
 		sum = 0
-		for i in range(0,len(BAO_list)):		
-			k=k_list[i]
+		for i in range(0,len(BAO_list)-1):		
+			k=(k_list[i]+k_list[i+1])/2.
 			if k > kmin and k < kmax:
 				Rmu = redshift_distort*exp(-1.*k*k*Sigma_z2*mu2)
-				Rmup = redshift_distort*exp(-1.*k_list[i+1]*k_list[i+1]*Sigma_z2*mu2)
-				dk = ldk*k
+				#Rmup = redshift_distort*exp(-1.*k_list[i+1]*k_list[i+1]*Sigma_z2*mu2)
+				#dk = ldk*k
+				dk = k_list[i+1]-k_list[i]
 				kvol = dk*k*k/(4.*pi**2.)
-				sig = BAO_list[i]*Rmu*exp(-.5*k*k*Sigma2_tot)
-				dsigdlk = (sig-BAO_list[i+1]*Rmup*exp(-.5*k_list[i+1]*k_list[i+1]*Sigma2_tot))/ldk 
-				noiseV = (P_list[i]*Rmu+1./num)#/kvol
+				#sig = BAO_list[i]*Rmu*exp(-.5*k*k*Sigma2_tot)
+				#dsigdlk = (sig-BAO_list[i+1]*Rmup*exp(-.5*k_list[i+1]*k_list[i+1]*Sigma2_tot))/ldk 
+				damp = exp(-k*k*Sigma2_tot)
+				#dsigdlk = dBAOdlk[i]*Rmu*damp
+				P = (P_list[i]+P_list[i+1])/2.
+				#noiseV = (P*Rmu+1./num)#/kvol
 				#Fmu = (sig/noiseV)**2.*kvol
-				Fmu = (dsigdlk/noiseV)**2.*kvol
+				#Fmu = (dsigdlk/noiseV)**2.*kvol
+				Fmu = (dBAOdlk[i]/(P+1./(num*Rmu)))**2.*kvol*damp
 				sum += Fmu
 				keffl[i] += Fmu 
+
+
 		neff += exp(-1.*keff**2.*Sigma_z2*mu2)*num*mustep
 #		fo.write(str(mu)+' '+str(sum)+'\n')
 		Fdd += sum*(1.-mu2)*(1.-mu2)
@@ -279,14 +419,284 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
 
+def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',keff=.15,cosm='Challenge',kmin=.02,kmax=.5):
+	#based on Seo & Eisenstein 2007, but using input linear power spectrum as the signal
+	#inputs are stored in the powerspectra folder; Challenge is the fiducial BOSS DR12 power spectrum and MICE is the MICE one
+	#takes list zl of redshift, nl of number density, and bl of bias
+	from Cosmo import distance
+	from numpy import ones
+	from EH import simulate
+	#fo = open('Fmufiles/FdaHvsmu_z'+str(zmin)+str(zmax)+'_zerr'+str(sigz)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
+	
+	pf = load('powerspectra/'+cosm+'_matterpower.dat').transpose()
+	k_list = pf[0]
+	P_list = pf[1]
+	if cosm == 'Challenge':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+	if cosm == 'MICE': 
+		om = 0.25
+		lam = .75
+		h = .7
+		ombhh = .044*0.7*.7	
+		nindex = .949
+	if cosm == 'WMAP3': 
+		om = 0.24
+		lam = .76
+		h = .73
+		ombhh = .0223	
+		nindex = .949
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	BAO_list = []
+	for i in range(0,len(k_list)):
+		k = k_list[i]
+		dpk = P_list[i]-s.Psmooth(k,0)
+		BAO_list.append(dpk)
+	if vis == 'y':
+		from matplotlib import pyplot as plt
+		plt.plot(k_list,BAO_list)
+		plt.xlim(kmin,kmax)
+		plt.show()	
+	BAO_list = np.array(BAO_list)	
+	d = distance(om,1.-om)
+	mustep = 0.01
+	fsky = area/(360*360./pi)
+	dtot = 0
+	neff = 0
+	keffl = np.zeros((len(k_list)))
+	dz = zl[1]-zl[0]
+	k0 = k_list[0]
+	k1 = k_list[1]
+	ldk = log(k1)-log(k0)
+	sumt = 0
+	sumW1 = 0
+	sumW2 = 0
+	monosum = 0
+	Fdd = Fdh = Fhh = 0.0
+
+	for i in range(0,len(zl)):
+		z = zl[i]
+		bias = bl[i]
+		num = nl[i]
+		sumz = 0
+		z1 = z-dz/2.
+		z2 = z+dz/2.
+		volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
+		Dg = d.D(z)
+		f = d.omz(z)**.557
+		beta = f/bias
+		Sig0 = 10.4*sig8*Dg*recon_fac
+		Sigma_perp = Sig0
+		Sigma_par = Sig0*(1.+f)
+		Sigma_perp2 = Sigma_perp*Sigma_perp
+		Sigma_par2 = Sigma_par*Sigma_par
+
+		Sigma_z = d.cHz(z)*sigz
+		Sigma_z2 = Sigma_z*Sigma_z
+
+		Pkamp = bias*Dg
+		power = Pkamp*Pkamp
+		BAO_listb = BAO_list*power
+		P_listb = P_list*power
+		nP_listb = num*P_list
+		mu = .5*mustep
+		while mu<1:
+			mu2 = mu*mu
+			redshift_distort = (1.+beta*mu2)*(1.+beta*mu2)
+			#redshift_distort = 1.
+			Sigma2_tot = Sigma_perp2*(1.-mu2)+Sigma_par2*mu2#+Sigma_zb*Sigma_zb/2.
+			sum = 0
+			for i in range(0,len(BAO_list)):		
+				k=k_list[i]
+				if k > kmin and k < kmax:
+					Rmu = redshift_distort*exp(-1.*k*k*Sigma_z2*mu2)
+					Rmup = redshift_distort*exp(-1.*k_list[i+1]*k_list[i+1]*Sigma_z2*mu2)
+					dk = ldk*k
+					kvol = dk*k*k/(4.*pi**2.)
+					sig = BAO_listb[i]*Rmu*exp(-.5*k*k*Sigma2_tot)
+					dsigdlk = (sig-BAO_listb[i+1]*Rmup*exp(-.5*k_list[i+1]*k_list[i+1]*Sigma2_tot))/ldk 
+					noiseV = (P_listb[i]*Rmu+1./num)#/kvol
+					#Fmu = (sig/noiseV)**2.*kvol
+					Fmu = (dsigdlk/noiseV)**2.*kvol
+					sum += Fmu
+			Fdd += sum*(1.-mu2)*(1.-mu2)*volume
+			Fdh += sum*(1.-mu2)*mu2*volume
+			Fhh += sum*mu2*mu2*volume
+			sumt += sum*volume
+			sumz += sum*volume*mustep
+			mu += mustep
+		print z,bias,num,sqrt(1./sumz)	
+	Fdd *= mustep
+	Fdh *= mustep
+	Fhh *= mustep
+	sumt *= mustep
+
+	r = Fdh/sqrt(Fhh*Fdd)
+	print sqrt(sumt)
+	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
+	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
+	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
+	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	dtot = sumt
+	return sqrt(1.0/dtot)
+
+def baoerr_fullboss(zmin,zmax,b0=1.5,recon_fac=.5,cosm='Challenge',kmin=.02,kmax=.5):
+	from Cosmo import distance
+	d = load('/Users/ashleyross/DR12/nbar-cmasslowz-dr12v4-N-Reid-om0p31.dat').transpose()
+
+	if cosm == 'Challenge':
+		dd = distance(.31,.69)
+	if cosm == 'WMAP3':
+		dd = distance(.24,.76)
+	zl = []
+	nl = []
+	bl = []
+	for i in range(0,len(d[0])):
+		z = d[0][i]
+		if z > zmin and z < zmax:
+			zl.append(z)
+			nl.append(d[3][i])
+			bl.append(b0/dd.D(z))
+# 	nz = 2
+# 	dz = (zmax-zmin)/float(nz)
+# 	for i in range(0,nz):
+# 		z = zmin+dz/2.+i*dz
+# 		zl.append(z)
+# 		nl.append(2.5e-4)
+# 		bl.append(b0/dd.D(z))
+	sigz = 0.001
+	area = 9500.			
+	return baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,keff=.15,cosm=cosm,kmin=kmin,kmax=kmax)
+
+def baoerr_fullqso(zmin,zmax,b0=1.5,recon_fac=1.,cosm='Challenge',kmin=.02,kmax=.5):
+	from Cosmo import distance
+	d = load('/Users/ashleyross/eboss/nbar-eboss_v1.6-QSO-N-eboss_v1.6.dat').transpose()
+	#d = load('/Users/ashleyross/eboss/nbarQSOzhaoforecast.dat').transpose()
+	zl = []
+	nl = []
+	bl = []
+	for i in range(0,len(d[0])):
+		z = d[0][i]
+		if z > zmin and z < zmax:
+			zl.append(z)
+			nl.append(d[3][i])
+			#nl.append(d[1][i])
+			bl.append(.53+.29*(1.+z)**2.)
+	sigz = 0.001
+	area = 7500.			
+	return baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+
+
+def plot2BAO(kmin=.02,kmax=.3):
+	from EH import simulate
+	cosm = 'Challenge'
+	pf = load('powerspectra/'+cosm+'_matterpower.dat').transpose()
+	k_list = pf[0]
+	P_list = pf[1]
+	om = 0.31
+	lam = 0.69
+	h = .676
+	nindex = .963
+	ombhh = .022
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	cosm = 'WMAP3'
+	pf = load('powerspectra/'+cosm+'_matterpower.dat').transpose()
+	k_list2 = pf[0]
+	P_list2 = pf[1]
+	om = 0.24
+	lam = .76
+	h = .73
+	ombhh = .0223	
+	nindex = .949
+	s2 = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	BAO_list = []
+	for i in range(0,len(k_list)):
+		k = k_list[i]
+		dpk = P_list[i]-s.Psmooth(k,0)
+		BAO_list.append(dpk)
+	BAO_list2 = []
+	for i in range(0,len(k_list2)):
+		k = k_list2[i]
+		dpk = P_list2[i]-s2.Psmooth(k,0)
+		BAO_list2.append(dpk)
+	from matplotlib import pyplot as plt
+	plt.plot(k_list,BAO_list*k_list**2.,'r-')
+	plt.plot(k_list2,BAO_list2*k_list2**2.,'b-')
+	plt.xlim(kmin,kmax)
+	plt.show()
+	return True
+
 
 def errvsig(num,sigmin=.01,sigmax=.06,sigstep=.001,zmin=.75,zmax=.85,bias=1.8,dampz='y'):
 	fo = open('Fmufiles/errvsig'+str(zmin)+str(zmax)+'_10e3n'+str(10**3.*num)+'_b'+str(bias)+dampz+'.dat','w')
 	nsig = int((sigmax+sigstep*.01-sigmin)/sigstep)
 	for i in range(0,nsig):
 		sigz = sigmin+i*sigstep+sigstep/2.
-		err = baoerr(zmin,zmax,.1,sigz,1400.,num,bias,dampz=dampz)
+		err = baoerr(zmin,zmax,sigz,1400.,num,bias,dampz=dampz)
 		fo.write(str(sigz)+' '+str(1./err**2.)+' '+str(err)+'\n')
+	fo.close()
+	return True
+
+def errvsigweight(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax=.85,bias=1.8,dampz='y'):
+	nsig = int((wmax+wstep*.01-wmin)/wstep)
+	emin = 100
+	err1 = baoerr(zmin,zmax,sig1,1400.,num1,bias,dampz=dampz)
+	err2 = baoerr(zmin,zmax,sig2,1400.,num2,bias,dampz=dampz)
+	errt = baoerr(zmin,zmax,(sig1*num1+sig2*num2)/(num1+num2),1400.,num2+num1,bias,dampz=dampz)
+	for i in range(0,nsig):
+		w1 = wstep*i+wstep/2.
+		w2 = ((num1+num2)-num1*w1)/num2
+		#if w1+w2 != 2:
+		#	print w1 + w2
+		#	return 'weights do not sum to 2'
+		numt = num1+num2
+		numw = numt*(num1+num2)/(w1**2.*num1+w2**2.*num2)
+		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
+		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
+		print w1,err,w1+w2,w2,numt,numw,sigz
+		if err < emin:
+			emin = err
+			wmin = (w1,w2)
+	print err1,err2,emin/err1,emin/err2,emin/errt
+	return wmin
+
+def ploterrvsig(pr=1.4,b=.05):
+	import matplotlib.pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+
+	d = load('Fmufiles/errvsig0.750.85_10e3n1.0_b1.8y.dat').transpose()
+	d1 = load('Fmufiles/errvsig0.750.85_10e3n0.1_b1.8y.dat').transpose()
+	d2 = load('Fmufiles/errvsig0.750.85_10e3n10.0_b1.8y.dat').transpose()
+
+	pp = PdfPages(diro+'errvsig.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.xlabel(r'$\sigma_z/(1+z)$',size=16)
+	plt.ylabel(r'Relative BAO Information',size=16)
+	plt.plot(d[0],d[1]/d[1][0],'k-')
+	plt.plot(d1[0],d1[1]/d1[1][0],'r-')
+	plt.plot(d2[0],d2[1]/d2[1][0],'b-')
+	#a = ((1.+b)**(1./pr)-1)
+	a = .03/pr*log(1.+b)
+	#plt.plot(d[0],(d[0]/d[0][0]+a)**pr-b,'g--')#.7,.18
+	plt.plot(d[0],np.exp((d[0]-d[0][0]+a)*pr/.03)-b,'g--')
+	plt.ylim(0,1)
+	pp.savefig()
+	pp.close()
+	return True
+
+
+def errvbias(num,bmin=1.,bmax=2.5,bstep=.01,zmin=.75,zmax=.85,dampz='n'):
+	fo = open('Fmufiles/errvbias'+str(zmin)+str(zmax)+'_10e3n'+str(10**3.*num)+dampz+'.dat','w')
+	nsig = int((bmax+bstep*.01-bmin)/bstep)
+	for i in range(0,nsig):
+		bias = bmin+i*bstep+bstep/2.
+		err = baoerr(zmin,zmax,0.001,1400.,num,bias,dampz=dampz)
+		fo.write(str(bias)+' '+str(1./err**2.)+' '+str(err)+'\n')
 	fo.close()
 	return True
 
@@ -441,7 +851,7 @@ def plot_Fvmu():
 	plt.show()
 	return True
 
-def mudistobszerr(r=100.,z=0.8,sigz=0.029,bias=1.5,rmin=10.,rmax=300,muww='0',a='',v='y',gam=-1.7,file='MICE_matterpower',dir='',mun=0,beta=0.4,sfog=3.0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.,mumin=0,mumax=1):
+def mudistobszerr(r=100.,z=0.8,sigz=0.03,dampz='n',bias=1.5,rmin=10.,rmax=300,muww='0',a='',v='y',gam=-1.7,file='MICE_matterpower',dir='',mun=0,beta=0.4,sfog=3.0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.,mumin=0,mumax=1):
 	from random import gauss
 	from numpy import zeros
 	spf = 1.
@@ -455,6 +865,7 @@ def mudistobszerr(r=100.,z=0.8,sigz=0.029,bias=1.5,rmin=10.,rmax=300,muww='0',a=
 	betaf = betad/beta	
 	zmin = z-sigz*(1.+z)*5.*sqrt(2.)
 	zmax = z+sigz*(1.+z)*5.*sqrt(2.)
+
 	nz = 40000
 	dz = (zmax-zmin)/float(nz)
 	d0 = d.dc(z)
@@ -471,7 +882,7 @@ def mudistobszerr(r=100.,z=0.8,sigz=0.029,bias=1.5,rmin=10.,rmax=300,muww='0',a=
 	print sum(wl)*dz
 	sumw = sum(wl)
 	#print wl
-	fmuw = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat').transpose()
+	fmuw = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8'+dampz+'.dat').transpose()
 	#muwt = sum(fmuw[1])
 	muwt = 0
 	#for i in range(0, len(fmuw[1])):
@@ -499,7 +910,7 @@ def mudistobszerr(r=100.,z=0.8,sigz=0.029,bias=1.5,rmin=10.,rmax=300,muww='0',a=
 		rr = mu*r
 		for i in range(0,nz):
 			rrp = rr + dzl[i]
-			rtp = rt*rzl[i]
+			rtp = rt#*rzl[i]
 			rp = sqrt(rrp**2.+rtp**2.)
 			mup = abs(rrp/rp)
 			muind = int(mup*100)
@@ -509,7 +920,7 @@ def mudistobszerr(r=100.,z=0.8,sigz=0.029,bias=1.5,rmin=10.,rmax=300,muww='0',a=
 			fo.write(str(mmu[i][j])+' ')
 		fo.write('\n')		
 	fo.close()
-	fo = open('Fmufiles/FmuobsdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat','w')
+	fo = open('Fmufiles/FmuobsdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8'+dampz+'.dat','w')
 	for i in range(0,len(mmu)):
 		mu = .005+.01*i
 		smu = 0
@@ -1029,46 +1440,55 @@ def xirpsigmumockcompthplot():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages(diro+'xirpsigmumockcompthnohimusig55.pdf')
+	pp = PdfPages(diro+'xirpsigmumockcompthnohimusig610.pdf')
 	plt.clf()
 	plt.minorticks_on()
 	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
 	plt.ylabel(r'$s^2\xi_{\perp}$',size=16)
-# 	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
-# 	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
-# 	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
-# 	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
-# 	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
-	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.405.05.0combzsigl0.029sp1.0.dat').transpose()
-	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.405.05.0combzsigl0.029sp1.0.dat').transpose()
-	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.405.05.0combzsigl0.029sp1.0.dat').transpose()
-	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
-	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
+	#d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	#d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	#d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	#d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	#d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	
+# 	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.405.05.0combzsigl0.029sp1.0.dat').transpose()
+# 	d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.405.05.0combzsigl0.029sp1.0.dat').transpose()
+# 	d2 = load(diro+'xizconvcrpMICE_matterpowermumin0.4mumax0.60.405.05.0combzsigl0.029sp1.0.dat').transpose()
+# 	d3 = load(diro+'xizconvcrpMICE_matterpowermumin0.6mumax0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
+# 	d4 = load(diro+'xizconvcrpMICE_matterpowermumin0.80.405.05.0combzsigl0.029sp1.0.dat').transpose()
 	dm0 = load(diro+'xiaverpsqmumax0.2.dat').transpose()
 	dm1 = load(diro+'xiaverpsqmumin0.2mumax0.4.dat').transpose()
 	dm2 = load(diro+'xiaverpsqmumin0.4mumax0.6.dat').transpose()
 	dm3 = load(diro+'xiaverpsqmumin0.6mumax0.8.dat').transpose()
 	dm4 = load(diro+'xiaverpsqmumin0.8.dat').transpose()
-	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm1[1]+1.,dm0[0][:40]**2.*dm1[2]/sqrt(504.),fmt='rd',linewidth=3)
-	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm2[1],dm0[0][:40]**2.*dm2[2]/sqrt(504.),fmt='b^',linewidth=3)
-	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/sqrt(504.),fmt='gs',linewidth=3)
-	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='y<',linewidth=3)
-	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1]+2.,dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='ko',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d1[1]*1.48+1.,'r-',linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d2[1]*1.48,'b-',linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d3[1]*1.48,'g-',linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d4[1]*1.48,'y-',linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d0[1]*1.48+2.,'k-',linewidth=2)
+	off = .5e-4
+	b = 1.46
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm1[1]-off)+1.,dm0[0][:40]**2.*dm1[2]/sqrt(504.),fmt='rd',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm2[1]-off),dm0[0][:40]**2.*dm2[2]/sqrt(504.),fmt='b^',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0]**2.*(dm3[1]-off),dm0[0][:40]**2.*dm3[2]/sqrt(504.),fmt='gs',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0]**2.*(dm4[1]-off),dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='y<',linewidth=3)
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm0[1]-off)+2.,dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='ko',linewidth=3)
+ 	plt.plot(d0[0],d0[0]**2.*d1[1]*b+1.,'r-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d2[1]*b,'b-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d3[1]*b,'g-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d4[1]*b,'y-',linewidth=2)
+ 	plt.plot(d0[0],d0[0]**2.*d0[1]*b+2.,'k-',linewidth=2)
  	plt.text(40,2.5,r'$\mu < 0.2$',color='k',size=16)
  	plt.text(40,1,r'$0.2 < \mu < 0.4$',color='r',size=16)
  	plt.text(40,-.5,r'$0.4 < \mu < 0.6$',color='b',size=16)
  	plt.text(40,-2,r'$0.6 < \mu < 0.8$',color='g',size=16)
  	plt.text(40,-3.5,r'$0.8 < \mu$',color='y',size=16)
-	plt.ylim(-5,17)
+	plt.ylim(-10,17)
 	plt.xlim(30,200)
 	pp.savefig()
 	pp.close()
 	return True
+
 
 
 def xisigmulampcompthplot():

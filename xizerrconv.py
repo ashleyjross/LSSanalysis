@@ -393,14 +393,21 @@ class zerrconv:
 		print sum(wl)*dz
 		return wl,dzl,rzl
 
-	def calcwlave(self,z,sigzl):
+	def calcwlave(self,z,sigzl,zmintot=.5,zmaxtot=1.1):
 		#wl becomes average of the inputs from sigzl
 		self.ff = self.d.omz(z)**.557
 		self.betad = self.ff/self.bias
 		self.betaf = self.betad/self.beta	
-
-		zmin = z-max(sigzl)*(1.+z)*5.*sqrt(2.)
-		zmax = z+max(sigzl)*(1.+z)*5.*sqrt(2.)
+		zd = zmaxtot-zmintot
+		#zmin = z-max(sigzl)*(1.+z)*5.*sqrt(2.)
+		#if zmin < z-zd:
+		#zmin = z-zd
+		#zmax = z+max(sigzl)*(1.+z)*5.*sqrt(2.)
+		#if zmax > z+zd:
+		#zmax = z+zd
+		zmin = zmintot
+		zmax = zmaxtot
+		print zmin,zmax
 		nz = 4000
 		dz = (zmax-zmin)/float(nz)
 		d0 = self.d.dc(z)
@@ -502,7 +509,7 @@ class zerrconv:
 		sumxin = sumxin/muwt			
 		return sumxi,sumxin
 
-	def calcxi_zerrconvrp(self,rperp,wl,dzl,rzl,sp=1.,rsd='',mumin=0,mumax=1,muweight='wtmu'):
+	def calcxi_zerrconvrp(self,rperp,wl,dzl,rzl,sp=1.,rsd='',mumin=0,mumax=1,muweight='wtmu',rrmax=200):
 		#Santi used zspec=0.45 to 1.2
 		#calculate just for one r
 		bias = self.bias
@@ -545,53 +552,61 @@ class zerrconv:
 			rr = mu*r
 			if rr > rrmaxt:
 				rrmaxt = rr
-#			if rr < rrmax:
-			if mu > mumaxt:
-				mumaxt = mu
-			for i in range(0,nz):
-				rrp = rr + dzl[i]
-				rtp = rt#*rzl[i]
-				rp = sqrt(rrp**2.+rtp**2.)
-				mup = abs(rrp/rp)
-				if rp >= 10. and rp < 299:
-					indd = int((rp-10.)/spf)
-					indu = indd + 1
-					fac = (rp-10.)/spf-indd
-					if fac > 1 or fac < 0:
-						print fac,rp,spf,indd
-					xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
-					xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
-					xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
-					xi0n = self.f0sm[1][indu]*fac+(1.-fac)*self.f0sm[1][indd]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
-					xi2n = (self.f2sm[1][indu]*fac+(1.-fac)*self.f2sm[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
-					xi4n = (self.f4sm[1][indu]*fac+(1.-fac)*self.f4sm[1][indd])*(self.betad/self.beta)**2.					
-				else:
-					if rp < 10.:
-						xi0,xi2,xi4 = wmod3(rp,mup,self.f0[1][0],10.,gam=self.gam)
-						xi0n,xi2n,xi4n = wmod3(rp,mup,self.f0sm[1][0],10.,gam=self.gam)
-						#xi2 = f2[1][0]
-						#xi4 = f4[1][0]
-						#xi2n = f2sm[1][0]
-						#xi4n = f4sm[1][0]
-
-					if rp >= 299:#input files don't go beyond 300, just using maximum value
-						xi0 = self.f0[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
-						xi2 = self.f2[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
-						xi4 = self.f4[1][-1]*(self.betad/self.beta)**2.					
-						xi0n = self.f0sm[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
-						xi2n = self.f2sm[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
-						xi4n = self.f4sm[1][-1]*(self.betad/self.beta)**2.						
-	
-						xi0,xi2,xi4 = 0,0,0	
-						xi0n,xi2n,xi4n = 0,0,0
-				if rsd == 'norsd':
-					xi2,xi4,xi2n,xi4n = 0,0,0,0
-				xip = xi0+P2(mup)*xi2+P4(mup)*xi4
-				xipn = xi0n+P2(mup)*xi2n+P4(mup)*xi4n
-				#if xip > 10:
-				#	print xip,rp,indd,indu,f4[1][indu],f4[1][indd],P4(mup),mup
-				summ += xip*wl[i]
-				summn += xipn*wl[i]
+			if rr < rrmax:
+				if mu > mumaxt:
+					mumaxt = mu
+				for i in range(0,nz):
+					rrp = rr + dzl[i]
+					rtp = rt#*rzl[i]
+					rp = sqrt(rrp**2.+rtp**2.)
+					mup = abs(rrp/rp)
+					if rp >= 10. and rp < 299:
+						indd = int((rp-10.)/spf)
+						indu = indd + 1
+						fac = (rp-10.)/spf-indd
+						if fac > 1 or fac < 0:
+							print fac,rp,spf,indd
+						xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+						xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+						xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
+						xi0n = self.f0sm[1][indu]*fac+(1.-fac)*self.f0sm[1][indd]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+						xi2n = (self.f2sm[1][indu]*fac+(1.-fac)*self.f2sm[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+						xi4n = (self.f4sm[1][indu]*fac+(1.-fac)*self.f4sm[1][indd])*(self.betad/self.beta)**2.					
+					else:
+						if rp < 10.:
+							xi0,xi2,xi4 = wmod3(rp,mup,self.f0[1][0],10.,gam=self.gam)
+							xi0n,xi2n,xi4n = wmod3(rp,mup,self.f0sm[1][0],10.,gam=self.gam)
+							#xi2 = f2[1][0]
+							#xi4 = f4[1][0]
+							#xi2n = f2sm[1][0]
+							#xi4n = f4sm[1][0]
+				
+						if rp >= 299 and rp <=1000:#input files don't go beyond 300, just using maximum value
+							xi03 = self.f0[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+							xi23 = self.f2[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+							xi43 = self.f4[1][-1]*(self.betad/self.beta)**2.					
+							xi0n3 = self.f0sm[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
+							xi2n3 = self.f2sm[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
+							xi4n3 = self.f4sm[1][-1]*(self.betad/self.beta)**2.						
+							frac = (rp-299.)/701
+							xi0 = xi03*(1.-frac)
+							xi2 = xi23*(1.-frac)
+							xi4 = xi43*(1.-frac)
+							xi0n = xi0n3*(1.-frac)
+							xi2n = xi2n3*(1.-frac)
+							xi4n = xi4n3*(1.-frac)
+						
+						if rp > 1000:
+							xi0,xi2,xi4 = 0,0,0	
+							xi0n,xi2n,xi4n = 0,0,0
+					if rsd == 'norsd':
+						xi2,xi4,xi2n,xi4n = 0,0,0,0
+					xip = xi0+P2(mup)*xi2+P4(mup)*xi4
+					xipn = xi0n+P2(mup)*xi2n+P4(mup)*xi4n
+					#if xip > 10:
+					#	print xip,rp,indd,indu,f4[1][indu],f4[1][indd],P4(mup),mup
+					summ += xip*wl[i]
+					summn += xipn*wl[i]
 			xi = summ/sumw#/float(nzs)#
 			xin = summn/sumw#/float(nzs)#
 			if muweight == '':
@@ -778,18 +793,21 @@ def wmod3(r,mu,mf,r0,sp=1.,gam=-1.7):
 	xi4 = xi0+2.5*3.*xi0/(3.+gam)-3.5*5.*xi0/(5.+gam)
 	return xi0,xi2,xi4
 
-def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,beta=0.4,sfog=0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.):
+def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,beta=0.4,sfog=0,amc=0.0,sigz=0,sigt=6.,sigr=10.,mult=1.,sigs=15.):
 	dir = 'BAOtemplates/'
-	f0 = open(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f2 = open(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f4 = open(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f0mc = open(dir+'xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f2mc = open(dir+'xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
-	f4mc = open(dir+'xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+str(mun)+'.dat','w')
+	wsigz = ''
+	if sigz != 0:
+		wsigz += 'sigz'+str(sigz)
+	f0 = open(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	f2 = open(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	f4 = open(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	f0mc = open(dir+'xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	f2mc = open(dir+'xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	f4mc = open(dir+'xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	r = 10.
 
 	while r < 300:
-		xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun)
+		xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
 		f0.write(str(r)+' '+str(xid[0])+'\n')
 		f2.write(str(r)+' '+str(xid[1])+'\n')
 		f4.write(str(r)+' '+str(xid[2])+'\n')
@@ -807,8 +825,9 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 	f4mc.close()
 	return True
 
-def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,pw='n'):
+def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
 	from scipy.integrate import quad
+	from Cosmo import distance
 	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
 	#print dir
 	mult = 1.
@@ -868,6 +887,10 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 	#print norm
 	b = 2.
 	ff =beta*b
+	if sigz != 0:
+		z = .8
+		d = distance(.25,.75)
+		sigzc = d.cHz(z)*sigz
 	for i in range(0,len(f)-1):
 		k = float(f[i].split()[0])
 		pk = float(f[i].split()[1])*mult
@@ -896,7 +919,9 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 			S = mun*exp(-0.5*(k*sigs)**2.)
 			C = (1.+beta*mu*mu*(1.-S))*1./(1.+k**2.*mu**2.*(sfog)**2./2.)
 			sigv2 = (1-mu**2.)*sigt**2./4.+mu**2.*sigr**2./4.
-			damp = exp(-1.*k*k*sigv2)	
+			damp = exp(-1.*k*k*sigv2)
+			if sigz != 0:
+				C = C*exp(-0.5*k*k*mu*mu*sigzc*sigzc)	
 			#damp1 = exp(-0.25*k**2.*mu**2.*sigr**2.*(1.+ff)**2.)
 			#damp2 = exp(-0.25*k**2.*(1.-mu**2.)*sigt**2.)
 			#damp3 = 1./b*S*exp(-0.5*k**2.*sigt*sigr)

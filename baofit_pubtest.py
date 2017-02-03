@@ -3,7 +3,7 @@ import numpy.linalg as linalg
 from math import *
 
 class baofit_iso:
-	def __init__(self,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,cov2 = ''):
+	def __init__(self,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,cov2 = '',facc=1.):
 		#xid and covd are the data vector and the covariance matrix and should be matched in length
 		#modl is the BAO template, assumed to have spacing sp between 10 and 300 mpc/h
 		#rl is the list of r values matching xid and covd
@@ -73,16 +73,19 @@ class baofit_iso:
 			pv.append(self.xim[i]-B*wm)
 		 
 		Al = findPolya(self.H,self.invt,pv)
-		A0,A1,A2 = Al[0],Al[1],Al[2]
-		self.A0 = A0
-		self.A1 = A1
-		self.A2 = A2
+		#A0,A1,A2 = Al[0],Al[1],Al[2]
+		#self.A0 = A0
+		#self.A1 = A1
+		#self.A2 = A2
 		modl = np.zeros((self.nbin))
 		if wo == 'y':
 			fo = open('ximod'+fw+'.dat','w')
 		for i in range(0,self.nbin):
 			r = self.rl[i]
-			ply = A0+A1/r+A2/r**2.
+			#ply = A0+A1/r+A2/r**2.
+			ply = 0
+			for j in range(0,self.np):
+				ply += Al[j]/r**j
 			r = self.rl[i]*alph
 			wm = self.wmod(r)
 			mod = B*wm+ply
@@ -200,11 +203,12 @@ class baofit_isoN:
 				pv.append(self.xim[j*self.nbin+i]-B[j]*wm[j])
 		 
 		Al = findPolya(self.H,self.invt,pv)
-		A0,A1,A2 = [],[],[]
-		for i in range(0,self.N):
-			A0.append(Al[0+3*i])
-			A1.append(Al[1+3*i])
-			A2.append(Al[2+3*i])
+		#A0,A1,A2 = [],[],[]
+		#for i in range(0,self.N):
+		#	for j in range(0,self.np):
+		#		A0.append(Al[0+3*i])
+		#	A1.append(Al[1+3*i])
+		#	A2.append(Al[2+3*i])
 		#A0,A1,A2 = Al[0],Al[1],Al[2]
 		self.A0 = A0
 		self.A1 = A1
@@ -214,8 +218,11 @@ class baofit_isoN:
 			fo = open('ximod'+fw+'.dat','w')
 		for j in range(0,self.N):
 			for i in range(0,self.nbin):
-				r = self.rl[i]				
-				ply = A0[j]+A1[j]/r+A2[j]/r**2.
+				r = self.rl[i]
+				ply = 0
+				for k in range(0,self.np):
+					ply += Al[k+self.np*j]/r**k				
+				#ply = A0[j]+A1[j]/r+A2[j]/r**2.
 				r = self.rl[i]*alph
 				wm = self.wmod(r)[j]
 				mod = B[j]*wm+ply
@@ -313,25 +320,26 @@ class baofit_isoN:
 		return chit
 
 
-def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo='',cov2=''):
+def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo='',cov2=''):
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
+	print np
 	b = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmax,sp=sp,cov2=cov2)
 	b.Bp = Bp
-	b.H = np.zeros((3,b.nbin))
+	b.np = npar
+	b.H = np.zeros((npar,b.nbin))
 	for i in range(0,b.nbin):
-		b.H[0][i] = 1.
-		b.H[1][i] = 1./b.rl[i]
-		b.H[2][i] = 1./b.rl[i]**2.
+		for j in range(0,npar):
+			b.H[j][i] = 1./b.rl[i]**j
 
 	bb = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmaxb,sp=sp,cov2=cov2)
 	#bb is to set bias prior
-	bb.H = np.zeros((3,bb.nbin))
+	bb.np = npar
+	bb.H = np.zeros((npar,bb.nbin))
 	for i in range(0,bb.nbin):
-		bb.H[0][i] = 1.
-		bb.H[1][i] = 1./bb.rl[i]
-		bb.H[2][i] = 1./bb.rl[i]**2.
+		for j in range(0,npar):
+			bb.H[0][i] = 1./bb.rl[i]**j
 
 	alphl= []
 	chil = []
@@ -377,15 +385,15 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=8
 			chim = chi
 			alphm = b.alph
 			Bm = B
-			A0m = b.A0
-			A1m = b.A1
-			A2m = b.A2
-	print alphm,chim,Bm,A0m,A1m,A2m
-	fo = open('BAOisobestfit'+wo+'.dat','w')
+			#A0m = b.A0
+			#A1m = b.A1
+			#A2m = b.A2
+	#print alphm,chim,Bm,A0m,A1m,A2m
+	#fo = open('BAOisobestfit'+wo+'.dat','w')
 	b.alph = alphm	
 	b.chi_templ_alphfXX((Bm),wo='y',fw=wo)
-	fo.write(str(alphm)+' '+str(chim)+' '+str(Bm[0])+' '+str(A0m[0])+' '+str(A1m[0])+' '+str(A2m[0])+'\n')
-	fo.close()
+	#fo.write(str(alphm)+' '+str(chim)+' '+str(Bm[0])+' '+str(A0m[0])+' '+str(A1m[0])+' '+str(A2m[0])+'\n')
+	#fo.close()
 	return chil
 
 def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo=''):
