@@ -727,7 +727,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
-def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,njack=20,fa='',md='EZmock_QSO',',zmin=.8,zmax=2.2,pp=False):
+def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,njack=20,fa='',md='EZmock_QSO',zmin=.8,zmax=2.2,pp=False):
 	#mom get multiplied by two, so mom=1 is quadrupole
 	mdr = md
 	from numpy import zeros
