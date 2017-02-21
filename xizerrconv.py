@@ -253,7 +253,7 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 	fo.close()
 	return True
 
-def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu'):
+def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu',dmu=.01):
 	#Santi used zspec=0.45 to 1.2
 	from random import gauss
 	spf = 1.
@@ -278,7 +278,7 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 	while r < rmax:
 		xis = 0
 		xisn = 0
-		xi,xin = zc.calcxi_zerrconvrp(r,wl,dzl,rzl,mumin=mumin,mumax=mumax,muweight=muwt)
+		xi,xin = zc.calcxi_zerrconvrp(r,wl,dzl,rzl,mumin=mumin,mumax=mumax,muweight=muwt,dmu=dmu)
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
 		print r,xi,xin
 		r += sp	 
@@ -509,7 +509,7 @@ class zerrconv:
 		sumxin = sumxin/muwt			
 		return sumxi,sumxin
 
-	def calcxi_zerrconvrp(self,rperp,wl,dzl,rzl,sp=1.,rsd='',mumin=0,mumax=1,muweight='wtmu',rrmax=200):
+	def calcxi_zerrconvrp(self,rperp,wl,dzl,rzl,sp=1.,rsd='',mumin=0,mumax=1,muweight='wtmu',rrmax=200,dmu=.01):
 		#Santi used zspec=0.45 to 1.2
 		#calculate just for one r
 		bias = self.bias
@@ -523,7 +523,7 @@ class zerrconv:
 			dw = loadtxt('Fmufiles/FmuobsdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat').transpose()
 			dw0 = dw[1][0]
 
-		for i in range(int(100*mumin),int(100*mumax)):	
+		for i in range(int(mumin/dmu),int(mumax/dmu)):	
 			if muweight == '':
 				muwt += 1.
 			else:
@@ -536,15 +536,16 @@ class zerrconv:
 		nzs = 10000
 		sumxi = 0
 		sumxin = 0
-		mmin = int(100*mumin)
+		mmin = int(mumin/dmu)
 		#mumaxx = rrmax/sqrt(rperp**2.+rrmax**2.)
 		#if mumaxx < mumax:
 		#	mumax = mumaxx
-		mmax = int(100*mumax)
+		mmax = int(mumax/dmu)
 		mumaxt = 0
 		rrmaxt = 0
+		muwt = 0
 		for m in range(mmin,mmax):
-			mu = .005+0.01*m
+			mu = dmu/2.+dmu*m
 			summ = 0
 			summn = 0
 			rt = rperp
@@ -553,6 +554,11 @@ class zerrconv:
 			if rr > rrmaxt:
 				rrmaxt = rr
 			if rr < rrmax:
+				if muweight == '':
+					muwt += 1.
+				else:
+					muwt += dw[1][m]/dw0
+				
 				if mu > mumaxt:
 					mumaxt = mu
 				for i in range(0,nz):
@@ -581,14 +587,14 @@ class zerrconv:
 							#xi2n = f2sm[1][0]
 							#xi4n = f4sm[1][0]
 				
-						if rp >= 299 and rp <=1000:#input files don't go beyond 300, just using maximum value
+						if rp >= 299 and rp <=10000:#input files don't go beyond 300, just using maximum value
 							xi03 = self.f0[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 							xi23 = self.f2[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 							xi43 = self.f4[1][-1]*(self.betad/self.beta)**2.					
 							xi0n3 = self.f0sm[1][-1]*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 							xi2n3 = self.f2sm[1][-1]*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 							xi4n3 = self.f4sm[1][-1]*(self.betad/self.beta)**2.						
-							frac = (rp-299.)/701
+							frac = (rp-299.)/(10000.-299.)
 							xi0 = xi03*(1.-frac)
 							xi2 = xi23*(1.-frac)
 							xi4 = xi43*(1.-frac)
@@ -596,7 +602,7 @@ class zerrconv:
 							xi2n = xi2n3*(1.-frac)
 							xi4n = xi4n3*(1.-frac)
 						
-						if rp > 1000:
+						if rp > 10000:
 							xi0,xi2,xi4 = 0,0,0	
 							xi0n,xi2n,xi4n = 0,0,0
 					if rsd == 'norsd':
@@ -615,6 +621,8 @@ class zerrconv:
 			else:	
 				sumxi += xi*dw[1][m]/dw0
 				sumxin += xin*dw[1][m]/dw0
+		if muwt == 0:
+			return 0,0
 		sumxi = sumxi/muwt
 		sumxin = sumxin/muwt
 		print mumaxt,rrmaxt,m,mu			

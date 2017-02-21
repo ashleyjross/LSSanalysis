@@ -1,6 +1,6 @@
 /*
- *  test.c
- *  
+ *  calculate w(theta) from pixelized overdensity map, using constant bin size
+ *  three arguments are scaling factor, bin size, and maximum scale
  *
  *  Created by ashleyr on 30/06/2010.
  *  Copyright 2010 __MyCompanyName__. All rights reserved.
@@ -54,10 +54,14 @@ main(int argc, char *argv[]) {
 	//int nbin = 99;
 	double angm;
 	angm = atof(argv[2]);
+    double bsd;
+    bsd = atof(argv[3]);
+    double maxd;
+    maxd = atof(argv[4]);
 	//double minang = .2*pi/180.*angm;
 	double minang = 0*pi/180.;
-	double binsize = 0.15*angm*pi/180.;
-	double maxang = angm*12.*pi/180.;
+	double binsize = bsd*angm*pi/180.;
+	double maxang = angm*maxd*pi/180.;
 	int nbin = (maxang-minang)/binsize;
 	double binl[nbin];
     double angl[nbin];

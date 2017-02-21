@@ -502,6 +502,10 @@ def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',kef
 		BAO_listb = BAO_list*power
 		P_listb = P_list*power
 		nP_listb = num*P_list
+		for indk in range(0,len(k_list)):
+			if k_list[indk] > .2:
+				nP2 = nP_listb[indk]
+				break
 		mu = .5*mustep
 		while mu<1:
 			mu2 = mu*mu
@@ -528,7 +532,7 @@ def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',kef
 			sumt += sum*volume
 			sumz += sum*volume*mustep
 			mu += mustep
-		print z,bias,num,sqrt(1./sumz)	
+		print z,bias,num,sqrt(1./sumz),nP2	
 	Fdd *= mustep
 	Fdh *= mustep
 	Fhh *= mustep
@@ -588,6 +592,105 @@ def baoerr_fullqso(zmin,zmax,b0=1.5,recon_fac=1.,cosm='Challenge',kmin=.02,kmax=
 	sigz = 0.001
 	area = 7500.			
 	return baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+
+def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02,kmax=.5):
+	from Cosmo import distance
+	if cosm == 'Challenge':
+		dd = distance(.31,.69)
+	if cosm == 'WMAP3':
+		dd = distance(.24,.76)
+	d = load('/Users/ashleyross/eboss/nbar-eboss_v1.6-QSO-N-eboss_v1.6.dat').transpose()
+	#d = load('/Users/ashleyross/eboss/nbarQSOzhaoforecast.dat').transpose()
+	dz = .1
+	sigz = 0.001
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dlong = [.656e-4,3.588e-4,3.578e-4,1.468e-4,0.635e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dlong[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 620.			
+	siglong = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	print 'sigma BAO SGC long is '+str(siglong)
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dnom = [.69e-4,3.404e-4,3.272e-4,1.464e-4,0.557e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dnom[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 620.			
+	signom = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	print 'sigma BAO SGC nominal is '+str(signom)
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dngc = [.729e-4,2.623e-4,2.639e-4,1.204e-4,0.471e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dngc[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 740.			
+	signgc = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	print 'sigma BAO NGC is '+str(signgc)
+	
+	sigtnom = sqrt(1./(1/signom**2.+1/signgc**2.))
+	sigtlong = sqrt(1./(1/siglong**2.+1/signgc**2.))
+	print 'sigma BAO nomtot '+str(sigtnom)
+	print 'sigma BAO longtot '+str(sigtlong)
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dlow = [.183e-4,1.908e-4,2.673e-4,1.135e-4,0.373e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dlow[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 1400.			
+	siglow = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	print 'sigma BAO low is '+str(siglow)
+
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dhigh = [.205e-4,2.068e-4,3.034e-4,1.605e-4,0.568e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dhigh[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 1100.			
+	sighigh = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	print 'sigma BAO high is '+str(sighigh)
+	
+	return True
 
 
 def plot2BAO(kmin=.02,kmax=.3):
@@ -1476,7 +1579,7 @@ def xirpsigmumockcompthplot():
  	plt.plot(d0[0],d0[0]**2.*d1[1]*b+1.,'r-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d2[1]*b,'b-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d3[1]*b,'g-',linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d4[1]*b,'y-',linewidth=2)
+ 	plt.plot(d4[0],d4[0]**2.*d4[1]*b,'y-',linewidth=2)
  	plt.plot(d0[0],d0[0]**2.*d0[1]*b+2.,'k-',linewidth=2)
  	plt.text(40,2.5,r'$\mu < 0.2$',color='k',size=16)
  	plt.text(40,1,r'$0.2 < \mu < 0.4$',color='r',size=16)
@@ -1489,6 +1592,28 @@ def xirpsigmumockcompthplot():
 	pp.close()
 	return True
 
+def xirpsigmumockcompthplotfull(b=1.46):
+	import matplotlib.pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(diro+'xirpsigmumockcompthsig610full.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi_{\perp}$',size=16)
+	#d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	
+	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.80.406.010.0combzsigl0.029sp1.0.dat').transpose()
+	dm0 = load(diro+'xiaverpsqzwtmumax0.8.dat').transpose()
+	off = .5e-4
+	b = 1.46
+	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm0[1]-off),dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='rd',linewidth=3)
+ 	plt.plot(d0[0],d0[0]**2.*d0[1]*b,'k-',linewidth=2)
+	plt.ylim(-10,17)
+	plt.xlim(30,200)
+	pp.savefig()
+	pp.close()
+	return True
 
 
 def xisigmulampcompthplot():
