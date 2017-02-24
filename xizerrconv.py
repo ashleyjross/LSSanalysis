@@ -815,7 +815,10 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 	r = 10.
 
 	while r < 300:
-		xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
+		if file == 'TSPT_out':
+			xid = xi3elldfilePT(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
+		else:	
+			xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
 		f0.write(str(r)+' '+str(xid[0])+'\n')
 		f2.write(str(r)+' '+str(xid[1])+'\n')
 		f4.write(str(r)+' '+str(xid[2])+'\n')
@@ -840,7 +843,7 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 	#print dir
 	mult = 1.
 	dir = 'powerspectra/'
-	if file=='Challenge_matterpower':
+	if file=='Challenge_matterpower' or file == 'TSPT_out':
 		om = 0.31
 		lam = 0.69
 		h = .676
@@ -940,6 +943,133 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 			pk0 += C**2.*(dpk*damp**2.+pksm)
 			pk2 += (dpk*damp**2.+pksm)*pl2[m]*C**2.
 			pk4 += (dpk*damp**2.+pksm)*pl4[m]*C**2.
+			pksm0 += pksm*C**2.
+			pksm2 += pksm*pl2[m]*C**2.
+			pksm4 += pksm*pl4[m]*C**2.
+		pk0 = pk0/100.
+		pk2 = 5.*pk2/100.
+		pk4 = 9.*pk4/100.
+		pksm0 = pksm0/100.
+		pksm2 = 5.*pksm2/100.
+		pksm4 = 9.*pksm4/100.
+		if pw == 'y':
+			fo.write(str(k)+' '+str(pk0)+' '+str(pk2)+' '+str(pk4)+' '+str(pksm0)+' '+str(pksm2)+' '+str(pksm4)+' '+str(pk)+' '+str(pksm)+'\n')
+		dk = ldk*k
+		xi0 += dk*k*k*pk0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xi2 += dk*k*k*pk2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
+		xi4 += dk*k*k*pk4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
+		xism0 += dk*k*k*pksm0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xism2 += dk*k*k*pksm2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
+		xism4 += dk*k*k*pksm4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
+	if pw == 'y':
+		fo.close()
+		from matplotlib import pyplot as plt
+		from numpy import loadtxt as load
+		d = load('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat').transpose()
+		plt.xlim(0,.3)
+		plt.plot(d[0],d[-2]/d[-1])
+		plt.show()
+	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
+
+def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
+	from scipy.integrate import quad
+	from Cosmo import distance
+	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
+	#print dir
+	mult = 1.
+	dir = 'powerspectra/'
+	if file=='TSPT_out':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+
+	f = open(dir+file+'.dat').readlines()
+	if pw == 'y':
+		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
+		fo.write('# k P0 P2 P4 Psmooth\n')
+
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	pl2 = []
+	pl4 = []
+	beta0 = 0.4
+	for i in range(0,100):
+		pl2.append(P2(i/100.+.005))
+	for i in range(0,100):
+		pl4.append(P4(i/100.+.005))
+	mul = []
+	anipolyl = []
+	for i in range(0,100):
+		mu = i/100.+.005
+		mul.append(mu)		
+		anipoly = (1.+beta*mu**2.)**2.
+		anipoly2 = (1.+beta*mu**2.)**2.*pl2[i]
+		anipoly4 = (1.+beta*mu**2.)**2.*pl4[i]
+		anipolyl.append((anipoly,anipoly2,anipoly4))
+	k0 = float(f[0].split()[0])
+	k1 = float(f[1].split()[0])
+	ldk = log(k1)-log(k0)
+	#print ldk
+	xi0 = 0
+	xi2 = 0
+	xi4 = 0
+	xism0 = 0
+	xism2 = 0
+	xism4 = 0
+	#print max
+	dmk = r/10.
+	k = float(f[0].split()[0])
+	if file == 'camb_Nacc':
+		norm = 1.
+	else:
+		norm = float(f[0].split()[1])/s.Psmooth(k,0)*mult
+	#print norm
+	b = 2.
+	ff =beta*b
+	if sigz != 0:
+		z = .8
+		d = distance(.25,.75)
+		sigzc = d.cHz(z)*sigz
+	for i in range(0,len(f)-1):
+		k = float(f[i].split()[0])
+		pk = float(f[i].split()[3])*mult
+		pk0 = 0
+		pk2 = 0
+		pk4 = 0
+		pksm0 = 0
+		pksm2 = 0
+		pksm4 = 0
+		pksm = s.Psmooth(k,0)*norm
+		dpk = pk-pksm
+		for m in range(0,100):
+			#mu = (1.-mul[m])			
+			mu = mul[m]
+
+			if mun == 'n':
+				mu = (1.-mul[m])
+			if sfog > 0:
+				F = 1./(1.+k**2.*mu**2.*sfog**2./2.)**2.
+			else:
+				F = (1.+k**2.*sfog**2./2.)**2./(1.+k**2.*(1.-mu)**2.*sfog**2./2.)**2.
+			if mun == 'b':
+				mus2 = mu**2.
+				F = (1.+beta*mus2*(1.-exp(-0.5*(k*sigs)**2.)))**2.*1./(1.+k**2.*mu**2.*(sfog)**2./2.)**2.
+			#C *doesn't include damping*
+			S = mun*exp(-0.5*(k*sigs)**2.)
+			C = (1.+beta*mu*mu*(1.-S))*1./(1.+k**2.*mu**2.*(sfog)**2./2.)
+			if sigz != 0:
+				C = C*exp(-0.5*k*k*mu*mu*sigzc*sigzc)	
+			#damp1 = exp(-0.25*k**2.*mu**2.*sigr**2.*(1.+ff)**2.)
+			#damp2 = exp(-0.25*k**2.*(1.-mu**2.)*sigt**2.)
+			#damp3 = 1./b*S*exp(-0.5*k**2.*sigt*sigr)
+			#damp4 = (1.-exp(-0.25*k**2.*mu**2.*(2.*ff+ff**2.)*sigt*sigr))
+			#damp = damp1*damp2+damp3*damp4 	
+			
+			anipoly = anipolyl[m]
+			pk0 += C**2.*pk
+			pk2 += pk*pl2[m]*C**2.
+			pk4 += pk*pl4[m]*C**2.
 			pksm0 += pksm*C**2.
 			pksm2 += pksm*pl2[m]*C**2.
 			pksm4 += pksm*pl4[m]*C**2.

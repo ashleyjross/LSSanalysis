@@ -320,7 +320,7 @@ class baofit_isoN:
 		return chit
 
 
-def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=80.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,v='n',wo='',cov2=''):
+def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=50.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,Nmock=1000,v='n',wo='',cov2=''):
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
@@ -329,6 +329,8 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 	b.Bp = Bp
 	b.np = npar
 	b.H = np.zeros((npar,b.nbin))
+	chi2fac = (Nmock-b.nbin-2.)/(Nmock-1.)
+	print b.nbin,chi2fac
 	for i in range(0,b.nbin):
 		for j in range(0,npar):
 			b.H[j][i] = 1./b.rl[i]**j
