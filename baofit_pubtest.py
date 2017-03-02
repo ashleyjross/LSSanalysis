@@ -334,7 +334,8 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 	for i in range(0,b.nbin):
 		for j in range(0,npar):
 			b.H[j][i] = 1./b.rl[i]**j
-
+	if rmin == rmaxb:
+		rmaxb += (b.rl[1]-b.rl[0])*1.1 #increase rmaxb by one bin size if set poorly
 	bb = baofit_iso(xid,covd,modl,rl,rmin=rmin,rmax=rmaxb,sp=sp,cov2=cov2)
 	#bb is to set bias prior
 	bb.np = npar
@@ -358,7 +359,8 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 	#b.alph = 0
 	B = .1
 	chiBmin = 1000
-	while B < 2.:
+	Bmax = 10.
+	while B < Bmax:
 		bl = [B]
 		chiB = bb.chi_templ_alphfXXn(bl)*chi2fac
 		if chiB < chiBmin:
@@ -366,6 +368,11 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 			BB = B
 		B += .01	
 	print 'best-fit bias factor is '+str(BB)+' '+str(chiBmin)
+	#print BB,Bmax,Bmax-.01
+	if BB >= Bmax-.011:
+		print 'WARNING, best-fit bias is at max tested value'
+	#else:
+	#	print BB,Bmax,Bmax-.01	
 	b.BB = BB		
 	#b.BB = 1. #switch to this to make bias prior centered on input rather than fit value
 	B = BB
