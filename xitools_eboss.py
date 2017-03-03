@@ -2269,7 +2269,7 @@ def putallBAOqsomocks(N=1000,sig=1,mock='qpm_qso',covmd='EZmock',bs=5,start=0,ve
 	return ma,sa,siga,chia,n
 	
 
-def xibao(sample,zmin,zmax,version='v1.6',wm='',bs=5,start=0,rmin=30,rmax=180.,md=1.,m=1.,mb='',Bp=.4,v='n',mockn='',covmd='EZmock',damp='3.04.08.0',Nmock=1000,template='Challenge_matterpower'):
+def xibao(sample,zmin,zmax,version='v1.6',wm='',bs=5,start=0,npar=3,rmin=30,rmax=180.,md=1.,m=1.,mb='',Bp=.4,v='n',mockn='',covmd='EZmock',damp='3.04.08.0',Nmock=1000,template='Challenge_matterpower'):
 	#does baofits, set mb='nobao' to do no BAO fit
 	ebossdir = '/Users/ashleyross/eboss/'
 	from baofit_pubtest import doxi_isolike
@@ -2391,14 +2391,14 @@ def xibao(sample,zmin,zmax,version='v1.6',wm='',bs=5,start=0,rmin=30,rmax=180.,m
 			cov[i][i] = cov[i][i]*md
 				
 	
-	chil = doxi_isolike(dd,cov,mod,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+version+covmd+mb,Bp=Bp,cov2=cov2,Nmock=Nmock)
-	fo = open(ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(Bp)+bsst+'.dat','w')
-	print ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(Bp)+bsst+'.dat'
+	chil = doxi_isolike(dd,cov,mod,rl,npar=npar,rmin=rmin,rmax=rmax,v=v,wo=sample+version+covmd+mb+str(npar),Bp=Bp,cov2=cov2,Nmock=Nmock)
+	fo = open(ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+bsst+'.dat','w')
+	print ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+bsst+'.dat'
 	for i in range(0,len(chil)):
 		a = .8+.001*i+.0005
 		fo.write(str(a)+' '+str(chil[i])+'\n')
 	fo.close()
-	a = sigreg_c12(ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(Bp)+bsst)
+	a = sigreg_c12(ebossdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+bsst)
 	#print a
 	return a
 
@@ -5732,7 +5732,7 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 	plt.show()
 	return True			
 	
-def BAOrelPlanck(wo='QSO4SH',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=False,des=False,desy1=False,eboss=False,desi=False):
+def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=False,des=False,desy1=False,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -5835,11 +5835,11 @@ def BAOrelPlanck(wo='QSO4SH',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,s
 		el = [0.013,0.026,0.021]
 		plt.errorbar(xl,yl,el,fmt='D',markeredgecolor='r',markersize=7,elinewidth=1.75,color='r')
 	if QSODR14:
-		plt.text(1.2,.95,'DR14 quasars',fontsize=18,color='b')
-		plt.text(1.2,.94,'(predicted)',fontsize=18,color='b')
+		plt.text(1.2,1.045,'DR14 quasars',fontsize=18,color='b')
+		#plt.text(1.2,.94,'(predicted)',fontsize=18,color='b')
 		xl = [1.5]
-		yl = [1.0]
-		el = [0.039]
+		yl = [0.987]
+		el = [0.040]
 		plt.errorbar(xl,yl,el,fmt='o',markeredgecolor='b',markersize=7,elinewidth=1.75,color='b')
 
 	if LRGDR14:

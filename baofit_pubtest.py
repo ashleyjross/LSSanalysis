@@ -382,10 +382,15 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 		#inl = np.array(B)
 		inl = B
 		#(B,A0,A1,A2) = fmin(b.chi_templ_alphfXX,inl,disp=False)
-		B = fmin(b.chi_templ_alphfXX,inl,disp=False)
+		if npar > 0:
+			B = fmin(b.chi_templ_alphfXX,inl,disp=False)
+			chi = b.chi_templ_alphfXX((B))*chi2fac
+		else:
+			B = fmin(b.chi_templ_alphfXXn,inl,disp=False)
+			chi = b.chi_templ_alphfXXn((B))*chi2fac
 		#B = fmin(b.chi_templ_alphfXXn,inl,disp=False)
 		#chi = b.chi_templ_alphfXX((B,A0,A1,A2))*chi2fac
-		chi = b.chi_templ_alphfXX((B))*chi2fac
+		
 		if v == 'y':
 			print b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
 		alphl.append(b.alph)
@@ -399,8 +404,9 @@ def doxi_isolike(xid,covd,modl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,
 			#A2m = b.A2
 	#print alphm,chim,Bm,A0m,A1m,A2m
 	#fo = open('BAOisobestfit'+wo+'.dat','w')
-	b.alph = alphm	
-	b.chi_templ_alphfXX((Bm),wo='y',fw=wo)
+	b.alph = alphm
+	if npar > 0:	
+		b.chi_templ_alphfXX((Bm),wo='y',fw=wo)
 	#fo.write(str(alphm)+' '+str(chim)+' '+str(Bm[0])+' '+str(A0m[0])+' '+str(A1m[0])+' '+str(A2m[0])+'\n')
 	#fo.close()
 	return chil

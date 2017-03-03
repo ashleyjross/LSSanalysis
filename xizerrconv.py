@@ -812,10 +812,15 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 	f0mc = open(dir+'xi0sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f2mc = open(dir+'xi2sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f4mc = open(dir+'xi4sm'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	if file == 'TSPT_out_z_1.5':
+		f0O = open(dir+'xi0O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+		f2O = open(dir+'xi2O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+		f4O = open(dir+'xi4O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+
 	r = 10.
 
 	while r < 300:
-		if file == 'TSPT_out':
+		if file == 'TSPT_out_z_1.5':
 			xid = xi3elldfilePT(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
 		else:	
 			xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
@@ -825,6 +830,11 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 		f0mc.write(str(r)+' '+str(xid[3])+'\n')
 		f2mc.write(str(r)+' '+str(xid[4])+'\n')
 		f4mc.write(str(r)+' '+str(xid[5])+'\n')
+		if file == 'TSPT_out_z_1.5':
+			f0O.write(str(r)+' '+str(xid[6])+'\n')
+			f2O.write(str(r)+' '+str(xid[7])+'\n')
+			f4O.write(str(r)+' '+str(xid[8])+'\n')
+
 		r += sp
 		if v == 'y':
 			print r
@@ -834,6 +844,11 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 	f0mc.close()
 	f2mc.close()
 	f4mc.close()
+	if file == 'TSPT_out_z_1.5':
+		f0O.close()
+		f2O.close()
+		f4O.close()
+
 	return True
 
 def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
@@ -971,14 +986,14 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 		plt.show()
 	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
 
-def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
+def xi3elldfilePT(r,file='TSPT_out_z_1.5',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
 	from scipy.integrate import quad
 	from Cosmo import distance
 	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
 	#print dir
 	mult = 1.
 	dir = 'powerspectra/'
-	if file=='TSPT_out':
+	if file=='TSPT_out' or file == 'TSPT_out_z_1.5':
 		om = 0.31
 		lam = 0.69
 		h = .676
@@ -1017,6 +1032,9 @@ def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,m
 	xism0 = 0
 	xism2 = 0
 	xism4 = 0
+	xiO0 = 0
+	xiO2 = 0
+	xiO4 = 0
 	#print max
 	dmk = r/10.
 	k = float(f[0].split()[0])
@@ -1034,13 +1052,18 @@ def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,m
 	for i in range(0,len(f)-1):
 		k = float(f[i].split()[0])
 		pk = float(f[i].split()[3])*mult
+		pkO = float(f[i].split()[2])*mult
+		pksm = float(f[i].split()[4])*mult
 		pk0 = 0
 		pk2 = 0
 		pk4 = 0
+		pkO0 = 0
+		pkO2 = 0
+		pkO4 = 0
 		pksm0 = 0
 		pksm2 = 0
 		pksm4 = 0
-		pksm = s.Psmooth(k,0)*norm
+		#pksm = s.Psmooth(k,0)*norm
 		dpk = pk-pksm
 		for m in range(0,100):
 			#mu = (1.-mul[m])			
@@ -1073,9 +1096,15 @@ def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,m
 			pksm0 += pksm*C**2.
 			pksm2 += pksm*pl2[m]*C**2.
 			pksm4 += pksm*pl4[m]*C**2.
+			pkO0 += C**2.*pkO
+			pkO2 += pkO*pl2[m]*C**2.
+			pkO4 += pkO*pl4[m]*C**2.
 		pk0 = pk0/100.
 		pk2 = 5.*pk2/100.
 		pk4 = 9.*pk4/100.
+		pkO0 = pkO0/100.
+		pkO2 = 5.*pkO2/100.
+		pkO4 = 9.*pkO4/100.
 		pksm0 = pksm0/100.
 		pksm2 = 5.*pksm2/100.
 		pksm4 = 9.*pksm4/100.
@@ -1085,6 +1114,9 @@ def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,m
 		xi0 += dk*k*k*pk0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
 		xi2 += dk*k*k*pk2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
 		xi4 += dk*k*k*pk4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
+		xiO0 += dk*k*k*pkO0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xiO2 += dk*k*k*pkO2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
+		xiO4 += dk*k*k*pkO4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
 		xism0 += dk*k*k*pksm0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
 		xism2 += dk*k*k*pksm2*sph_jn(2,k*r)*exp(-1.*dmk*k**2.)
 		xism4 += dk*k*k*pksm4*sph_jn(4,k*r)*exp(-1.*dmk*k**2.)
@@ -1096,5 +1128,5 @@ def xi3elldfilePT(r,file='TSPT_out',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,m
 		plt.xlim(0,.3)
 		plt.plot(d[0],d[-2]/d[-1])
 		plt.show()
-	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
+	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi),xiO0/(2.*pi*pi),-1.*xiO2/(2.*pi*pi),xiO4/(2.*pi*pi)
 	
