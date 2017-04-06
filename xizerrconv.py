@@ -851,6 +851,37 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 
 	return True
 
+def mkxifile_0dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',sig=8.):
+	dir = 'BAOtemplates/'
+	f0 = open(dir+'xi0iso'+file+str(sig)+'.dat','w')
+	f0mc = open(dir+'xi0smiso'+file+str(sig)+'.dat','w')
+	if file == 'TSPT_out_z_1.5':
+		#return 'not supported'
+		f0O = open(dir+'xi0isoO'+file+str(sig)+'.dat','w')
+
+	r = 10.
+
+	while r < 300:
+		if file == 'TSPT_out_z_1.5':
+			xid = xi0dfilePT(r,file,dir,sig=sig)
+		else:	
+			xid = xi0dfile_dewig(r,file,dir,sig=sig)
+		f0.write(str(r)+' '+str(xid[0])+'\n')
+		f0mc.write(str(r)+' '+str(xid[1])+'\n')
+		if file == 'TSPT_out_z_1.5':
+			f0O.write(str(r)+' '+str(xid[2])+'\n')
+
+		r += sp
+		if v == 'y':
+			print r
+	f0.close()
+	f0mc.close()
+	if file == 'TSPT_out_z_1.5':
+		f0O.close()
+
+	return True
+
+
 def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
 	from scipy.integrate import quad
 	from Cosmo import distance
@@ -985,6 +1016,62 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 		plt.plot(d[0],d[-2]/d[-1])
 		plt.show()
 	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
+
+def xi0dfile_dewig(r,file='Challenge_matterpower',dir='',sig=8.,max=51,ns=.95,sigz=0,pw='n'):
+	from scipy.integrate import quad
+	from Cosmo import distance
+	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
+	#print dir
+	mult = 1.
+	dir = 'powerspectra/'
+	if file=='Challenge_matterpower' or file == 'TSPT_out':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+	if file == 'MICE_matterpower':
+		om = 0.25
+		lam = .75
+		h = .7
+		ombhh = .044*0.7*.7	
+		nindex = .949
+
+	f = open(dir+file+'.dat').readlines()
+
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	k0 = float(f[0].split()[0])
+	k1 = float(f[1].split()[0])
+	ldk = log(k1)-log(k0)
+	#print ldk
+	xi0 = 0
+	xism0 = 0
+	#print max
+	dmk = r/10.
+	k = float(f[0].split()[0])
+	if file == 'camb_Nacc':
+		norm = 1.
+	else:
+		norm = float(f[0].split()[1])/s.Psmooth(k,0)*mult
+	#print norm
+	b = 2.
+	if sigz != 0:
+		z = .8
+		d = distance(.25,.75)
+		sigzc = d.cHz(z)*sigz
+	for i in range(0,len(f)-1):
+		k = float(f[i].split()[0])
+		pk = float(f[i].split()[1])*mult
+		pksm = s.Psmooth(k,0)*norm
+		dpk = pk-pksm
+		damp = exp(-.5*k*k*sig**2.)
+		pk0 = (dpk*damp+pksm)
+		pksm0 = pksm
+		dk = ldk*k
+		xi0 += dk*k*k*pk0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xism0 += dk*k*k*pksm0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+	return xi0/(2.*pi*pi),xism0/(2.*pi*pi)
+
 
 def xi3elldfilePT(r,file='TSPT_out_z_1.5',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
 	from scipy.integrate import quad
@@ -1129,4 +1216,66 @@ def xi3elldfilePT(r,file='TSPT_out_z_1.5',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog
 		plt.plot(d[0],d[-2]/d[-1])
 		plt.show()
 	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi),xiO0/(2.*pi*pi),-1.*xiO2/(2.*pi*pi),xiO4/(2.*pi*pi)
+
+def xi0dfilePT(r,file='TSPT_out_z_1.5',dir='',sig=8.,max=51,ns=.95,sigz=0,pw='n'):
+	from scipy.integrate import quad
+	from Cosmo import distance
+	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
+	#print dir
+	mult = 1.
+	dir = 'powerspectra/'
+	if file=='TSPT_out' or file == 'TSPT_out_z_1.5':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+
+	f = open(dir+file+'.dat').readlines()
+	if pw == 'y':
+		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
+		fo.write('# k P0 P2 P4 Psmooth\n')
+
+	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	k0 = float(f[0].split()[0])
+	k1 = float(f[1].split()[0])
+	ldk = log(k1)-log(k0)
+	#print ldk
+	xi0 = 0
+	xism0 = 0
+	xiO0 = 0
+	#print max
+	dmk = r/10.
+	k = float(f[0].split()[0])
+	if file == 'camb_Nacc':
+		norm = 1.
+	else:
+		norm = float(f[0].split()[1])/s.Psmooth(k,0)*mult
+	#print norm
+	b = 2.
+	for i in range(0,len(f)-1):
+		k = float(f[i].split()[0])
+		pk = float(f[i].split()[3])*mult
+		pkO = float(f[i].split()[2])*mult
+		pksm = float(f[i].split()[4])*mult
+		pk0 = pk
+		pkO0 = pkO
+		pksm0 = pksm
+		dpk = pk-pksm
+
+		if pw == 'y':
+			fo.write(str(k)+' '+str(pk0)+' '+str(pk2)+' '+str(pk4)+' '+str(pksm0)+' '+str(pksm2)+' '+str(pksm4)+' '+str(pk)+' '+str(pksm)+'\n')
+		dk = ldk*k
+		xi0 += dk*k*k*pk0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xiO0 += dk*k*k*pkO0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+		xism0 += dk*k*k*pksm0*sph_jn(0,k*r)*exp(-1.*dmk*k**2.)
+	if pw == 'y':
+		fo.close()
+		from matplotlib import pyplot as plt
+		from numpy import loadtxt as load
+		d = load('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat').transpose()
+		plt.xlim(0,.3)
+		plt.plot(d[0],d[-2]/d[-1])
+		plt.show()
+	return xi0/(2.*pi*pi),xism0/(2.*pi*pi),xiO0/(2.*pi*pi)
 	
