@@ -214,18 +214,18 @@ def calcweights(sample,NS,version,zmin=.8,zmax=2.2,app='.fits'):
 	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app) #read galaxy/quasar file
 	#no = 0
 	#fo = open(os.environ['HOME']+'/mkEsample_work/depthextweights'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+'.dat','w')
-	for i in range(0,len(f)):
-		sysw = f[i]['IMAGE_DEPTH'][1]
-		sysw = luptm(sysw,1)-3.303*f[i]['EB_MINUS_V']
-		wd = (1./(b+m*sysw))
-		ext = f[i]['EB_MINUS_V']
-		we = (1./(be+me*ext))
-		wtot = wd*we
-		#fo.write(str(ws)+'\n')
-		f[i]['WEIGHT_SYSTOT'] = wtot
-	#fo.close()
-	pyfits.writeto(outfile,f,clobber=True)
-	print 'Wrote file with systematic weights to: ' + outfile
+# 	for i in range(0,len(f)):
+# 		sysw = f[i]['IMAGE_DEPTH'][1]
+# 		sysw = luptm(sysw,1)-3.303*f[i]['EB_MINUS_V']
+# 		wd = (1./(b+m*sysw))
+# 		ext = f[i]['EB_MINUS_V']
+# 		we = (1./(be+me*ext))
+# 		wtot = wd*we
+# 		#fo.write(str(ws)+'\n')
+# 		f[i]['WEIGHT_SYSTOT'] = wtot
+# 	#fo.close()
+# 	pyfits.writeto(outfile,f,clobber=True)
+# 	print 'Wrote file with systematic weights to: ' + outfile
 	#print no
 	return True
 
