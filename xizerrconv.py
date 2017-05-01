@@ -253,7 +253,7 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 	fo.close()
 	return True
 
-def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu',dmu=.01):
+def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu',dmu=.01,rrmax=200):
 	#Santi used zspec=0.45 to 1.2
 	from random import gauss
 	spf = 1.
@@ -267,7 +267,9 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 		sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
 		szo = 'DESY1'
 	else:
-		szo = str(sigl[0])	
+		szo = str(sigl[0])
+	if rrmax != 200:
+		szo += 'rpz'+str(rrmax)		
 	fo = open('xizconvcrp'+muww+file+muw+str(beta)+str(sfog)+str(sigt)+str(sigr)+'combzsigl'+szo+rsd+'sp'+str(sp)+'.dat','w')
 	
 	zc = zerrconv(file=file,mun=mun,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,gam=gam)
@@ -278,7 +280,7 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 	while r < rmax:
 		xis = 0
 		xisn = 0
-		xi,xin = zc.calcxi_zerrconvrp(r,wl,dzl,rzl,mumin=mumin,mumax=mumax,muweight=muwt,dmu=dmu)
+		xi,xin = zc.calcxi_zerrconvrp(r,wl,dzl,rzl,mumin=mumin,mumax=mumax,muweight=muwt,dmu=dmu,rrmax=rrmax)
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
 		print r,xi,xin
 		r += sp	 

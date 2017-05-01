@@ -1441,7 +1441,8 @@ def xisigmuplot6pan():
 	ax2 = fig.add_subplot(2,3,4)
 	ax2.minorticks_on()
 # 	for tick in ax2.xaxis.get_major_ticks():
-	ax2.set_ylabel(r'                                                                        $10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=12)
+	#ax2.set_ylabel(r'                                                                        $10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=12)
+	ax2.text(-25,1.6,r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=14,rotation='vertical')
 	ax2.set_xlim(30,200)
 	ax2.set_ylim(-.5,1.)
 	ax2.plot(xl,yl,'k:')
@@ -1504,7 +1505,7 @@ def xisigmuplot6pan():
 	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
 	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
 	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
-	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'rpz1000sp1.0.dat').transpose()
 
 
 	ax5 = fig.add_subplot(2,3,3)
