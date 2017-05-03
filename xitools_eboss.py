@@ -1,5 +1,5 @@
 dirsci = '/mnt/lustre/ashleyr/eboss/' #where AJR puts eboss catalogs, change this to wherever you have put catalogs
-dirsys = '/Users/ashleyross/ngalvsys_wiki/' #change to local directory where ngalvsys from wiki was put, note star map and depth map included
+dirsys = 'maps/' #change to local directory where ngalvsys from wiki was put, note star map and depth map included
 dirfits = '/Users/ashleyross/fitsfiles/' #change to where your catalog files are
 ebossdir = '/Users/ashleyross/eboss/' #where AJR puts correlation functions, writes out results
 dirscio = '/mnt/lustre/ashleyr/eboss/mocks/'
