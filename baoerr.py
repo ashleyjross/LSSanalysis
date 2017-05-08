@@ -1181,7 +1181,7 @@ def plot_Fvmusig3():
 	plt.minorticks_on()
 	plt.xlim(0,1)
 	xl = [0.1,.3,.5,.7,.9]
-	yl = [.21,.21,.21*1./.041**2.*.04**2.,.21*1./.041**2.*.04**2.,.21*1./.065**2.*.04**2.]
+	yl = [.21,.21,.21*1./.04**2.*.039**2.,.21*1./.041**2.*.039**2.,.21*1./.051**2.*.039**2.]
 	plt.plot(xl,yl,'y*',markersize=10,markeredgecolor='k',markeredgewidth=.5)
 	#d0 = load('FdaHvsmu_z0.60.7_zerr0.03_10e3n1.5_b1.8n.dat').transpose()
 	#dc = load('FdaHvsmu_z0.60.7_zerr0.001_10e3n1.5_b1.8n.dat').transpose()
