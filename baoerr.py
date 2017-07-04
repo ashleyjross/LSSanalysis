@@ -1017,6 +1017,29 @@ def BAOdampsigz(z,sigz,nthbin=50,dz=.01,zmax=3.,vis='n'):
 	if sigz < 0.01 and sum < .1:
 		outl = ones((nthbin))
 	return outl
+
+def testweight(w):
+	from random import gauss
+	v = sqrt(1/w)
+	n = int(1/w)
+	asqnw = 0
+	for i in range(0,10000):
+		ai = gauss(0,1.)
+		for j in range(0,n):
+			ai += gauss(0,v)
+		ai = ai/(1.+n)
+		asqnw += ai**2.
+	snw = sqrt(asqnw/10000.)
+	asqw = 0
+	for i in range(0,10000):
+		ai = gauss(0,1.)
+		for j in range(0,n):
+			ai += gauss(0,v)*w
+		ai = ai/(2.)
+		asqw += ai**2.
+	sw = sqrt(asqw/10000.)
+	print sw,snw
+	return True
 	
 
 def plot_Fvmu():

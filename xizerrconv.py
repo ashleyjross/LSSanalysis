@@ -253,7 +253,7 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 	fo.close()
 	return True
 
-def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.6,muwt='wtmu',dmu=.01,rrmax=200):
+def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd='',muww='',a='',v='y',gam=-1.7,file='MICE_matterpower',mun=0,beta=0.4,sfog=0,sigt=6.,sigr=10.,sigs=15.,mumin=0,mumax=0.8,muwt='',dmu=.01,rrmax=200):
 	#Santi used zspec=0.45 to 1.2
 	from random import gauss
 	spf = 1.
@@ -266,7 +266,21 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 	if sigl == '':
 		sigl = [0.031,0.029,0.028,0.029,0.033,0.038,0.044,0.052]
 		szo = 'DESY1'
-	else:
+	if sigl == 'nom':
+		szo = 'DESY1nom'
+		sigl = [0.30,0.029,0.035,0.047]
+	if sigl == 'VFF':
+		szo = 'DESY1bpzv0'
+		sigl = [0.33,0.036,0.039,0.050]
+	if sigl == 'mof':
+		szo = 'DESY1bpzmof'
+		sigl = [0.27,0.031,0.034,0.039]
+	if sigl == 'dnf':
+		szo = 'DESY1dnfmof'
+		sigl = [0.28,0.033,0.036,0.048]
+	try:
+		print szo	
+	except:
 		szo = str(sigl[0])
 	if rrmax != 200:
 		szo += 'rpz'+str(rrmax)		

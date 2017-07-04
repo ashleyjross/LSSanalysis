@@ -110,7 +110,7 @@ class baofit_iso:
 			mod = B*wm+ply
 			modsm = B*wsm+ply
 			if wo == 'y':
-				fo.write(str(self.rl[i])+' '+str(mod)+' '+str(modsm)+'\n')
+				fo.write(str(self.rl[i])+' '+str(mod)+' '+str(modsm)+' '+str(self.xim[i])+'\n')
 				#print mod,self.xim[i]
 			modl[i] = mod
 		if wo == 'y':

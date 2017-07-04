@@ -201,6 +201,41 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	fo.close()
 	return True
 
+def mkgalELG4xi(zmin=.7,zmax=1.,reg='190_ngc',version='v2',samp='chunk23',c='sci',app='.fits'):
+	if c == 'sci': #AJR uses this define directory for machine he uses
+		dir = dirsci
+	f = fitsio.read(dir+'elg_'+reg+'.'+version+'.clustering.'+samp+app) #read galaxy/quasar file
+	fo = open(dir+'gebosselg_'+samp+'_mz'+str(zmin)+'xz'+str(zmax)+version+'4xi.dat','w')
+	for i in range(0,len(f)):
+		z = f[i]['z']
+		w =1.
+		if z > zmin and z < zmax:
+			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
+	fo.close()
+	return True		
+
+def mkranELG4xifit(samp='chunk23',zmin=.7,zmax=1.,comp = 'sci',N=0):
+	from random import random
+	if comp == 'sci':
+		dir = dirsci 
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	f = fitsio.read(dir+'random-sweep.clustering.'+samp+'.fits')
+	fo = open(dir+'rebosselg'+'_'+samp+'_0'+wz+'4xi.dat','w')
+	n = 0
+	minc = N*10**6
+	maxc = (N+1)*10**6 #will become relevant once files are big enough
+	if len(f) < maxc:
+		maxc = len(f)
+	for i in range(minc,maxc):
+		z = f[i]['z']
+		w = 1.
+		if z > zmin and z < zmax:
+			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
+			n += 1.
+	print n #just helps to know things worked properly
+	fo.close()
+	return True
+
 
 def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30,zpl=False,gri22='gri22',znudge=False,wmin=False,extc=False,depthc=False,depthextc=False,decmax=False):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
@@ -730,6 +765,30 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.6,zmax=1.,gmax
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
+def createalladfilesfb_elg(zmin=.7,zmax=1.,samp='chunk23',version='v2',nran=1):
+	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
+	#./suball.sh sends all of the jobs to the queue on the system I use
+	mkgalELG4xi(zmin=zmin,zmax=zmax,samp=samp,version=version)
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	gf = 'gebosselg'+'_'+samp+'_'+wz+version
+	sysw= ''
+	createSourcesrd_ad(gf)
+	for i in range(0,20):
+		createSourcesrd_adJack(gf,i,'ebosselg'+'_'+samp)
+
+	rf = 'rebosselg'+'_'+samp+'_'
+	for rann in range(0,nran):	
+		print rann
+		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
+		mkranELG4xifit(samp,N=rann,zmin=zmin,zmax=zmax)
+		rfi = rf+str(rann)+wz
+		createSourcesrd_ad(rfi)
+		for i in range(0,20):
+			createSourcesrd_adJack(rfi,i,'ebosselg'+'_'+samp)
+	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
+	return True
+
+
 def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,njack=20,fa='',md='EZmock_QSO',zmin=.8,zmax=2.2,pp=False):
 	#mom get multiplied by two, so mom=1 is quadrupole
 	mdr = md
@@ -861,7 +920,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	pl = []
 #	pl.append((0,0,0,0))
 	if wf:
-		fD = open(dirsci+'paircounts/Paircounts_'+fl+'.dat','w')
+		fD = open(dirsci+'paircounts/Paircounts_un_'+fl+'.dat','w')
 		#fDR = open('DRcounts'+file+'.dat','w')
 		#fR = open('RRcounts'+file+'.dat','w')
 	nmut = 0
@@ -881,8 +940,8 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 			if jack != i and jack != j:
 				fdp = open(gf+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
 				DDnormt += float(fdp[0])
-				fdnp = open(rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
-				fr = open(rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmu.dat').readlines()
+				fdnp = open(rf+'0'+wz+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+				fr = open(rf+'0'+wz+str(j)+rf+'0'+wz+str(i)+'2ptdmu.dat').readlines()
 				DRnormt += float(fdnp[0])
 				RRnormt += float(fr[0])
 				for k in range(1,len(fdp)):
@@ -893,7 +952,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 					DRnl[k-1] += dr
 					RRnl[k-1] += rp
 					
-					
+	print DDnormt,DRnormt,RRnormt				
 	for nr in range(1,nranf):
 		for i in range(0,njack):
 			#print i
@@ -912,14 +971,14 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	#print RRnl
 	
 	if wf:
-		fD.write('#normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
+		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
 		fD.write('#r_center mu_center DD DR RR\n')
 		#fD.write(str(DDnormt)+'\n')
 		#fDR.write(str(DRnormt)+'\n')
 		#fR.write(str(RRnormt)+'\n')
 		for j in range(0,100):
 			for i in range(0,rmax):
-				fD.write(str(.5+i)+' '+str(.01*j+.005)+' '+str(DDnl[j+100*i]/DDnormt)+' '+str(DRnl[j+100*i]/DRnormt)+' '+str(RRnl[j+100*i]/RRnormt)+'\n')
+				fD.write(str(.5+i)+' '+str(.01*j+.005)+' '+str(DDnl[j+100*i])+' '+str(DRnl[j+100*i])+' '+str(RRnl[j+100*i])+'\n')
 				#fDR.write(str(DRnl[j+100*i])+' ')
 				#fR.write(str(RRnl[j+100*i])+' ')
 			#fD.write('\n')
@@ -934,6 +993,10 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		dd = 0
 		dr = 0
 		rr = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+
 		for j in range(0,nmubin):
 			if wmu != 'counts':
 				dd = 0
@@ -942,13 +1005,17 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 			for k in range(0,bs):
 				bin = nmubin*(i+k)+j			
 				if bin < len(RRnl):
-					if RRnl[bin] == 0:
-						pass
+					#if RRnl[bin] == 0:
+					#	pass
 				
-					else:
-						dd += DDnl[bin]
-						rr += RRnl[bin]
-						dr += DRnl[bin]
+					#else:
+					dd += DDnl[bin]
+					rr += RRnl[bin]
+					dr += DRnl[bin]
+					ddt +=dd
+					rrt += rr
+					drt += dr
+				
 			#if rr != 0 and wm == 'muw':			
 			if wmu != 'counts':
 				xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
@@ -956,6 +1023,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 			xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
 		if i/bs < nbin:
 			xil[i/bs] = xi
+		print ddt/DDnormt,drt/DRnormt,rrt/RRnormt	
 	return xil
 
 

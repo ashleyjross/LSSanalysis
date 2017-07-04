@@ -8,7 +8,7 @@ if len(sys.argv) != 3:
 
 zmin = .8
 zmax = 2.2
-sample = 'QSOsys' #this probably needs to be changed, I named the files like this
+sample = 'QSO' #this probably needs to be changed, I named the files like this
 NS = sys.argv[1]
 version = sys.argv[2]#'v1.6'
 print(NS, version)
