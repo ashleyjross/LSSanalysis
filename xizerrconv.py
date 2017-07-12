@@ -277,7 +277,7 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 		sigl = [0.27,0.031,0.034,0.039]
 	if sigl == 'dnf':
 		szo = 'DESY1dnfmof'
-		sigl = [0.28,0.033,0.036,0.048]
+		sigl = [0.23,0.028,0.029,0.036]
 	try:
 		print szo	
 	except:
@@ -379,7 +379,7 @@ class zerrconv:
 		from Cosmo import distance
 		if file == 'Challenge_matterpower':
 			d = distance(.31,.69)
-		if file == 'MICE_matterpower':
+		if file == 'MICE_matterpower' or file == 'Pk_MICEcosmology_z0_Plin_Pnowig':
 			d = distance(.25,.75)
 		self.d = d
 		self.beta = beta
