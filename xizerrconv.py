@@ -922,8 +922,10 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 	if pw == 'y':
 		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
 		fo.write('# k P0 P2 P4 Psmooth\n')
-
-	s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	if file != 'Pk_MICEcosmology_z0_Plin_Pnowig':
+		s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	else:
+		mult = 8.*pi**3.	
 	pl2 = []
 	pl4 = []
 	beta0 = 0.4
@@ -953,7 +955,7 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 	#print max
 	dmk = r/10.
 	k = float(f[0].split()[0])
-	if file == 'camb_Nacc':
+	if file == 'camb_Nacc' or file == 'Pk_MICEcosmology_z0_Plin_Pnowig':
 		norm = 1.
 	else:
 		norm = float(f[0].split()[1])/s.Psmooth(k,0)*mult
@@ -973,7 +975,10 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 		pksm0 = 0
 		pksm2 = 0
 		pksm4 = 0
-		pksm = s.Psmooth(k,0)*norm
+		if file == 'Pk_MICEcosmology_z0_Plin_Pnowig':
+			pksm = float(f[i].split()[2])*mult
+		else:	
+			pksm = s.Psmooth(k,0)*norm
 		dpk = pk-pksm
 		for m in range(0,100):
 			#mu = (1.-mul[m])			

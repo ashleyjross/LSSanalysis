@@ -1188,7 +1188,20 @@ def plotmuobsmutrue():
 	pp.savefig()
 	pp.close()
 	return True
-	
+
+def calcpower():
+	ds = load(diro+'Fmufiles/FdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8n.dat').transpose()
+	dmu = ds[0][1]-ds[0][0]
+	norm = sum(ds[1])*dmu
+	m = 0
+	n = 0
+	#plt.plot(ds[0],ds[1],'k-')
+	#plt.show()
+	for i in range(0,len(ds[1])):
+		mu = ds[0][i]	
+		m += mu**2.*ds[1][i]*dmu
+		n += (1-mu**2.)*ds[1][i]*dmu
+	return m/(m+n),n/(m+n)	
 
 def plot_Fvmusig3():
 	import matplotlib.pyplot as plt
@@ -1380,6 +1393,237 @@ def xisigmuplotzerr(zerr):
 	if zerr == 0.02:
 		plt.ylim(-.2,.5)
 	plt.xlim(30,200)
+	pp.savefig()
+	pp.close()
+	return True
+
+def xisigmuplot8pan():
+	import matplotlib.pyplot as plt
+	import matplotlib as mpl
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	from pylab import *
+	from numpy import loadtxt as load
+	import numpy as np
+	rcParams['font.family'] = 'serif'
+	plt.rc('text', usetex=True)
+	plt.rc('font', family='serif', size=14)
+
+	pp = PdfPages('/Users/ashleyross/DESY1/xisigmu8pan.pdf')
+	colors = ('k','red','steelblue','gold','thistle')
+	fig = plt.figure(figsize=(8.5,8))
+	zerr = 0.01
+	#fig.tick_params(axis='both', which='major', labelsize=12)
+	mpl.rcParams['xtick.labelsize'] = 10
+	mpl.rcParams['ytick.labelsize'] = 9
+
+	xl = [104,104]
+	yl = [-20,20]
+
+	axs = fig.add_subplot(2,4,1)
+	axp = fig.add_subplot(2,4,5)
+	d0 = load('BAOtemplates/xi0MICE_matterpower0.43.06.010.015.00.dat').transpose()
+	d2 = load('BAOtemplates/xi2MICE_matterpower0.43.06.010.015.00.dat').transpose()
+	d4 = load('BAOtemplates/xi4MICE_matterpower0.43.06.010.015.00.dat').transpose()
+	d0sm = load('BAOtemplates/xi0smMICE_matterpower0.43.06.010.015.00.dat').transpose()
+	d2sm = load('BAOtemplates/xi2smMICE_matterpower0.43.06.010.015.00.dat').transpose()
+	d4sm = load('BAOtemplates/xi4smMICE_matterpower0.43.06.010.015.00.dat').transpose()
+	mu = .1
+	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
+	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
+	axs.set_xlim(40,300)
+	axp.set_xlim(30,200)
+	axs.set_ylim(-1,1.5)
+	axp.set_ylim(-1,1.5)
+	axs.minorticks_on()
+	axp.minorticks_on()
+	start, end = axp.get_xlim()
+	axp.xaxis.set_ticks(np.arange(start, end, 40))
+	
+	#axs.plot(xl,yl,'k:')
+	axs.plot(xl,yl,'k:')
+	axp.plot(xl,yl,'k:')
+ 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
+ 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
+	mu = .7
+	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
+	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
+ 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
+ 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
+	mu = .9
+	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
+	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
+ 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
+ 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
+	mu = .3
+	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
+	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
+ 	axs.plot(d0[0],(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
+ 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
+	mu = .5
+	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
+	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
+ 	axs.plot(d0[0],(db-dbsm)*1000,':',color=colors[2],linewidth=3)
+ 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,':',color=colors[2],linewidth=3)
+	cnr = [135,289,.35,1.4]
+	cxl = [cnr[0],cnr[1]]
+	cyl = [cnr[2],cnr[2]]
+	axs.plot(cxl,cyl,'k-')
+	cyl = [cnr[3],cnr[3]]
+	axs.plot(cxl,cyl,'k-')
+	cxl = [cnr[0],cnr[0]]
+	cyl = [cnr[2],cnr[3]]
+	axs.plot(cxl,cyl,'k-')
+	cxl = [cnr[1],cnr[1]]
+	axs.plot(cxl,cyl,'k-')
+	lxl = [150,169]
+	lxll = [142,175]
+	axs.text(142,1.2,r'$\mu_{\rm obs}$:',color='k')
+	axs.text(180,1.04,'(0,0.2)',size=10)
+	lyl = [1.06,1.06]
+	axs.plot(lxl,lyl,'-',color=colors[0],linewidth=3)
+	axs.text(180,.88,'(0.2,0.4)',size=10)
+	lyl = [.9,.9]
+	axs.plot(lxll,lyl,'--',color=colors[1],linewidth=3)
+	axs.text(180,.72,'(0.4,0.6)',size=10)
+	lyl = [.74,.74]
+	axs.plot(lxl,lyl,':',color=colors[2],linewidth=3)
+	axs.text(180,.56,'(0.6,0.8)',size=10)
+	lyl = [.58,.58]
+	axs.plot(lxl,lyl,'-',color=colors[3],linewidth=3)
+	axs.text(180,.4,'(0.8,1)',size=10)
+	lyl = [.42,.42]
+	axs.plot(lxl,lyl,'-',color=colors[4],linewidth=3)
+	
+	axs.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	axs.set_title(r'$\sigma_{zf} = 0$')
+	axp.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	axp.text(-35,2.5,r'$10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=14,rotation='vertical')
+	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+
+
+	ax = fig.add_subplot(2,4,2)
+
+	
+	ax.set_xlim(40,300)
+	ax.set_ylim(-.5,1.)
+	ax.minorticks_on()
+	ax.plot(xl,yl,'k:')
+ 	ax.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)
+	
+	ax.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax.set_title(r'$\sigma_{zf} = 0.01$')
+
+	ax2 = fig.add_subplot(2,4,6)
+	ax2.minorticks_on()
+# 	for tick in ax2.xaxis.get_major_ticks():
+	#ax2.set_ylabel(r'                                                                        $10^3(\xi_{\rm BAO} - \xi_{\rm no BAO})$',size=12)
+	
+	ax2.set_xlim(30,200)
+	ax2.set_ylim(-.5,1.)
+	ax2.plot(xl,yl,'k:')
+ 	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax2.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax2.get_xlim()
+	ax2.xaxis.set_ticks(np.arange(start, end, 40))
+
+	zerr = 0.02
+	d0 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+
+	ax3 = fig.add_subplot(2,4,3)
+	ax3.minorticks_on()
+	ax3.set_xlim(40,300)
+	ax3.set_ylim(-.2,.5)
+	ax3.plot(xl,yl,'k:')
+ 	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax3.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax3.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax3.set_title(r'$\sigma_{zf} = 0.02$')
+
+	ax4 = fig.add_subplot(2,4,7)
+	ax4.minorticks_on()
+	ax4.set_xlim(30,200)
+	ax4.set_ylim(-.2,.5)
+	ax4.plot(xl,yl,'k:')
+ 	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax4.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax4.get_xlim()
+	ax4.xaxis.set_ticks(np.arange(start, end, 40))
+
+
+	zerr = 0.029
+	d0 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumax0.20.406.010.00.029sp1.0.dat').transpose()
+	d1 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.2mumax0.40.406.010.00.029sp1.0.dat').transpose()
+	d2 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.4mumax0.60.406.010.00.029sp1.0.dat').transpose()
+	d3 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.6mumax0.80.406.010.00.029sp1.0.dat').transpose()
+	d4 = load('/Users/ashleyross/DESY1/xizconv0MICE_matterpowermumin0.80.406.010.00.029sp1.0.dat').transpose()
+	d0p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d1p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d2p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.4mumax0.60.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d3p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.6mumax0.80.406.010.0combzsigl'+str(zerr)+'sp1.0.dat').transpose()
+	d4p = load('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumin0.80.406.010.0combzsigl'+str(zerr)+'rpz1000sp1.0.dat').transpose()
+
+
+	ax5 = fig.add_subplot(2,4,4)
+	ax5.minorticks_on()
+	ax5.set_xlim(40,300)
+	ax5.set_ylim(-.15,.35)
+	ax5.plot(xl,yl,'k:')
+ 	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax5.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax5.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
+	ax5.set_title(r'$\sigma_{zf} = 0.029$')
+
+	ax6 = fig.add_subplot(2,4,8)
+	ax6.minorticks_on()
+	ax6.set_xlim(30,200)
+	ax6.set_ylim(-.15,.35)
+	ax6.plot(xl,yl,'k:')
+ 	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+ 	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+ 	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+ 	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+ 	ax6.plot(d4p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax6.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
+	start, end = ax6.get_xlim()
+	ax6.xaxis.set_ticks(np.arange(start, end, 40))
+	fig.subplots_adjust(wspace=.25)
 	pp.savefig()
 	pp.close()
 	return True
@@ -1711,7 +1955,7 @@ def xirpsigmumockcompthplot():
 	plt.clf()
 	plt.minorticks_on()
 	plt.xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=16)
-	plt.ylabel(r'$s^2\xi_{\perp}$',size=16)
+	plt.ylabel(r'$s_{\perp}^2\xi_{\rm phot}(s_{\perp})$',size=16)
 	#d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsiglsp1.0.dat').transpose()
 	d0 = load(diro+'xizconvcrpMICE_matterpowermumax0.20.406.010.0combzsigl0.029sp1.0.dat').transpose()
 	#d1 = load(diro+'xizconvcrpMICE_matterpowermumin0.2mumax0.40.406.010.0combzsiglsp1.0.dat').transpose()
@@ -1972,6 +2216,13 @@ def BAOerrplot(wo='test',BOSS=True,MGS=False,wz=False,sdss=False,df6=False,des=T
 	pp.savefig()
 	pp.close()
 	return True
+
+def P2(mu):
+	return .5*(3.*mu**2.-1.)
+	
+def P4(mu):
+	return .125*(35.*mu**4.-30.*mu**2.+3.)
+
 
 if __name__ == '__main__':
 	xisigmuplot6pan()
