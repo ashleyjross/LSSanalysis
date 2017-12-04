@@ -229,6 +229,35 @@ def calcweights(sample,NS,version,zmin=.8,zmax=2.2,app='.fits'):
 	#print no
 	return True
 
+def calcweights_ran(sample,NS,version,zmin=.8,zmax=2.2,app='.fits'):
+	#note, zmin/zmax assume LRG sample these need to be change for QSO files
+	#outfile = outdir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.dat'+app
+	b,m = findlinmb(sample,NS,version,'IMAGE_DEPTH_EXT1',.8,2.2,wm='nosys')
+	be,me = findlinmb(sample,NS,version,'EB_MINUS_V-1',.8,2.2,wm='wgdepthext')
+	print 'fit parameters for g-band depth'
+	print b,m
+	print 'fit parameters for EB_MINUS_V (after weighting for depth)'
+	print be,me
+	f = fitsio.read(dir+'eboss_'+version+'-'+sample+'-'+NS+'-eboss_'+version+'.ran'+app) #read galaxy/quasar file
+	#no = 0
+	#fo = open(os.environ['HOME']+'/mkEsample_work/depthextweights'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+'.dat','w')
+ 	fo = open(outdir+'ran'+sample+NS+version+'sysweights.dat','w')
+ 	for i in range(0,len(f)):
+ 		sysv = f[i]['IMAGE_DEPTH'][1]
+ 		sysw = luptm(sysv,1)-3.303*f[i]['EB_MINUS_V']
+ 		wd = (1./(b+m*sysw))
+ 		ext = f[i]['EB_MINUS_V']
+ 		we = (1./(be+me*ext))
+ 		wtot = wd*we
+ 		fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(wtot)+'\n')
+# 		f[i]['WEIGHT_SYSTOT'] = wtot
+ 	fo.close()
+# 	pyfits.writeto(outfile,f,clobber=True)
+# 	print 'Wrote file with systematic weights to: ' + outfile
+	#print no
+	return True
+
+
 # if __name__ == '__main__':
 # 	zmin = .6
 # 	zmax = 1.

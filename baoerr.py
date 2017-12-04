@@ -803,13 +803,63 @@ def errvsigweight(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax=.85
 		#numw = numt/(w1+w2)
 		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
 		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
-		#print w1,err,w1+w2,w2,numt,numw,sigz
+		print w1,err,w1+w2,w2,numt,numw,sigz
 		if err < emin:
 			emin = err
 			wmin = (w1,w2)
 	print wmin
 	print err1,err2,emin/err1,emin/err2,emin/errt
 	return (emin/errt,emin/err1,emin/err2)
+
+def errvsigweight_alt(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax=.85,bias=1.8,dampz='n'):
+	nsig = int((wmax+wstep*.01-wmin)/wstep)
+	emin = 100
+	err1 = baoerr(zmin,zmax,sig1,1400.,num1,bias,dampz=dampz)
+	emin = err1
+	wmin = (1,0)
+	err2 = baoerr(zmin,zmax,sig2,1400.,num2,bias,dampz=dampz)
+	if err2 < emin:
+		emin = err2
+		wmin = (0,1)
+	errt = baoerr(zmin,zmax,(sig1*num1+sig2*num2)/(num1+num2),1400.,num2+num1,bias,dampz=dampz)
+	if errt < emin:
+		emin = errt
+		wmin = (1,1)
+	for i in range(0,nsig):
+		w1 = wstep*i+wstep/2.
+		w2 = 1.
+		#if w1+w2 != 2:
+		#	print w1 + w2
+		#	return 'weights do not sum to 2'
+		numt = num1+num2
+		numw = num1*w1+num2*w2
+		#numw = numt/(w1+w2)
+		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
+		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
+		print w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz
+		if err < emin:
+			emin = err
+			wmin = (w1,w2)
+	for i in range(0,nsig):
+		w1 = 1.
+		w2 = wstep*i+wstep/2.
+		#if w1+w2 != 2:
+		#	print w1 + w2
+		#	return 'weights do not sum to 2'
+		numt = num1+num2
+		numw = num1*w1+num2*w2
+		#numw = numt/(w1+w2)
+		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
+		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
+		print w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz
+		if err < emin:
+			emin = err
+			wmin = (w1,w2)
+
+	print wmin
+	print err1,err2,emin/err1,emin/err2,emin/errt
+	return (emin/errt,emin/err1,emin/err2)
+
 	
 def mkgfvssigz(sig2=0.03,num1=1.e-3,num2=1.e-3):	
 	emax = 0.06
@@ -1040,6 +1090,67 @@ def testweight(w):
 	sw = sqrt(asqw/10000.)
 	print sw,snw
 	return True
+
+def testweightnum(w,n=10000):
+	from random import gauss
+	w2 = 2.-w #make mean 1
+	#v = sqrt(1/w)
+	#n = int(1/w)
+	asqnw = 0
+	asq = 0
+	a1sq = 0
+	a2sq = 0
+	aisq = 0
+	for i in range(0,n,2):
+		ai = gauss(0,1.)
+		a2 = gauss(0,1.)
+		#for j in range(0,n):
+		#	ai += gauss(0,v)
+		asqnw += ((ai+a2)/2.)**2.
+		aisq += ai**2.
+		a1sq += (ai*w)**2.
+		a2sq += (a2*w2)**2.
+		ai = (ai*w+a2*w2)/(2.)
+		asq += ai**2.
+			
+	print 4.*asq/n,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.))
+	#snw = asqnw/10000.
+	
+	#print sw,snw
+	return asqnw/asq
+
+def testweightnum_alt(w,n=10000):
+	from random import gauss
+	w2 = 2.-w #make mean 1
+	#v = sqrt(1/w)
+	#n = int(1/w)
+	asqnw = 0
+	asq = 0
+	a1sq = 0
+	a2sq = 0
+	aisq = 0
+	al = []
+	amw = 0
+	for i in range(0,n):
+		al.append(gauss(1.,1.))
+	for i in range(0,n,2):
+		ai = al[i]
+		asqnw += ai**2.
+		asq += (ai*w)**2.
+		amw += ai*w
+		a2 = al[i+1]
+		amw +=a2*w2
+		asqnw += a2**2.
+		asq += (a2*w2)**2.
+		a1sq += (ai*w)**2.
+		a2sq += (a2*w2)**2.
+			
+	print asq/n-(amw/n)**2.,(a1sq+a2sq)/n-(amw/n)**2.,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.))
+	#snw = asqnw/10000.
+	
+	#print sw,snw
+	return (asqnw/n-(sum(al)/n)**2.)/(asq/n-(amw/n)**2.)
+
 	
 
 def plot_Fvmu():
