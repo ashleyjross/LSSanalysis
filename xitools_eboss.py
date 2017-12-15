@@ -121,17 +121,17 @@ def ranHealp(sample,NS,version,cm='',res=256,rad=''):
 	fo.close()
 	return True
 
-def mkjackf_elg(samp,cm='',Njack=20):
+def mkjackf_elg(samp,v='v5_10_7',cm='',Njack=20):
 	#defines jack-knifes
-	ranHealp_elg(samp)
-	mf = open('ranHeal_pix256eboss'+cm+samp+'_elg.dat').readlines()
-	fo = open('jackhpixeboss'+cm+samp+'_elg'+str(Njack)+'.dat','w')
+	ranHealp_elg(samp,v=v)
+	mf = open('ranHeal_pix256eboss'+cm+samp+v+'_elg.dat').readlines()
+	fo = open('jackhpixeboss'+cm+samp+v+'_elg'+str(Njack)+'.dat','w')
 	for i in range(0,Njack-1):
 		fo.write(str(mf[(len(mf)/Njack)*(i+1)].split()[0])+'\n')
 	fo.close()
 	return True
 
-def ranHealp_elg(samp,cm='',res=256,rad=''):
+def ranHealp_elg(samp,v='v5_10_7',cm='',res=256,rad=''):
 	#pixelizes random file to create jack-knifes
 	import gzip
 	dir = dirsci
@@ -144,13 +144,13 @@ def ranHealp_elg(samp,cm='',res=256,rad=''):
 	np = 12*res**2
 	for i in range(0,np):
 		pixl.append(0)
-	f = fitsio.read(dirsci+'ELG_Y1.eboss'+samp+'.rands.fits')	
+	f = fitsio.read(dirsci+'eboss'+samp+'.'+v+'.latest.rands.fits')	
 	for i in range(0,len(f)):
 		ra,dec = f[i]['ra'],f[i]['dec']
 		th,phi = radec2thphi(ra,dec)
 		p = int(h.ang2pix_nest(res,th,phi))
 		pixl[p] += 1.
-	fo = open('ranHeal_pix'+str(res)+'eboss'+cm+samp+'_elg.dat','w')
+	fo = open('ranHeal_pix'+str(res)+'eboss'+cm+samp+v+'_elg.dat','w')
 	for i in range(0,len(pixl)):
 		if pixl[i] > 0:
 			fo.write(str(i)+' '+str(pixl[i])+'\n')
@@ -239,52 +239,80 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	fo.close()
 	return True
 
-def mkgalELG4xi(zmin=.7,zmax=1.1,samp='21',c='sci',app='.fits',compl=.5):
+def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl=.5,fkp='fkp',wm='wstar'):
+	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
-	f = fitsio.read(dir+'ELG_Y1.eboss'+samp+app) #read galaxy/quasar file
-	fo = open(dir+'gebosselg_'+samp+'_mz'+str(zmin)+'xz'+str(zmax)+'4xi.dat','w')
+	if wm == 'wstar' or wm == 'cpstar':
+		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
+		b,m = findlinmb('ELG',samp,v,'star',zmin,zmax,dir='')
+		h = healpix()
+	ffkp = np.loadtxt('nbarELG'+samp+v+'.dat').transpose()
+	f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest'+app) #read galaxy/quasar file
+	fo = open(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat','w')
+	n = 0
 	for i in range(0,len(f)):
 		z = f[i]['Z']
+		
 		w =1.
 		m = 0
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
-		if f[i]['TSR'] < compl:
+		if f[i]['sector_TSR'] < compl:
 			m = 1
-		if z > zmin and z < zmax and m == 0:
+		if z > zmin and z < zmax and m == 0 and f[i]['Z_reliable'] == True:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+			ra,dec = f[i]['ra'],f[i]['dec']
+			th,phi = radec2thphi(ra,dec)
+			if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
+				pix2 = int(h.ang2pix_nest(256,th,phi))
+				#print pix2
+				ns = wsys[pix2]
+				ws = 1./(b+m*ns)
+				w = w*ws
+			zind = int(z/.01)
+			if fkp == 'fkp':
+				fkpw = ffkp[-1][zind]
+				w = w*fkpw
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
+			n += 1.
+	print n		
 	fo.close()
 	return True		
 
-def mkranELG4xi(samp='21',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=.5):
+def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=.5,fkp='fkp',wm='wstar'):
 	from random import random
 	if comp == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = np.loadtxt(dir+'gebosselg_'+samp+'_mz'+str(zmin)+'xz'+str(zmax)+'4xi.dat').transpose()
-	f = fitsio.read(dir+'ELG_Y1.eboss'+samp+'.rands'+app)
-	fo = open(dir+'rebosselg'+'_'+samp+'_0'+wz+'4xi.dat','w')
+	gf = np.loadtxt(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat').transpose()
+	f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest.rands'+app)
+	fo = open(dir+'rebosselg'+'_'+samp+v+'_0'+wz+fkp+wm+'4xi.dat','w')
 	n = 0
 	nw = 0
-	minc = N*10**6
-	maxc = (N+1)*10**6 #will become relevant once files are big enough
-	if len(f) < maxc:
-		maxc = len(f)
-	for i in range(minc,maxc):
+	#minc = N*10**6
+	#maxc = (N+1)*10**6 #will become relevant once files are big enough
+	
+	#if len(f) < maxc:
+	#	maxc = len(f)
+	ns = len(f)/1000000
+	print len(f),ns
+	#for i in range(minc,maxc):
+	for i in range(N,len(f),ns):
 		indz = int(random()*len(gf[2]))
 		z = gf[2][indz]
-		w = f[i]['TSR']*f[i]['SSR']
+		wg = gf[3][indz]
+		w = wg*f[i]['sector_TSR']*f[i]['plate_SSR']
 		m = 0
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
 
 		#if z > zmin and z < zmax:
-		if f[i]['TSR'] >= compl:
+		if f[i]['sector_TSR'] >= compl:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
 			nw += w
 	print n,nw #just helps to know things worked properly
+	print n/10000.*ns #area in sq degrees
 	fo.close()
 	return True
 
@@ -856,26 +884,26 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.8,zmax=2.2,ms=
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
-def createalladfilesfb_elg(zmin=.7,zmax=1.1,samp='21',nran=1):
+def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',nran=1,fkp='fkp',wm=''):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgalELG4xi(zmin=zmin,zmax=zmax,samp=samp)
-	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = 'gebosselg'+'_'+samp+'_'+wz
+	mkgalELG4xi(v=v,zmin=zmin,zmax=zmax,samp=samp,wm=wm,fkp=fkp)
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)+fkp+wm
+	gf = 'gebosselg'+'_'+samp+v+'_'+wz
 	sysw= ''
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
-		createSourcesrd_adJack(gf,i,'eboss'+samp+'_elg')
+		createSourcesrd_adJack(gf,i,'eboss'+samp+v+'_elg')
 
-	rf = 'rebosselg'+'_'+samp+'_'
+	rf = 'rebosselg'+'_'+samp+v+'_'
 	for rann in range(0,nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkranELG4xi(samp,N=rann,zmin=zmin,zmax=zmax)
+		mkranELG4xi(samp,v=v,N=rann,zmin=zmin,zmax=zmax,wm=wm,fkp=fkp)
 		rfi = rf+str(rann)+wz
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
-			createSourcesrd_adJack(rfi,i,'eboss'+samp+'_elg')
+			createSourcesrd_adJack(rfi,i,'eboss'+samp+v+'_elg')
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
@@ -1376,7 +1404,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 	#zmax is the maximum redshift to used, 1.0 for lrgs and 2.2 for qsos
 	from healpix import healpix, radec2thphi
 	h = healpix()
-	
+	d2 = False
 	stl = []
 	wstl = []
 	errl = []
@@ -1512,10 +1540,17 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 		ds = 'DEC'
 		zs ='Z'
 	else:
-		f = fitsio.read(dirfits+'random-sweep.clustering.chunk'+ver+'.fits')
+		#f = fitsio.read(dirfits+'random-sweep.clustering.chunk'+ver+'.fits')
+		
 		rs = 'ra'
 		ds = 'dec'	
-		zs = 'z'
+		zs = 'Z'
+		if NS =='21p22':
+			f = fitsio.read(dirfits+'eboss21.'+ver+'.latest.rands.fits')
+			f2 = fitsio.read(dirfits+'eboss22.'+ver+'.latest.rands.fits')
+			d2 = True
+		else:
+			f = fitsio.read(dirfits+'eboss'+NS+'.'+ver+'.latest.rands.fits')	
 	nr = 0
 	for i in range (0,len(f)):
 		ra,dec = f[i][rs],f[i][ds]
@@ -1523,11 +1558,25 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 		p = int(h.ang2pix_nest(res,th,phi))
 		pixlr[p] += 1.
 		nr += 1.
+	if d2:
+		for i in range (0,len(f2)):
+			ra,dec = f2[i][rs],f2[i][ds]
+			th,phi = radec2thphi(ra,dec)
+			p = int(h.ang2pix_nest(res,th,phi))
+			pixlr[p] += 1.
+			nr += 1.
+
 	print nr
 	if sampl != 'ELG':
 		f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	else:
-		f = fitsio.read(dirfits+'elg_'+NS+'.v2.clustering.chunk'+ver+'.fits')
+		#f = fitsio.read(dirfits+'elg_'+NS+'.v2.clustering.chunk'+ver+'.fits')
+		if NS == '21p22':
+			f = fitsio.read(dirfits+'eboss21.'+ver+'.latest.fits')
+			f2 = fitsio.read(dirfits+'eboss22.'+ver+'.latest.fits')
+		else:	
+			f = fitsio.read(dirfits+'eboss'+NS+'.'+ver+'.latest.fits')
+		ffkp = np.loadtxt(ebossdir+'nbarELG22v5_10_7.dat').transpose()
 	no = 0
 	zm = 0
 	nt = 0
@@ -1759,7 +1808,20 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 					ext = f[i]['EB_MINUS_V']
 					w = w*(1./(be+me*ext))
 			else:
-				w = f[i]['w']
+				w = 1.
+				w = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
+				zind = int(z/.01)
+				wfkp =ffkp[-1][zind]
+				w = w*wfkp
+				if wm == 'wstar':
+					pix2 = h.ang2pix_nest(256,th,phi)
+					ns = wsys[pix2]
+					ws = 1./(b+m*ns)
+					w = w*ws
+
+				if f[i]['Z_reliable'] == False:
+					w = 0
+				#w = f[i]['w']
 				if wm == 'nw':
 					w = 1.
 				if wm == 'iw':
@@ -1767,6 +1829,37 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 			pixlg[p] += 1.*w
 			zm += w*z
 			nt += w
+	if d2:
+	
+		for i in range(0,len(f2)):
+			z = f2[i][zs]
+			if z > zmin and z < zmax:
+				no += 1
+				ra,dec = f2[i][rs],f2[i][ds]
+				th,phi = radec2thphi(ra,dec)
+				p = int(h.ang2pix_nest(res,th,phi))
+				w = 1.
+				w = 1./(f2[i]['sector_TSR']*f2[i]['plate_SSR'])
+				zind = int(z/.01)
+				wfkp =ffkp[-1][zind]
+				w = w*wfkp
+				if wm == 'wstar':
+					pix2 = h.ang2pix_nest(256,th,phi)
+					ns = wsys[pix2]
+					ws = 1./(b+m*ns)
+					w = w*ws
+
+				if f2[i]['Z_reliable'] == False:
+					w = 0
+				#w = f[i]['w']
+				if wm == 'nw':
+					w = 1.
+				if wm == 'iw':
+					w = 1./w	
+				pixlg[p] += 1.*w
+				zm += w*z
+				nt += w
+
 	print 'total number, weighted number'
 	print no,nt
 	print 'mean redshift'
@@ -2206,6 +2299,212 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 	el = np.array(el)
 	plotvssys_simp(xl,yl,el,sys)
 	return xl,yl,el
+
+def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22=''):
+	#sample is the sample being used, e.g. 'lrg'
+	#uses files with imaging properties filled
+	#NS is either 'N' or 'S'
+	#ver is the version, e.g., 'v1.0_IRt'
+	#sys is a string containing the name of the systematic to be tested
+	#sysmin is the minimum value of the systematic to be tested, ~25 is a good value to use for stars
+	#sysmax is the maximum value of the systematic to be tested, ~200 is a good value to use for stars
+	#res is Nside for the healpix map, default should be 512 for sky,seeing,air and 256 for extinction and stars
+	#zmin is the minimum redshift to use, 0.6 is minimum used for lrgs, 0.9 for qsos
+	#zmax is the maximum redshift to used, 1.0 for lrgs and 2.2 for qsos
+	d2 = False
+	stl = []
+	wstl = []
+	errl = []
+	binng = []
+	binnr = []
+	nsysbin = 10 #10 bins are being used
+	for i in range(0,nsysbin):
+		binng.append(0)
+		binnr.append(0)
+
+	if sampl == '21p22':
+		f = fitsio.read(dirfits+'eboss21.'+ver+'.latest.rands.fits')
+		f2 = fitsio.read(dirfits+'eboss22.'+ver+'.latest.rands.fits')
+		d2 = True
+	else:
+		f = fitsio.read(dirfits+'eboss'+sampl+'.'+ver+'.latest.rands.fits') #read galaxy/quasar file
+	nr = 0
+	sysm = float(nsysbin)/(sysmax-sysmin)
+	bs = 0
+	bsr = 0
+	#extc = [4.239,3.303,2.285,1.698,1.263]
+	for i in range (0,len(f)):
+		if f[i]['sector_TSR'] > compl:
+			w = f[i]['sector_TSR']*f[i]['plate_SSR']
+			if band == -1:
+				sysv = f[i][sys]
+			else:
+				if sys == 'IMAGE_DEPTH_EXT':
+					sysv = f[i]['IMAGE_DEPTH'][band]
+					sysv = luptm(sysv,band)-extc[band]*f[i]['EB_MINUS_V']
+				else:
+					sysv = f[i][sys][band]	 
+					if sys == 'IMAGE_DEPTH':
+						sysv = luptm(sysv,band)
+			if sys.split('_')[1] == 'ivar':
+				if sysv > 0:
+					sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+			bins = int((sysv-sysmin)*sysm)
+			if bins >= 0 and bins < nsysbin:
+				binnr[bins] += w
+			else:
+				bsr += w
+
+			nr += w
+	if d2:
+		for i in range (0,len(f2)):
+			if f2[i]['sector_TSR'] > compl:
+				w = f2[i]['sector_TSR']*f2[i]['plate_SSR']
+				if band == -1:
+					sysv = f2[i][sys]
+				else:
+					if sys == 'IMAGE_DEPTH_EXT':
+						sysv = f2[i]['IMAGE_DEPTH'][band]
+						sysv = luptm(sysv,band)-extc[band]*f[i]['EB_MINUS_V']
+					else:
+						sysv = f2[i][sys][band]	 
+						if sys == 'IMAGE_DEPTH':
+							sysv = luptm(sysv,band)
+				if sys.split('_')[1] == 'ivar':
+					if sysv > 0:
+						sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+
+				bins = int((sysv-sysmin)*sysm)
+				if bins >= 0 and bins < nsysbin:
+					binnr[bins] += w
+				else:
+					bsr += w
+
+				nr += w
+
+	print nr
+	ffkp = np.loadtxt(ebossdir+'nbarELG22v5_10_7.dat').transpose()
+	if sampl == '21p22':
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		
+	else:
+		f = fitsio.read(dirfits+'eboss'+sampl+'.'+ver+'.latest.fits') #read galaxy/quasar file
+	
+	no = 0
+	zm = 0
+	nt = 0
+	avebs = 0
+	print min(f[sys]),max(f[sys])
+	for i in range (0,len(f)):
+		z = f[i]['Z']
+		c = 1
+		gc = True
+		if z > zmin and z < zmax and f[i]['Z_reliable'] == True and c == 1 and gc and f[i]['sector_TSR'] > compl:
+			no += 1
+			w = 1.
+			#if wm == '':
+			zind = int(z/.01)
+			wfkp =ffkp[-1][zind]
+			w = w*wfkp
+			if band == -1:
+				sysv = f[i][sys]
+			else:
+				if sys == 'IMAGE_DEPTH_EXT':
+					sysv = f[i]['IMAGE_DEPTH'][band]
+					sysv = luptm(sysv,band)-extc[band]*f[i]['EB_MINUS_V']
+				else:
+					sysv = f[i][sys][band]	 
+					if sys == 'IMAGE_DEPTH':
+						sysv = luptm(sysv,band)
+			if sys.split('_')[1] == 'ivar':
+				if sysv > 0:
+				
+					sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+
+			bins = int((sysv-sysmin)*sysm)
+					
+			if bins >= 0 and bins < nsysbin:
+				binng[bins] += 1.*w
+			else:
+				bs += w #count numbers outside of sysmin/sysmax
+				avebs += w*sysv
+			zm += w*z
+			nt += w
+	if d2:
+		for i in range (0,len(f2)):
+			z = f2[i]['Z']
+			c = 1
+			gc = True
+			if z > zmin and z < zmax and f2[i]['Z_reliable'] == True and c == 1 and gc and f2[i]['sector_TSR'] > compl:
+				no += 1
+				w = 1.
+				#if wm == '':
+				zind = int(z/.01)
+				wfkp =ffkp[-1][zind]
+				w = w*wfkp
+				if band == -1:
+					sysv = f2[i][sys]
+				else:
+					if sys == 'IMAGE_DEPTH_EXT':
+						sysv = f2[i]['IMAGE_DEPTH'][band]
+						sysv = luptm(sysv,band)-extc[band]*f[i]['EB_MINUS_V']
+					else:
+						sysv = f2[i][sys][band]	 
+						if sys == 'IMAGE_DEPTH':
+							sysv = luptm(sysv,band)
+
+				if sys.split('_')[1] == 'ivar':
+					if sysv > 0:
+						sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+
+				bins = int((sysv-sysmin)*sysm)
+					
+				if bins >= 0 and bins < nsysbin:
+					binng[bins] += 1.*w
+				else:
+					bs += w #count numbers outside of sysmin/sysmax
+					avebs += w*sysv
+				zm += w*z
+				nt += w
+			
+	if bs > 0:
+		avebs = avebs/bs
+	print avebs,sysmin		
+	print 'total number, weighted number'
+	print no,nt
+	print 'mean redshift'
+	print zm/nt
+
+	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
+	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	ave = nt/nr
+	print 'average number of objects per random is '+ str(ave)
+	fs = open(ebossdir+'n'+'geboss'+sampl+'_'+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'v'+sys+'.dat','w')
+	xl = []
+	yl = []
+	el = []
+	for i in range(0,nsysbin):
+		sysv = sysmin + 1./(2.*sysm) + i/sysm
+		if binnr[i] > 0:
+			ns = binng[i]/binnr[i]/ave
+			nse = sqrt(binng[i]/(binnr[i])**2./(ave)**2.+(binng[i]/ave)**2./(binnr[i])**3.) #calculate poisson error
+		else:
+			ns = 1. #write out 1.0 1.0 if no pixels at given value of sys
+			nse = 1.		
+		fs.write(str(sysv)+' '+str(ns)+' '+str(nse)+'\n')
+		xl.append(sysv)
+		yl.append(ns)
+		el.append(nse)
+	fs.close()
+	chin = sum((np.array(yl)-1.)**2./np.array(el)**2.)
+	print chin
+	xl = np.array(xl)
+	yl = np.array(yl)
+	el = np.array(el)
+	plotvssys_simp(xl,yl,el,sys)
+	return xl,yl,el
+
 
 def doallnsys4qsoplot():
 	nsl = ['N','S']
@@ -4358,6 +4657,82 @@ def mkNbarz(NS,area,sample='QSO',version='v1.8',sp=0.02,zmin=0.1,zmax=2.9):
 	fo.close()
 	print sum
 	return True
+
+def plotNbarELG(ver='v5_10_7'):
+	from matplotlib import pyplot as plt
+	d1 = np.loadtxt(ebossdir+'nbarELG21'+ver+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'nbarELG22'+ver+'.dat').transpose()
+	d3 = np.loadtxt(ebossdir+'nbarELG23'+ver+'.dat').transpose()
+	plt.plot(d1[0],d1[1],'k-')
+	plt.plot(d1[0],d2[1],'r-')
+	plt.plot(d1[0],d3[1],'b-')
+	plt.xlim(0.5,1.5)
+	plt.show()
+	return True
+
+
+def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
+	area = len(f)/10000.
+	f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	no = 0
+	fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
+	nb = int(zmax/sp)
+	zl = []
+	for i in range(0,nb):
+		zl.append(0)
+	vl = []
+	for i in range(0,len(zl)):
+		zlo = i*sp
+		zh = (i+1)*sp
+		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)	
+	sum = 0
+	sumw = 0
+	sumt = 0	
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z < zmax:
+			zind = int(z/sp)
+			
+			wfczss = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
+			
+			sum += wfczss
+			if z > zmin and z < zmax and f[i]['Z_reliable']==True:
+				sumt += 1.
+				sumw += wfczss
+				zl[zind] += wfczss
+			
+	print sumw/sumt
+	#f = sumw/sumt
+	f = 1.
+	zpl = []
+	nbl = []
+	nbwl = []
+	wtot = 0
+	zm = 0
+	nw = 0
+	for i in range(0,nb):
+		z = sp/2.+sp*i
+		zpl.append(z)
+		fo.write(str(z)+' '+str(zl[i]/vl[i]/f)+' '+str(zl[i]/f)+' '+str(vl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+		if z > .6 and z < 1.1:
+			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
+			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
+			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+		nbl.append(zl[i]/vl[i]/f)
+		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
+	fo.close()
+	print sum,zm/wtot,nw
+	plt.plot(zpl,nbl)
+	plt.show()
+	plt.plot(zpl,nbwl)
+	plt.show()
+	return True
+
 
 
 def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
