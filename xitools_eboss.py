@@ -33,15 +33,16 @@ def mksubfile_Dmufbfjack(file1,file2,jack,off=0,a=''):
 	fo.close()
 	return True
 
-def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20):
+def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20,sran=0):
 	fo = open('suball.sh','w')
 	fo.write('#!/bin/bash\n')
 	
-	for i in range(0,njack):
-		mksubfile_Dmufbfjack(galf,galf,i)
-		fo.write('qsub sub'+str(i)+'.sh \n')
-		fo.write('sleep 1 \n')
-	for j in range(0,nran):	
+	if sran == 0:
+		for i in range(0,njack):
+			mksubfile_Dmufbfjack(galf,galf,i)
+			fo.write('qsub sub'+str(i)+'.sh \n')
+			fo.write('sleep 1 \n')
+	for j in range(sran,sran+nran):	
 		off = 20+40*j
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(ranf+str(j)+wr,galf,i,off)
@@ -144,12 +145,25 @@ def ranHealp_elg(samp,v='v5_10_7',cm='',res=256,rad=''):
 	np = 12*res**2
 	for i in range(0,np):
 		pixl.append(0)
-	f = fitsio.read(dirsci+'eboss'+samp+'.'+v+'.latest.rands.fits')	
+	d2 = False
+	if samp == '21p22':
+		f = fitsio.read(dirsci+'eboss21'+'.'+v+'.latest.rands.fits')	
+		d2 = True
+		f2 = fitsio.read(dirsci+'eboss22'+'.'+v+'.latest.rands.fits')	
+	else:
+		f = fitsio.read(dirsci+'eboss'+samp+'.'+v+'.latest.rands.fits')	
 	for i in range(0,len(f)):
 		ra,dec = f[i]['ra'],f[i]['dec']
 		th,phi = radec2thphi(ra,dec)
 		p = int(h.ang2pix_nest(res,th,phi))
 		pixl[p] += 1.
+	if d2:
+		for i in range(0,len(f2)):
+			ra,dec = f2[i]['ra'],f2[i]['dec']
+			th,phi = radec2thphi(ra,dec)
+			p = int(h.ang2pix_nest(res,th,phi))
+			pixl[p] += 1.
+
 	fo = open('ranHeal_pix'+str(res)+'eboss'+cm+samp+v+'_elg.dat','w')
 	for i in range(0,len(pixl)):
 		if pixl[i] > 0:
@@ -245,12 +259,29 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		dir = dirsci
 	if wm == 'wstar' or wm == 'cpstar':
 		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
-		b,m = findlinmb('ELG',samp,v,'star',zmin,zmax,dir='')
+		b,ms = findlinmb('ELG',samp,v,'star',zmin,zmax,dir='')
 		h = healpix()
+		print b,ms
+	#print wm.split('_')[1]	
+	iv = False
+	if len(wm.split('_')) > 1:
+		if wm.split('_')[1] == 'ivar':
+			b,ms = findlinmb(samp,v,'',wm,zmin,zmax,dir='')
+			iv = True
+			print b,ms
+			
 	ffkp = np.loadtxt('nbarELG'+samp+v+'.dat').transpose()
-	f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest'+app) #read galaxy/quasar file
+	d2 = False
+	if samp == '21p22':
+		f = fitsio.read(dir+'eboss21'+'.'+v+'.latest'+app)
+		d2 = True
+		f2 = fitsio.read(dir+'eboss22'+'.'+v+'.latest'+app)
+	else:
+		f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest'+app) #read galaxy/quasar file
 	fo = open(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat','w')
 	n = 0
+	mins = 100
+	maxs = 0
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		
@@ -267,15 +298,65 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 				pix2 = int(h.ang2pix_nest(256,th,phi))
 				#print pix2
 				ns = wsys[pix2]
-				ws = 1./(b+m*ns)
+				ws = 1./(b+ms*ns)
+				if ws > maxs:
+					maxs = ws
+				if ws < mins:
+					mins = ws
 				w = w*ws
+			else:	
+				if iv:
+					sysv = f[i][wm]
+					if sysv > 0:
+						sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+						ws = 1./(b+sysv*ms)
+						w = w*ws	
 			zind = int(z/.01)
 			if fkp == 'fkp':
 				fkpw = ffkp[-1][zind]
 				w = w*fkpw
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
-	print n		
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+		
+			w =1.
+			m = 0
+			#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
+			#	m = 1
+			if f2[i]['sector_TSR'] < compl:
+				m = 1
+			if z > zmin and z < zmax and m == 0 and f2[i]['Z_reliable'] == True:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+				ra,dec = f2[i]['ra'],f2[i]['dec']
+				th,phi = radec2thphi(ra,dec)
+				if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
+					pix2 = int(h.ang2pix_nest(256,th,phi))
+					#print pix2
+					ns = wsys[pix2]
+					ws = 1./(b+ms*ns)
+					if ws > maxs:
+						maxs = ws
+					if ws < mins:
+						mins = ws
+					w = w*ws
+				else:
+					if iv:
+						sysv = f2[i][wm]
+						if sysv > 0:
+							sysv = -2.5*(log(5./sqrt(sysv),10.)-9)
+							ws = 1./(b+sysv*ms)
+							w = w*ws	
+
+				zind = int(z/.01)
+				if fkp == 'fkp':
+					fkpw = ffkp[-1][zind]
+					w = w*fkpw
+				fo.write(str(f2[i]['ra'])+' '+str(f2[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
+				n += 1.
+
+	print n	
+	print mins,maxs,wm	
 	fo.close()
 	return True		
 
@@ -285,8 +366,20 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = np.loadtxt(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat').transpose()
-	f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest.rands'+app)
-	fo = open(dir+'rebosselg'+'_'+samp+v+'_0'+wz+fkp+wm+'4xi.dat','w')
+	d2 = False
+	if samp == '21p22':
+		f = fitsio.read(dir+'eboss21'+'.'+v+'.latest.rands'+app)
+		d2 = True
+		f2 = fitsio.read(dir+'eboss22'+'.'+v+'.latest.rands'+app)
+		ns = (len(f)+len(f2))/1000000
+		print len(f)+len(f2),ns
+		
+	else:
+		f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest.rands'+app)
+		ns = len(f)/1000000
+		print len(f),ns
+
+	fo = open(dir+'rebosselg'+'_'+samp+v+'_'+str(N)+wz+fkp+wm+'4xi.dat','w')
 	n = 0
 	nw = 0
 	#minc = N*10**6
@@ -294,8 +387,6 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 	
 	#if len(f) < maxc:
 	#	maxc = len(f)
-	ns = len(f)/1000000
-	print len(f),ns
 	#for i in range(minc,maxc):
 	for i in range(N,len(f),ns):
 		indz = int(random()*len(gf[2]))
@@ -311,6 +402,22 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
 			nw += w
+	if d2:
+		for i in range(N,len(f2),ns):
+			indz = int(random()*len(gf[2]))
+			z = gf[2][indz]
+			wg = gf[3][indz]
+			w = wg*f2[i]['sector_TSR']*f2[i]['plate_SSR']
+			m = 0
+			#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
+			#	m = 1
+
+			#if z > zmin and z < zmax:
+			if f2[i]['sector_TSR'] >= compl:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+				fo.write(str(f2[i]['ra'])+' '+str(f2[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
+				n += 1.
+				nw += w
+
 	print n,nw #just helps to know things worked properly
 	print n/10000.*ns #area in sq degrees
 	fo.close()
@@ -884,7 +991,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.8,zmax=2.2,ms=
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
 	return True
 
-def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',nran=1,fkp='fkp',wm=''):
+def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,fkp='fkp',wm=''):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
 	mkgalELG4xi(v=v,zmin=zmin,zmax=zmax,samp=samp,wm=wm,fkp=fkp)
@@ -896,7 +1003,7 @@ def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',nran=1,fkp='fk
 		createSourcesrd_adJack(gf,i,'eboss'+samp+v+'_elg')
 
 	rf = 'rebosselg'+'_'+samp+v+'_'
-	for rann in range(0,nran):	
+	for rann in range(sran,sran+nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		mkranELG4xi(samp,v=v,N=rann,zmin=zmin,zmax=zmax,wm=wm,fkp=fkp)
@@ -904,7 +1011,7 @@ def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',nran=1,fkp='fk
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
 			createSourcesrd_adJack(rfi,i,'eboss'+samp+v+'_elg')
-	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
+	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw,sran=sran)#gw+gri22+wm)
 	return True
 
 
@@ -1389,10 +1496,183 @@ def mksysmapran(res):
 			fo.write('\n')
 	fo.close()
 	return True
+
+def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
+	#sample is the sample being used, e.g. 'lrg'
+	#NS is either 'N' or 'S'
+	#ver is the version, e.g., 'v1.0_IRt'
+	#sys is a string containing the name of the systematic to be tested
+	#sysmin is the minimum value of the systematic to be tested, ~25 is a good value to use for stars
+	#sysmax is the maximum value of the systematic to be tested, ~200 is a good value to use for stars
+	#res is Nside for the healpix map, default should be 512 for sky,seeing,air and 256 for extinction and stars
+	#zmin is the minimum redshift to use, 0.6 is minimum used for lrgs, 0.9 for qsos
+	#zmax is the maximum redshift to used, 1.0 for lrgs and 2.2 for qsos
+	from healpix import healpix, radec2thphi
+	h = healpix()
+	d2 = False
+	stl = []
+	wstl = []
+	errl = []
+	npo = 12*res**2
+		
+	if sys != 'star' and sys != 'ext' and sys != 'depth':
+		#fsys = np.loadtxt(dirsys+'heal'+sys+'nm'+str(res)+'.dat')
+		filesys = np.loadtxt('healmap_eBOSS_nested_'+str(res)+'.dat').transpose()
+		hd = open('healmap_eBOSS_nested_'+str(res)+'.dat').readline().split()
+		for i in range(0,len(hd)):
+			if hd[i] == sys:
+				col = i-1 #because of space between # and first text in file
+				break
+		print col
+		fsys = np.zeros((npo))
+		for i in range(0,len(filesys[0])):
+			p = filesys[0][i]
+			if sys.split('_')[0] == 'IMAGE':
+				if sys.split('_')[-1] == 'i':
+					fsys[p] = luptm(filesys[col][i],3)
+				if sys.split('_')[-1] == 'g':
+					fsys[p] = luptm(filesys[col][i],1)
+				if sys.split('_')[-1] == 'r':
+					fsys[p] = luptm(filesys[col][i],2)
+				if sys.split('_')[-1] == 'z':
+					fsys[p] = luptm(filesys[col][i],4)
+				if sys.split('_')[-1] == 'u':
+					fsys[p] = luptm(filesys[col][i],0)
+
+			else:
+				fsys[p] = filesys[col][i]
+		
+	if sys == 'ext':
+		fsys = np.loadtxt('healSFD_r_'+str(res)+'_fullsky.dat')/2.751 #E(B-V)#*2.285/2.751 #r-band extinction
+	if sys == 'star':
+		fsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
+	if sys == 'depth':
+		try:
+			fsys = np.loadtxt('healdepthinm'+str(res)+'.dat').transpose()
+		except:
+			#from DJS email Oct 7th to eboss targeting:
+			# Flux(5-sigma) = anorm * PSF_FWHM * sqrt(SKYFLUX) * 10^(0.4*kterm*AIRMASS)
+			# anorm = 0.387, 0.218, 0.241, 0.297, 0.665
+			# kterm =  [0.49, 0.17, 0.10, 0.06, 0.06] 
+			# current files are for i band so
+			anorm = 0.297
+			kterm = 0.06
+			fsee = np.loadtxt('healseenm'+str(res)+'.dat')
+			fsky = np.loadtxt('healskynm'+str(res)+'.dat')
+			fair = np.loadtxt('healairnm'+str(res)+'.dat')
+			fsys = []
+			febv = np.loadtxt('healSFD_r_256_fullsky.dat')/2.751 #ebv map at Nside 256
+			ebv5 = []
+			for i in range(0,12*512*512):
+				th,phi = h.pix2ang_nest(512,i)
+				if fsee[i] > 0 and fsee[i] < 2.5:
+					pix2 = h.ang2pix_nest(256,th,phi)
+					ebv5.append(febv[pix2])
+				else:
+					ebv5.append(0)	
+			for i in range(0,len(fsee)):
+				see = float(fsee[i])
+				sky = float(fsky[i])
+				air = float(fair[i])
+			
+				dp = luptm(anorm*see*sqrt(sky)*10.**(.4*kterm*air),3)-ebv5[i]*1.698
+				fsys.append(dp)
+			fo = open('healdepthinm'+str(res)+'.dat','w')
+			for i in range(0,len(fsys)):
+				fo.write(str(fsys[i])+'\n')
+			fo.close()			
+
+	#ml = []
+	
+
+	print min(fsys),max(fsys)
+	h = healpix()
+	pixlg = []
+	pixlr = []
+	for i in range(0,npo):
+		pixlg.append(0)
+		pixlr.append(0)
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)	
+	f = np.loadtxt(dirsci+'reboss'+sampl+'_'+NS+ver+'_0'+wz+fkp+wm+'4xi.dat')#.transpose()	
+	nr = 0
+	nrt = 0
+	for i in range (0,len(f)):
+		ra,dec = f[i][0],f[i][1]
+		th,phi = radec2thphi(ra,dec)
+		p = int(h.ang2pix_nest(res,th,phi))
+		pixlr[p] += 1.*f[i][-1]
+		nr += 1.*f[i][-1]
+		nrt += 1.
+	f = np.loadtxt(dirsci+'geboss'+sampl+'_'+NS+ver+'_'+wz+fkp+wm+'4xi.dat')#.transpose()	
+	no = 0
+	nt = 0
+	for i in range (0,len(f)):
+		ra,dec = f[i][0],f[i][1]
+		th,phi = radec2thphi(ra,dec)
+		p = int(h.ang2pix_nest(res,th,phi))
+		pixlg[p] += 1.*f[i][-1]
+		no += 1.
+		nt += 1.*f[i][-1]
+	
+	print 'total number, weighted number'
+	print no,nt
+	binnbs = []
+	binns = []
+	nsysbin = 10 #10 bins are being used
+	for i in range(0,nsysbin):
+		binnbs.append(0)
+		binns.append(0)
+
+	nbt = 0
+	nt = 0
+	bs = 0
+	bsr = 0
+	n0 = 0
+	sysm = float(nsysbin)/(sysmax-sysmin)
+	ng0 = 0
+	for i in range(0,npo):
+		sysv = float(fsys[i])
+		if sysv != 0: #the maps are not perfect, entries with 0s shouldn't be used
+			nt += pixlr[i]
+			nbt += pixlg[i]
+			bins = int((sysv-sysmin)*sysm)
+			if bins >= 0 and bins < nsysbin:
+				binnbs[bins] += pixlg[i]
+				binns[bins] += pixlr[i]
+			else:
+				bs += pixlg[i] #count numbers outside of sysmin/sysmax
+				bsr += pixlr[i]
+		else:
+			n0 += pixlr[i] #count numbers inside bad pixels in sys map
+			ng0 += pixlg[i]
+					
+	print 'total number of randoms/objects '+str(nt)+'/'+str(nbt)
+	print 'number of randoms/objects where sys = 0 '+str(n0)+'/'+str(ng0)
+	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	ave = nbt/nt
+	print 'average number of objects per random is '+ str(ave)
+	xl = []
+	yl = []
+	el = []
+	chinull = 0
+	for i in range(0,nsysbin):
+		sysv = sysmin + 1./(2.*sysm) + i/sysm
+		if binns[i] > 0:
+			ns = binnbs[i]/binns[i]/ave
+			nse = sqrt(binnbs[i]/(binns[i])**2./(ave)**2.+(binnbs[i]/ave)**2./(binns[i])**3.) #calculate poisson error
+		else:
+			ns = 1. #write out 1.0 1.0 if no pixels at given value of sys
+			nse = 1.		
+		xl.append(sysv)
+		yl.append(ns)
+		el.append(nse)
+		chinull += ((ns-1.)/nse)**2.
+	print chinull
+	return xl,yl,el
 		
 		
 
-def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22=''):
+def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22='',compl=.5):
 	#sample is the sample being used, e.g. 'lrg'
 	#NS is either 'N' or 'S'
 	#ver is the version, e.g., 'v1.0_IRt'
@@ -1553,18 +1833,27 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 			f = fitsio.read(dirfits+'eboss'+NS+'.'+ver+'.latest.rands.fits')	
 	nr = 0
 	for i in range (0,len(f)):
-		ra,dec = f[i][rs],f[i][ds]
-		th,phi = radec2thphi(ra,dec)
-		p = int(h.ang2pix_nest(res,th,phi))
-		pixlr[p] += 1.
-		nr += 1.
-	if d2:
-		for i in range (0,len(f2)):
-			ra,dec = f2[i][rs],f2[i][ds]
+		comp = 1
+		if sampl == 'ELG':
+			comp = f[i]['sector_TSR']
+		if  comp >= compl:	
+			ra,dec = f[i][rs],f[i][ds]
 			th,phi = radec2thphi(ra,dec)
 			p = int(h.ang2pix_nest(res,th,phi))
 			pixlr[p] += 1.
 			nr += 1.
+	if d2:
+		for i in range (0,len(f2)):
+			comp = 1
+			if sampl == 'ELG':
+				comp = f2[i]['sector_TSR']
+			if  comp >= compl:	
+
+				ra,dec = f2[i][rs],f2[i][ds]
+				th,phi = radec2thphi(ra,dec)
+				p = int(h.ang2pix_nest(res,th,phi))
+				pixlr[p] += 1.
+				nr += 1.
 
 	print nr
 	if sampl != 'ELG':
@@ -1622,7 +1911,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 				if im < imag[0] or im > imag[1]:
 					gc = False
 		if z > zmin and z < zmax and c == 1 and gc:
-			no += 1
+			
 			#w = 1.
 			#if wm == '':
 			ra,dec = f[i][rs],f[i][ds]
@@ -1808,32 +2097,37 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 					ext = f[i]['EB_MINUS_V']
 					w = w*(1./(be+me*ext))
 			else:
-				w = 1.
-				w = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
-				zind = int(z/.01)
-				wfkp =ffkp[-1][zind]
-				w = w*wfkp
-				if wm == 'wstar':
-					pix2 = h.ang2pix_nest(256,th,phi)
-					ns = wsys[pix2]
-					ws = 1./(b+m*ns)
-					w = w*ws
-
-				if f[i]['Z_reliable'] == False:
-					w = 0
-				#w = f[i]['w']
-				if wm == 'nw':
+				if f[i]['Z_reliable'] and f[i]['sector_TSR'] >= compl:
 					w = 1.
-				if wm == 'iw':
-					w = 1./w	
-			pixlg[p] += 1.*w
-			zm += w*z
-			nt += w
+					w = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
+					zind = int(z/.01)
+					wfkp =ffkp[-1][zind]
+					w = w*wfkp
+					if wm == 'wstar':
+						pix2 = h.ang2pix_nest(256,th,phi)
+						ns = wsys[pix2]
+						ws = 1./(b+m*ns)
+						w = w*ws
+
+					#if f[i]['Z_reliable'] == False:
+					#	w = 0
+					#w = f[i]['w']
+					if wm == 'nw':
+						w = 1.
+					if wm == 'iw':
+						w = 1./w
+				else:
+					w = 0			
+			if w > 0:
+				no += 1
+				pixlg[p] += 1.*w
+				zm += w*z
+				nt += w
 	if d2:
 	
 		for i in range(0,len(f2)):
 			z = f2[i][zs]
-			if z > zmin and z < zmax:
+			if z > zmin and z < zmax and f2[i]['Z_reliable'] and f2[i]['sector_TSR'] >= compl:
 				no += 1
 				ra,dec = f2[i][rs],f2[i][ds]
 				th,phi = radec2thphi(ra,dec)
@@ -1849,8 +2143,8 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 					ws = 1./(b+m*ns)
 					w = w*ws
 
-				if f2[i]['Z_reliable'] == False:
-					w = 0
+				#if f2[i]['Z_reliable'] == False:
+				#	w = 0
 				#w = f[i]['w']
 				if wm == 'nw':
 					w = 1.
@@ -4663,33 +4957,55 @@ def plotNbarELG(ver='v5_10_7'):
 	d1 = np.loadtxt(ebossdir+'nbarELG21'+ver+'.dat').transpose()
 	d2 = np.loadtxt(ebossdir+'nbarELG22'+ver+'.dat').transpose()
 	d3 = np.loadtxt(ebossdir+'nbarELG23'+ver+'.dat').transpose()
-	plt.plot(d1[0],d1[1],'k-')
-	plt.plot(d1[0],d2[1],'r-')
-	plt.plot(d1[0],d3[1],'b-')
-	plt.xlim(0.5,1.5)
+	plt.plot(d1[0],d1[1]*10000,'k-')
+	plt.plot(d1[0],d2[1]*10000,'r-')
+	plt.plot(d1[0],d3[1]*10000,'b-')
+	plt.xlim(0.5,1.2)
+	plt.xlabel('redshift')
+	plt.ylabel(r'number density (10$^4$ [$h$/Mpc]$^3$)')
+	plt.text(1.1,4.6,'chunk 21',color='k')
+	plt.text(1.1,4.4,'chunk 22',color='r')
+	plt.text(1.1,4.2,'chunk 23',color='b')
 	plt.show()
 	return True
 
 
-def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.):
+def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 	from Cosmo import distance
 	d = distance(.31,.69)
 	from matplotlib import pyplot as plt
-	f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
-	area = len(f)/10000.
-	f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	d2 = False
+	sumr = 0
+	if chunk == '21p22':
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl:
+				sumr += f[i]['sector_TSR']
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f2)):
+			if f2[i]['sector_TSR'] > compl:
+				sumr += f2[i]['sector_TSR']
+
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl:
+				sumr += f[i]['sector_TSR']
+
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	area = (sumr)/10000.
+	print 'effective area is '+str(area)
 	no = 0
 	fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
 	zl = []
 	for i in range(0,nb):
 		zl.append(0)
-	vl = []
-	for i in range(0,len(zl)):
-		zlo = i*sp
-		zh = (i+1)*sp
-		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
-		vl.append(v)	
 	sum = 0
 	sumw = 0
 	sumt = 0	
@@ -4698,16 +5014,45 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.):
 		if z < zmax:
 			zind = int(z/sp)
 			
-			wfczss = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
+			wfczss = 1./(f[i]['plate_SSR'])
 			
 			sum += wfczss
-			if z > zmin and z < zmax and f[i]['Z_reliable']==True:
+			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl:
 				sumt += 1.
 				sumw += wfczss
 				zl[zind] += wfczss
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+			if z < zmax:
+				zind = int(z/sp)
+			
+				wfczss = 1./(f2[i]['plate_SSR'])
+			
+				sum += wfczss
+				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl:
+					sumt += 1.
+					sumw += wfczss
+					zl[zind] += wfczss
 			
 	print sumw/sumt
-	#f = sumw/sumt
+	#areaf = sumt/sumw
+	#area = area*areaf
+	#print 'effective area is '+str(area)
+	vl = []
+	veffl = []
+	nl = []
+	for i in range(0,len(zl)):
+		zlo = i*sp
+		zh = (i+1)*sp
+		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)
+		nbarz =  zl[i]/v	
+		nl.append(nbarz)
+		veff = v*(nbarz*P0/(1.+nbarz*P0))**2.
+		veffl.append(veff)
+
+	
 	f = 1.
 	zpl = []
 	nbl = []
@@ -4715,18 +5060,20 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.):
 	wtot = 0
 	zm = 0
 	nw = 0
+	nnw = 0
 	for i in range(0,nb):
 		z = sp/2.+sp*i
 		zpl.append(z)
-		fo.write(str(z)+' '+str(zl[i]/vl[i]/f)+' '+str(zl[i]/f)+' '+str(vl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+		fo.write(str(z)+' '+str(nl[i])+' '+str(zl[i])+' '+str(vl[i])+' '+str(veffl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
 		if z > .6 and z < 1.1:
 			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
 			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
 			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+			nnw += zl[i]
 		nbl.append(zl[i]/vl[i]/f)
 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 	fo.close()
-	print sum,zm/wtot,nw
+	print sum,zm/wtot,nw,nnw
 	plt.plot(zpl,nbl)
 	plt.show()
 	plt.plot(zpl,nbwl)
@@ -6371,6 +6718,58 @@ def plotxiQSOv(bs='10st0',v='v1.2'):
 	plt.text(30,180,v,color='b')
 	#plt.text(30,170,v2,color='r')
 	plt.title(r'Correlation function of quasars, 0.9 < z < 2.2')
+	pp.savefig()
+	pp.close()
+
+	return True
+
+def plotxiELGv(samp,bs='8st0',v='v5_10_7',wm='fkpwstar',zmin=.6,zmax=1.1):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi0ELG'+samp+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	dnw = np.loadtxt(ebossdir+'xi0gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	dm = np.loadtxt(ebossdir+'xi0gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	plt.plot(dt[0],dt[0]**2.*dt[1],'k:')
+	plt.plot(dm[0],dm[0]**2.*(dnw[1]),'--',color='.5')
+	plt.plot(dm[0],dm[0]**2.*(dm[1]),'k-')
+	plt.xlim(20,200)
+	plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in chunk '+samp+' , '+str(zmin)+' < z < '+str(zmax))
+	pp.savefig()
+	pp.close()
+
+	return True
+
+def plotxiELGv_quad(samp,bs='8st0',v='v5_10_7',wm='fkpwstar',zmin=.6,zmax=1.1):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi2ELG'+samp+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	dnw = np.loadtxt(ebossdir+'xi2gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	dm = np.loadtxt(ebossdir+'xi2gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+
+	dt = np.loadtxt('BAOtemplates/xi2Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	plt.plot(dt[0],dt[0]*dt[1],'k:')
+	plt.plot(dm[0],dm[0]*(dnw[1]),'--',color='.5')
+	plt.plot(dm[0],dm[0]*(dm[1]),'k-')
+	plt.xlim(20,200)
+	plt.ylim(-2,0.8)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+	plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in chunk '+samp+' , '+str(zmin)+' < z < '+str(zmax))
 	pp.savefig()
 	pp.close()
 
