@@ -7,6 +7,7 @@ dirscio = '/mnt/lustre/ashleyr/eboss/mocks/'
 import fitsio #needed to read data
 import numpy as np
 from math import *
+import matplotlib.cm as cm
 
 
 
@@ -253,7 +254,7 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	fo.close()
 	return True
 
-def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl=.5,fkp='fkp',wm='wstar'):
+def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl=.8,compls=.7,fkp='fkp',wm='wstar'):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
@@ -289,9 +290,9 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		m = 0
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
-		if f[i]['sector_TSR'] < compl:
+		if f[i]['sector_TSR'] < compl or f[i]['sector_SSR'] < compls:
 			m = 1
-		if z > zmin and z < zmax and m == 0 and f[i]['Z_reliable'] == True:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+		if z > zmin and z < zmax and m == 0 and f[i]['Z_reliable'] == True and f[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 			ra,dec = f[i]['ra'],f[i]['dec']
 			th,phi = radec2thphi(ra,dec)
 			if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
@@ -325,9 +326,9 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 			m = 0
 			#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 			#	m = 1
-			if f2[i]['sector_TSR'] < compl:
+			if f2[i]['sector_TSR'] < compl or f2[i]['sector_SSR'] < compls:
 				m = 1
-			if z > zmin and z < zmax and m == 0 and f2[i]['Z_reliable'] == True:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+			if z > zmin and z < zmax and m == 0 and f2[i]['Z_reliable'] == True and f2[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 				ra,dec = f2[i]['ra'],f2[i]['dec']
 				th,phi = radec2thphi(ra,dec)
 				if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
@@ -360,7 +361,7 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 	fo.close()
 	return True		
 
-def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=.5,fkp='fkp',wm='wstar'):
+def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=.8,compls=.7,fkp='fkp',wm='wstar'):
 	from random import random
 	if comp == 'sci':
 		dir = dirsci 
@@ -392,13 +393,16 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 		indz = int(random()*len(gf[2]))
 		z = gf[2][indz]
 		wg = gf[3][indz]
-		w = wg*f[i]['sector_TSR']*f[i]['plate_SSR']
+		if wm == 'noSSR':
+			w = wg*f[i]['sector_TSR']
+		else:	
+			w = wg*f[i]['sector_TSR']*f[i]['plate_SSR']
 		m = 0
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
 
 		#if z > zmin and z < zmax:
-		if f[i]['sector_TSR'] >= compl:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+		if f[i]['sector_TSR'] >= compl and f[i]['sector_SSR'] >= compls:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
 			nw += w
@@ -407,13 +411,16 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 			indz = int(random()*len(gf[2]))
 			z = gf[2][indz]
 			wg = gf[3][indz]
-			w = wg*f2[i]['sector_TSR']*f2[i]['plate_SSR']
+			if wm == 'noSSR':
+				w = wg*f2[i]['sector_TSR']
+			else:	
+				w = wg*f2[i]['sector_TSR']*f2[i]['plate_SSR']
 			m = 0
 			#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 			#	m = 1
 
 			#if z > zmin and z < zmax:
-			if f2[i]['sector_TSR'] >= compl:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+			if f2[i]['sector_TSR'] >= compl and f2[i]['sector_SSR'] >= compls:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 				fo.write(str(f2[i]['ra'])+' '+str(f2[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
@@ -449,6 +456,96 @@ def mkranELG4xifit(samp='chunk23',zmin=.7,zmax=1.,comp = 'sci',N=0):
 	print n #just helps to know things worked properly
 	fo.close()
 	return True
+
+def plotfootQSO(NS,cmap=cm.coolwarm,v='v5_10_7'):
+	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	import fitsio
+	
+	from mpl_toolkits.basemap import Basemap
+	from mangle import graphmask
+	from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+	
+	plt.rc('font', family='serif', size=24)
+#from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+	plt.clf()
+	fig = plt.figure(figsize=(12,6.7))
+	ax = fig.add_subplot(111)
+	f = fitsio.read(dirfits +'eboss_'+v+'-QSO-'+NS+'-eboss_'+v+'.ran.fits')
+	#if NS == 'S':
+	#	m=Basemap(lon_0=0,lat_0=15,width=100,height=50,projection='laea')
+	#m=Basemap(lon_0=180,lat_0=45,width=12000000,height=8000000,projection='laea')
+	if NS == 'N':
+		m = graphmask.Skymap(cenaz=180,cenel=55,projection='laea',width=100,height=50)
+	if NS == 'S':	
+		m = graphmask.Skymap(cenaz=0,cenel=13,projection='laea',width=100,height=50)
+	lon, lat = m(f['RA'],f['DEC'])
+	print min(lon),max(lon),min(lat),max(lat)
+	#cmap = cm.jet
+	#cmap = cm.viridis
+	#cmap = cm.coolwarm
+	#cmap = cm.copper
+	map = plt.scatter(lon,lat,c=f['COMP'],s=.1,cmap=cmap,vmin=.5,lw=0)
+	m.scatter(lon,lat,c=f['COMP'],s=.1,cmap=cmap,vmin=.5,lw=0)
+	#cbar = plt.colorbar(map)
+	#cbar.set_label(r'$n_g$ (arcmin$^{-2}$)', rotation=270,fontsize=14)
+	plt.xlabel('right ascension J2000 (degrees)',fontsize=24)
+	plt.ylabel('declination J2000 (degrees)',fontsize=24)
+	m.drawmeridians(np.arange(0,360,20),linewidth=.2,fontsize=24,labels=[0,0,0,0])#,labels=[True,True,True,True])
+	if NS == 'N':
+		plt.text(0.098, -0.085, r'220$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.293, -0.085, r'200$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.48, -0.085, r'180$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.66, -0.085, r'160$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.855, -0.085, r'140$^{\circ}$',transform=ax.transAxes,fontsize=24)
+	if NS == 'S':
+		plt.text(0.096, -0.085, r'40$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.288, -0.085, r'20$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.49, -0.085, r'0$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.663, -0.085, r'340$^{\circ}$',transform=ax.transAxes,fontsize=24)
+		plt.text(0.865, -0.085, r'320$^{\circ}$',transform=ax.transAxes,fontsize=24)
+	m.drawparallels(np.arange(-10,80,10),linewidth=.2, fontsize=24)#,labels=[True,True,True,True])
+	#meridians = np.arange(0,360,20)
+	#meridians1=(meridians-(m.cenaz-180))%360+(m.cenaz-180)
+	#Basemap.drawmeridians(m,np.arange(0,360,20),fmt=mlabelzero22pi,labels=[0,0,0,0],linewidth=1.,color='gray')
+	plt.gca().xaxis.set_label_coords(.5,-.1)
+	plt.gca().yaxis.set_label_coords(-.09,.5)
+	if NS == 'N':
+		axins=inset_axes(plt.gca(),width="40%",height="3%",loc=1)
+		plt.colorbar(map,cax=axins,orientation='horizontal',ticks=[.5, .6, .7, .8, .9, 1.])
+	#plt.drawmeridians(arange(0,360,20),linewidth=.2,fontsize=20)
+	plt.savefig('footprint'+NS+v+'.png')
+	#plt.show()
+	#pp.savefig()
+	#pp.close()
+	return True
+
+def plotELGcomp(chunk,comp='plate_SSR',cmap=cm.coolwarm,v='v5_10_7'):
+	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	import fitsio
+	import matplotlib.cm as cm
+	
+	plt.clf()
+	fig = plt.figure(figsize=(12,6.7))
+	ax = fig.add_subplot(111)
+	f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.rands.fits')
+	map = plt.scatter(f['ra'],f['dec'],c=f[comp],s=.1,cmap=cmap,vmin=.5,lw=0)
+	#cbar = plt.colorbar(map)
+	plt.xlabel('right ascension J2000 (degrees)',fontsize=24)
+	plt.ylabel('declination J2000 (degrees)',fontsize=24)
+	plt.colorbar(map,orientation='horizontal',ticks=[.5, .6, .7, .8, .9, 1.])
+	#plt.drawmeridians(arange(0,360,20),linewidth=.2,fontsize=20)
+	plt.savefig(ebossdir+'elg'+chunk+comp+'.png')
+	#plt.show()
+	#pp.savefig()
+	#pp.close()
+	return True
+
 
 
 def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',ms='ms',wm='',compmin=0,gmin=0,gmax=30,zpl=False,gri22='gri22',znudge=False,wmin=False,extc=False,depthc=False,depthextc=False,decmax=False):
@@ -2097,9 +2194,9 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 					ext = f[i]['EB_MINUS_V']
 					w = w*(1./(be+me*ext))
 			else:
-				if f[i]['Z_reliable'] and f[i]['sector_TSR'] >= compl:
+				if f[i]['Z_reliable'] and f[i]['sector_TSR'] >= compl and f[i]['isdupl'] == False:
 					w = 1.
-					w = 1./(f[i]['sector_TSR']*f[i]['plate_SSR'])
+					w = 1./(f[i]['sector_TSR'])#*f[i]['plate_SSR'])
 					zind = int(z/.01)
 					wfkp =ffkp[-1][zind]
 					w = w*wfkp
@@ -2127,13 +2224,13 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 	
 		for i in range(0,len(f2)):
 			z = f2[i][zs]
-			if z > zmin and z < zmax and f2[i]['Z_reliable'] and f2[i]['sector_TSR'] >= compl:
+			if z > zmin and z < zmax and f2[i]['Z_reliable'] and f2[i]['sector_TSR'] >= compl and f2[i]['isdupl'] == False:
 				no += 1
 				ra,dec = f2[i][rs],f2[i][ds]
 				th,phi = radec2thphi(ra,dec)
 				p = int(h.ang2pix_nest(res,th,phi))
 				w = 1.
-				w = 1./(f2[i]['sector_TSR']*f2[i]['plate_SSR'])
+				w = 1./(f2[i]['sector_TSR'])#*f2[i]['plate_SSR'])
 				zind = int(z/.01)
 				wfkp =ffkp[-1][zind]
 				w = w*wfkp
@@ -4952,11 +5049,11 @@ def mkNbarz(NS,area,sample='QSO',version='v1.8',sp=0.02,zmin=0.1,zmax=2.9):
 	print sum
 	return True
 
-def plotNbarELG(ver='v5_10_7'):
+def plotNbarELG(ver='v5_10_7',nocut='nocut'):
 	from matplotlib import pyplot as plt
-	d1 = np.loadtxt(ebossdir+'nbarELG21'+ver+'.dat').transpose()
-	d2 = np.loadtxt(ebossdir+'nbarELG22'+ver+'.dat').transpose()
-	d3 = np.loadtxt(ebossdir+'nbarELG23'+ver+'.dat').transpose()
+	d1 = np.loadtxt(ebossdir+'nbarELG21'+ver+nocut+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'nbarELG22'+ver+nocut+'.dat').transpose()
+	d3 = np.loadtxt(ebossdir+'nbarELG23'+ver+nocut+'.dat').transpose()
 	plt.plot(d1[0],d1[1]*10000,'k-')
 	plt.plot(d1[0],d2[1]*10000,'r-')
 	plt.plot(d1[0],d3[1]*10000,'b-')
@@ -4970,7 +5067,7 @@ def plotNbarELG(ver='v5_10_7'):
 	return True
 
 
-def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
+def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7):
 	from Cosmo import distance
 	d = distance(.31,.69)
 	from matplotlib import pyplot as plt
@@ -4979,11 +5076,11 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 	if chunk == '21p22':
 		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f)):
-			if f[i]['sector_TSR'] > compl:
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
 				sumr += f[i]['sector_TSR']
 		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f2)):
-			if f2[i]['sector_TSR'] > compl:
+			if f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
 				sumr += f2[i]['sector_TSR']
 
 		
@@ -4994,7 +5091,7 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 	else:
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f)):
-			if f[i]['sector_TSR'] > compl:
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
 				sumr += f[i]['sector_TSR']
 
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
@@ -5008,7 +5105,8 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 		zl.append(0)
 	sum = 0
 	sumw = 0
-	sumt = 0	
+	sumt = 0
+	ndup = 0	
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		if z < zmax:
@@ -5017,10 +5115,12 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 			wfczss = 1./(f[i]['plate_SSR'])
 			
 			sum += wfczss
-			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl:
+			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['isdupl'] == False:
 				sumt += 1.
 				sumw += wfczss
 				zl[zind] += wfczss
+			if f[i]['isdupl']:
+				ndup += 1.	
 	if d2:
 		for i in range(0,len(f2)):
 			z = f2[i]['Z']
@@ -5030,11 +5130,14 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 				wfczss = 1./(f2[i]['plate_SSR'])
 			
 				sum += wfczss
-				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl:
+				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls and f2[i]['isdupl'] == False:
 					sumt += 1.
 					sumw += wfczss
 					zl[zind] += wfczss
+				if f2[i]['isdupl']:
+					ndup += 1.	
 			
+	print ndup
 	print sumw/sumt
 	#areaf = sumt/sumw
 	#area = area*areaf
@@ -5080,6 +5183,332 @@ def mkNbarELG(chunk,ver,sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.5):
 	plt.show()
 	return True
 
+def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	d2 = False
+	sumr = 0
+	if chunk == '21p22':
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				sumr += f[i]['sector_TSR']
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f2)):
+			if f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
+				sumr += f2[i]['sector_TSR']
+
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				sumr += f[i]['sector_TSR']
+
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	area = (sumr)/10000.
+	print 'effective area is '+str(area)
+	no = 0
+	fo = open(ebossdir+'nbarELG'+chunk+ver+'nocut.dat','w')
+	nb = int(zmax/sp)
+	zl = []
+	for i in range(0,nb):
+		zl.append(0)
+	sum = 0
+	sumw = 0
+	sumt = 0
+	ndup = 0	
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z < zmax:
+			zind = int(z/sp)
+			
+			wfczss = 1.#/(f[i]['plate_SSR'])
+			
+			sum += wfczss
+			if z > zmin and z < zmax and f[i]['CLASS'] == 'GALAXY' and f[i]['isdupl'] == False:#f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['isdupl'] == False:
+				sumt += 1.
+				sumw += wfczss
+				zl[zind] += wfczss
+			if f[i]['isdupl']:
+				ndup += 1.	
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+			if z < zmax:
+				zind = int(z/sp)
+			
+				wfczss = 1.#/(f2[i]['plate_SSR'])
+			
+				sum += wfczss
+				if z > zmin and z < zmax and f2[i]['CLASS'] == 'GALAXY' and f2[i]['isdupl'] == False:#f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls and f2[i]['isdupl'] == False:
+					sumt += 1.
+					sumw += wfczss
+					zl[zind] += wfczss
+				if f2[i]['isdupl']:
+					ndup += 1.	
+			
+	print ndup
+	print sumw/sumt
+	#areaf = sumt/sumw
+	#area = area*areaf
+	#print 'effective area is '+str(area)
+	vl = []
+	veffl = []
+	nl = []
+	for i in range(0,len(zl)):
+		zlo = i*sp
+		zh = (i+1)*sp
+		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)
+		nbarz =  zl[i]/v	
+		nl.append(nbarz)
+		veff = v*(nbarz*P0/(1.+nbarz*P0))**2.
+		veffl.append(veff)
+
+	
+	f = 1.
+	zpl = []
+	nbl = []
+	nbwl = []
+	wtot = 0
+	zm = 0
+	nw = 0
+	nnw = 0
+	for i in range(0,nb):
+		z = sp/2.+sp*i
+		zpl.append(z)
+		fo.write(str(z)+' '+str(nl[i])+' '+str(zl[i])+' '+str(vl[i])+' '+str(veffl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+		if z > .6 and z < 1.1:
+			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
+			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
+			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+			nnw += zl[i]
+		nbl.append(zl[i]/vl[i]/f)
+		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
+	fo.close()
+	print sum,zm/wtot,nw,nnw
+	plt.plot(zpl,nbl)
+	plt.show()
+	plt.plot(zpl,nbwl)
+	plt.show()
+	return True
+
+def ELG_SSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	d2 = False
+	sumr = 0
+	if chunk == '21p22':
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	ngal = 0
+	nq = 0
+	nqz = 0
+	nstar = 0
+	ngoodgal = 0
+	nSSR = 0
+	ntot = 0
+	for i in range(0,len(f)):
+		if f[i]['isdupl'] == False:
+			ntot += 1.
+			if f[i]['CLASS'] == 'GALAXY':
+				ngal += 1.
+				if f[i]['Z_reliable']:
+					ngoodgal += 1.
+					nSSR += f[i]['sector_SSR']
+			if f[i]['CLASS'] == 'QSO':
+				nq += 1.
+				if f[i]['Z_reliable']:
+					nqz += 1.
+			if f[i]['CLASS'] == 'STAR':
+				nstar += 1.
+	if d2:
+		for i in range(0,len(f2)):
+			ntot += 1.
+			if f2[i]['isdupl'] == False:
+				if f2[i]['CLASS'] == 'GALAXY':
+					ngal += 1.
+					if f2[i]['Z_reliable']:
+						ngoodgal += 1.
+						nSSR += f2[i]['sector_SSR']
+				if f2[i]['CLASS'] == 'QSO':
+					nq += 1.
+					if f[i]['Z_reliable']:
+						nqz += 1.
+					
+				if f2[i]['CLASS'] == 'STAR':
+					nstar += 1.
+			
+	print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
+	print ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz)
+	return True
+
+
+def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7,split=.8):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	d2 = False
+	sumr1 = 0
+	sumr2 = 0
+	if chunk == '21p22':
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				if f[i]['plate_SSR'] > split:
+					sumr1 += f[i]['sector_TSR']
+				else:
+					sumr2 += f[i]['sector_TSR']	
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f2)):
+			if f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
+				if f2[i]['plate_SSR'] > split:
+					sumr1 += f2[i]['sector_TSR']
+				else:
+					sumr2 += f2[i]['sector_TSR']	
+
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
+		for i in range(0,len(f)):
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				if f[i]['plate_SSR'] > split:
+					sumr1 += f[i]['sector_TSR']
+				else:
+					sumr2 += f[i]['sector_TSR']	
+
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	area1 = (sumr1)/10000.
+	area2 = (sumr2)/10000.
+	print 'effective areas are '+str(area1) +' and '+str(area2)
+	no = 0
+	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
+	nb = int(zmax/sp)
+	zl1 = []
+	zl2 = []
+	for i in range(0,nb):
+		zl1.append(0)
+		zl2.append(0)
+	sum = 0
+	sumw = 0
+	sumt = 0	
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z < zmax:
+			zind = int(z/sp)
+			
+			wfczss = 1./(f[i]['plate_SSR'])
+			
+			sum += wfczss
+			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				sumt += 1.
+				sumw += wfczss
+				if f[i]['plate_SSR'] > split:
+					zl1[zind] += wfczss
+				else:
+					zl2[zind] += wfczss	
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+			if z < zmax:
+				zind = int(z/sp)
+			
+				wfczss = 1./(f2[i]['plate_SSR'])
+			
+				sum += wfczss
+				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
+					sumt += 1.
+					sumw += wfczss
+					if f2[i]['plate_SSR'] > split:
+						zl1[zind] += wfczss
+					else:
+						zl2[zind] += wfczss	
+			
+	print sumw/sumt
+	#areaf = sumt/sumw
+	#area = area*areaf
+	#print 'effective area is '+str(area)
+	vl = []
+	veffl = []
+	nl = []
+	nl2 = []
+	zpl = []
+	for i in range(0,len(zl1)):
+		z = sp/2.+sp*i
+		zpl.append(z)
+
+		zlo = i*sp
+		zh = (i+1)*sp
+		v = area1/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		v2 = area2/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)
+		nbarz =  zl1[i]/v	
+		nl.append(nbarz)
+		nbarz2 =  zl2[i]/v2	
+		nl2.append(nbarz2)
+		veff = v*(nbarz*P0/(1.+nbarz*P0))**2.
+		veffl.append(veff)
+
+	
+	f = 1.
+	
+	nbl = []
+	nbwl = []
+	wtot = 0
+	zm = 0
+	nw = 0
+	nnw = 0
+# 	for i in range(0,nb):
+# 		fo.write(str(z)+' '+str(nl[i])+' '+str(zl[i])+' '+str(vl[i])+' '+str(veffl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+# 		if z > .6 and z < 1.1:
+# 			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
+# 			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
+# 			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+# 			nnw += zl[i]
+# 		nbl.append(zl[i]/vl[i]/f)
+# 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
+# 	fo.close()
+# 	print sum,zm/wtot,nw,nnw
+	plt.plot(zpl,nl,zpl,nl2)
+	plt.show()
+	return True
+
+
+
+def calcVeffqso(zmin=.8,zmax=2.2,P0=6000.):
+	ds = np.loadtxt(ebossdir+'nbar-eboss_v1.9f-QSO-S-eboss_v1.9f.dat').transpose()
+	dn = np.loadtxt(ebossdir+'nbar-eboss_v1.9f-QSO-N-eboss_v1.9f.dat').transpose()
+	veff = 0	
+	for i in range(0,len(ds[0])):
+		z = ds[0][i]
+		if z > zmin and z < zmax:
+			
+			ns = ds[3][i]
+			nn = dn[3][i]
+			vs = ds[-2][i]
+			vn = dn[-2][i]
+			nt = (ns+nn)/2.
+			vt = vs+vn
+			veffb = vt*(nt*P0/(1.+nt*P0))**2.
+			veff += veffb
+	return veff
 
 
 def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
@@ -6743,6 +7172,19 @@ def plotxiELGv(samp,bs='8st0',v='v5_10_7',wm='fkpwstar',zmin=.6,zmax=1.1):
 	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
 	plt.text(30,180,v,color='b')
 	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in chunk '+samp+' , '+str(zmin)+' < z < '+str(zmax))
+	pp.savefig()
+	pp.close()
+	pp = PdfPages(ebossdir+'xi0ELG'+samp+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'xs.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.plot(dt[0],dt[0]*dt[1],'k:')
+	plt.plot(dm[0],dm[0]*(dnw[1]),'--',color='.5')
+	plt.plot(dm[0],dm[0]*(dm[1]),'k-')
+	plt.xlim(20,200)
+	plt.ylim(-.5,2)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s\xi(s)$ ($h^{-1}$Mpc)',size=16)
 	plt.title(r'Correlation function of ELGs in chunk '+samp+' , '+str(zmin)+' < z < '+str(zmax))
 	pp.savefig()
 	pp.close()
