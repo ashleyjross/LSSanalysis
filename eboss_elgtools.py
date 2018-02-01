@@ -906,39 +906,46 @@ def ELG_SSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,comp
 	ngoodgal = 0
 	nSSR = 0
 	ntot = 0
+	ngoodtot = 0
+	ngz = 0
+	nqzz = 0
+	nqf = 0
+	nqfz = 0
+	nbg = 0
+	nbgz = 0
 	for i in range(0,len(f)):
 		if f[i]['isdupl'] == False:
 			ntot += 1.
+			nSSR += f[i]['sector_SSR']
+			if f[i]['Z_reliable']:
+				ngoodtot += 1.
+				if 0.6 < f[i]['Z'] < 1.1:
+					ngz += 1.
+				
 			if f[i]['CLASS'] == 'GALAXY':
 				ngal += 1.
 				if f[i]['Z_reliable']:
 					ngoodgal += 1.
-					nSSR += f[i]['sector_SSR']
+				else:
+					nbg += 1.	
+					if 0.6 < f[i]['Z'] < 1.1:
+						nbgz += 1.
 			if f[i]['CLASS'] == 'QSO':
 				nq += 1.
 				if f[i]['Z_reliable']:
 					nqz += 1.
+					if 0.6 < f[i]['Z'] < 1.1:
+						nqzz += 1.
+				else:
+					nqf += 1.
+					if 0.6 < f[i]['Z'] < 1.1:	
+						nqfz += 1.	
+
 			if f[i]['CLASS'] == 'STAR':
 				nstar += 1.
-	if d2:
-		for i in range(0,len(f2)):
-			ntot += 1.
-			if f2[i]['isdupl'] == False:
-				if f2[i]['CLASS'] == 'GALAXY':
-					ngal += 1.
-					if f2[i]['Z_reliable']:
-						ngoodgal += 1.
-						nSSR += f2[i]['sector_SSR']
-				if f2[i]['CLASS'] == 'QSO':
-					nq += 1.
-					if f[i]['Z_reliable']:
-						nqz += 1.
-					
-				if f2[i]['CLASS'] == 'STAR':
-					nstar += 1.
 			
 	print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
-	print ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz)
+	print ngoodgal/ngal,nSSR/ntot,ngoodtot/ntot,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ntot),nqz/nq,nq/ntot,ngz/ngoodtot,nqzz/nqz,nqfz/nqf,nbgz/nbg
 	return True
 
 def ELG_SSRvsSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7):
@@ -1001,7 +1008,7 @@ def ELG_SSRvsSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8
 	return True
 
 
-def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7,split=.8):
+def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7,split=.8,zm=''):
 	from Cosmo import distance
 	d = distance(.31,.69)
 	from matplotlib import pyplot as plt
@@ -1057,11 +1064,16 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 		z = f[i]['Z']
 		if z < zmax:
 			zind = int(z/sp)
-			
-			wfczss = 1./(f[i]['plate_SSR'])
+			if zm == 'allz':
+				wfczss = 1.
+			else:
+				wfczss = 1./(f[i]['plate_SSR'])
 			
 			sum += wfczss
-			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+			kz = 0
+			if f[i]['Z_reliable']==True or zm == 'allz':
+				kz = 1
+			if z > zmin and z < zmax and kz == 1 and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
 				sumt += 1.
 				sumw += wfczss
 				if f[i]['plate_SSR'] > split:
@@ -1074,10 +1086,18 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 			if z < zmax:
 				zind = int(z/sp)
 			
-				wfczss = 1./(f2[i]['plate_SSR'])
+				if zm == 'allz':
+					wfczss = 1.
+				else:
+					wfczss = 1./(f2[i]['plate_SSR'])
 			
 				sum += wfczss
-				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
+				kz = 0
+				if f2[i]['Z_reliable']==True or zm == 'allz':
+					kz = 1
+			
+				sum += wfczss
+				if z > zmin and z < zmax and kz == 1 and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
 					sumt += 1.
 					sumw += wfczss
 					if f2[i]['plate_SSR'] > split:
@@ -1145,14 +1165,14 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f)):
 			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
-				if f[i]['plate_SSR'] > split:
+				if f[i]['decam_depth_r'] > split:
 					sumr1 += f[i]['sector_TSR']
 				else:
 					sumr2 += f[i]['sector_TSR']	
 		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f2)):
 			if f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
-				if f2[i]['depth_ivar_r'] > split:
+				if f2[i]['decam_depth_r'] > split:
 					sumr1 += f2[i]['sector_TSR']
 				else:
 					sumr2 += f2[i]['sector_TSR']	
@@ -1166,7 +1186,7 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.rands.fits')
 		for i in range(0,len(f)):
 			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
-				if f[i]['depth_ivar_r'] > split:
+				if f[i]['decam_depth_r'] > split:
 					sumr1 += f[i]['sector_TSR']
 				else:
 					sumr2 += f[i]['sector_TSR']	
@@ -1197,7 +1217,7 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
 				sumt += 1.
 				sumw += wfczss
-				if f[i]['depth_ivar_r'] > split:
+				if f[i]['decam_depth'][2] > split:
 					zl1[zind] += wfczss
 				else:
 					zl2[zind] += wfczss	
@@ -1213,7 +1233,7 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 				if z > zmin and z < zmax and f2[i]['Z_reliable']==True and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
 					sumt += 1.
 					sumw += wfczss
-					if f2[i]['depth_ivar_r'] > split:
+					if f2[i]['decam_depth'][2] > split:
 						zl1[zind] += wfczss
 					else:
 						zl2[zind] += wfczss	
@@ -1267,8 +1287,9 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 	nl2 = np.array(nl2)
 	plt.plot(zpl,nl*1e4,zpl,nl2*1e4)
 	plt.xlabel('redshift')
-	plt.ylabel(r'$n(z) (h/Mpc)^3$')
-	plt.legend(labels=['depth_ivar_r>220','depth_ivar_r<=220'])
+	plt.ylabel(r'$10^4 n(z) (h/Mpc)^3$')
+	plt.legend(labels=['decam_depth_r>'+str(split),'decam_depth_r<='+str(split)])
+	plt.title('Chunk '+chunk)
 	plt.show()
 	return True
 
@@ -1370,6 +1391,225 @@ def mkNbarELG_splitplate(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,
 	plt.xlabel('redshift')
 	plt.ylabel('Normalized redshift histogram')
 	plt.legend(labels=['plate>9590','plate<=9590'])
+	plt.show()
+	return True
+
+def nzELG_splitfailures(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=0,compls=0):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	d2 = False
+	sumr1 = 0
+	sumr2 = 0
+	if chunk == '21p22':
+
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	no = 0
+	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
+	nb = int(zmax/sp)
+	zl1 = []
+	zl2 = []
+	for i in range(0,nb):
+		zl1.append(0)
+		zl2.append(0)
+	#sum = 0
+	sumw = 0
+	sumt = 0	
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z < zmax:
+			zind = int(z/sp)
+			
+			wfczss = 1.#/(f[i]['plate_SSR'])
+			
+			#sum += wfczss
+			if z > zmin and z < zmax and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+				sumt += 1.
+				sumw += wfczss
+				if f[i]['Z_reliable']==True:
+					zl1[zind] += wfczss
+				else:
+					zl2[zind] += wfczss	
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+			if z < zmax:
+				zind = int(z/sp)
+			
+				wfczss = 1.#/(f2[i]['plate_SSR'])
+			
+				#sum += wfczss
+				if z > zmin and z < zmax and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls:
+					sumt += 1.
+					sumw += wfczss
+					if f2[i]['Z_reliable']==True:
+						zl1[zind] += wfczss
+					else:
+						zl2[zind] += wfczss	
+			
+	print sumw/sumt
+	#areaf = sumt/sumw
+	#area = area*areaf
+	#print 'effective area is '+str(area)
+	vl = []
+	veffl = []
+	nl = []
+	nl2 = []
+	zpl = []
+	for i in range(0,len(zl1)):
+		z = sp/2.+sp*i
+		zpl.append(z)
+
+
+	
+	f = 1.
+	
+	nbl = []
+	nbwl = []
+	wtot = 0
+	zm = 0
+	nw = 0
+	nnw = 0
+# 	for i in range(0,nb):
+# 		fo.write(str(z)+' '+str(nl[i])+' '+str(zl[i])+' '+str(vl[i])+' '+str(veffl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+# 		if z > .6 and z < 1.1:
+# 			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
+# 			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
+# 			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+# 			nnw += zl[i]
+# 		nbl.append(zl[i]/vl[i]/f)
+# 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
+# 	fo.close()
+# 	print sum,zm/wtot,nw,nnw
+	zl1 = np.array(zl1)
+	zl2 = np.array(zl2)
+	plt.plot(zpl,zl1/sum(zl1),zpl,zl2/sum(zl2))
+	plt.xlabel('redshift')
+	plt.ylabel('Normalized redshift histogram')
+	plt.legend(labels=['reliable','not reliable'])
+	plt.show()
+	return True
+
+def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=0,compls=0,splitv=20,plus=2):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	from matplotlib import pyplot as plt
+	d2 = False
+	sumr1 = 0
+	sumr2 = 0
+	if chunk == '21p22':
+
+		
+		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
+		f2 = fitsio.read(dirfits+'eboss22'+'.'+ver+'.latest.fits')
+		d2 = True
+
+	else:
+		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
+	no = 0
+	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
+	nb = int(zmax/sp)
+	zl1 = []
+	zl2 = []
+	for i in range(0,nb):
+		zl1.append(0)
+		zl2.append(0)
+	#sum = 0
+	sumw = 0
+	sumt = 0
+	ssr1 = 0
+	ssr2 = 0
+	n1 = 0
+	n2 = 0	
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		if z < zmax:
+			zind = int(z/sp)
+			
+			wfczss = 1.#/(f[i]['plate_SSR'])
+			
+			#sum += wfczss
+			if z > zmin and z < zmax and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['Z_reliable']==True:
+				sumt += 1.
+				sumw += wfczss
+				if f[i]['plate_rSN2'] > splitv+plus:
+					zl1[zind] += wfczss
+					ssr1 += f[i]['sector_SSR']
+					n1 += 1.
+				if f[i]['plate_rSN2'] < splitv-plus:
+					zl2[zind] += wfczss	
+					ssr2 += f[i]['sector_SSR']
+					n2 += 1.
+	if d2:
+		for i in range(0,len(f2)):
+			z = f2[i]['Z']
+			if z < zmax:
+				zind = int(z/sp)
+			
+				wfczss = 1.#/(f2[i]['plate_SSR'])
+			
+				#sum += wfczss
+				if z > zmin and z < zmax and f2[i]['sector_TSR'] > compl and f2[i]['sector_SSR'] > compls and f2[i]['Z_reliable']==True:
+					sumt += 1.
+					sumw += wfczss
+					if f2[i]['plate_rSN2'] > splitv+plus:
+						zl1[zind] += wfczss
+						ssr1 += f2[i]['sector_SSR']
+						n1 += 1.
+					if f2[i]['plate_rSN2'] < splitv-plus:
+						zl2[zind] += wfczss	
+						ssr2 += f2[i]['sector_SSR']
+						n2 += 1.
+			
+	print sumw/sumt
+	fac = (ssr1/n1)/(ssr2/n2)
+	#areaf = sumt/sumw
+	#area = area*areaf
+	#print 'effective area is '+str(area)
+	vl = []
+	veffl = []
+	nl = []
+	nl2 = []
+	zpl = []
+	for i in range(0,len(zl1)):
+		z = sp/2.+sp*i
+		zpl.append(z)
+
+
+	
+	f = 1.
+	
+	nbl = []
+	nbwl = []
+	wtot = 0
+	zm = 0
+	nw = 0
+	nnw = 0
+# 	for i in range(0,nb):
+# 		fo.write(str(z)+' '+str(nl[i])+' '+str(zl[i])+' '+str(vl[i])+' '+str(veffl[i])+' '+str(1./(1.+zl[i]/vl[i]/f*P0))+'\n')
+# 		if z > .6 and z < 1.1:
+# 			zm += z*1./(1.+zl[i]/vl[i]/f*P0)
+# 			wtot += 1./(1.+zl[i]/vl[i]/f*P0)
+# 			nw += zl[i]/(1.+zl[i]/vl[i]/f*P0)
+# 			nnw += zl[i]
+# 		nbl.append(zl[i]/vl[i]/f)
+# 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
+# 	fo.close()
+# 	print sum,zm/wtot,nw,nnw
+	zl1 = np.array(zl1)
+	zl2 = np.array(zl2)
+	diffl = zl1/sum(zl1)*fac-zl2/sum(zl2)
+	print fac
+	plt.plot(zpl,zl1/sum(zl1),zpl,zl2/sum(zl2),zpl,diffl/sum(diffl))
+	plt.xlabel('redshift')
+	plt.ylabel('Normalized redshift histogram')
+	plt.legend(labels=['SNR > '+str(splitv+plus),'SNR < '+str(splitv-plus)])
 	plt.show()
 	return True
 
@@ -1590,7 +1830,7 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 	plotvssys_simp(xl,yl,el,sys)
 	return xl,yl,el
 
-def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=128,band=-1,compl=.5,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22=''):
+def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=256,band=-1,compl=.5,wm='',umag=False,gmag=False,rmag=False,imag=False,umg=False,gri=False,gri22=''):
 	#sample is the sample being used, e.g. 'lrg'
 	#uses files with imaging properties filled
 	#NS is either 'N' or 'S'
@@ -1602,7 +1842,7 @@ def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=128,band=-1,compl=.
 	#zmin is the minimum redshift to use, 0.6 is minimum used for lrgs, 0.9 for qsos
 	#zmax is the maximum redshift to used, 1.0 for lrgs and 2.2 for qsos
 	from healpix import radec2thphi,ang2pix_ring
-	mapf = fitsio.read(ebossdir+'ELG_systhp.hp128.fits')
+	mapf = fitsio.read(ebossdir+'ELG_systhp.hp'+str(nside)+'.fits')
 	mapl = np.zeros((12*nside*nside))
 	for i in range(0,len(mapf)):
 		pix = mapf[i]['hpind']
@@ -1806,4 +2046,102 @@ def plotvssys_simp(xl,yl,el,sys):
 	#pp.close()
 	return True
 
+def plotxiELG(chunk='21p22',bs='8st0',v='v5_10_7',wm='fkp',zmin=.7,zmax=1.1):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi0ELG'+chunk+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi0gebossELG_SGCtest'+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+	plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	plt.xlim(10,200)
+	plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in chunk, '+chunk+' '+str(zmin)+' < z < '+str(zmax))
+	plt.legend(labels=['model','eBOSS'])
+
+	pp.savefig()
+	pp.close()
+	pp = PdfPages(ebossdir+'xi0ELG'+chunk+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'xr.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	plt.plot(dt[0],dt[0]*dt[1]/1.44/1.035,'k:')
+	plt.plot(d1[0],d1[0]*(d1[1]))
+	plt.xlim(0,200)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s\xi(s)$ ($h^{-1}$Mpc)',size=16)
+	plt.title(r'Correlation function of ELGs in chunk, '+chunk+' '+str(zmin)+' < z < '+str(zmax))
+	plt.legend(labels=['model','eBOSS'])
+
+	pp.savefig()
+	pp.close()
+
+	return True
+
+def plotxiELGrec(reg='SGC',bs='8st0',v='test',wm='fkp',zmin=.6,zmax=1.1):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi0ELGrec'+reg+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	d1 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'rec_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.04.07.015.00.dat').transpose()
+	dtrec = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
+	plt.plot(dt[0],dt[0]**2.*dt[1]*.9+.3*dt[0]-.001*dt[0]**2.,'k:')
+	plt.plot(dt[0],dt[0]**2.*dtrec[1]*.9+.3*dt[0]-.001*dt[0]**2.,'k--')
+	plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	plt.xlim(10,200)
+	plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in '+reg+' '+str(zmin)+' < z < '+str(zmax))
+	plt.legend(labels=['model','eBOSS'])
+
+	pp.savefig()
+	pp.close()
+
+
+def plotxiELGv21p2223(bs='8st0',v='v5_10_7',wm='fkp',zmin=.75,zmax=1.1):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi0ELG21p2223'+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	d1 = np.loadtxt(ebossdir+'xi0gebosselg_21p22'+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi0gebosselg_23'+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	a1 = 466.
+	a2 = 165.
+	wave = (d1[1]*a1+d2[1]*a2)/(a1+a2)
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+	plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	plt.plot(d1[0],d1[0]**2.*(d2[1]))
+	plt.plot(d1[0],d1[0]**2.*wave)
+	plt.xlim(10,200)
+	plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs , '+str(zmin)+' < z < '+str(zmax))
+	plt.legend(labels=['model','chunks 21+22','chunk 23','weighted average'])
+
+	pp.savefig()
+	pp.close()
+
+	return True
 

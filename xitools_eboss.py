@@ -172,6 +172,45 @@ def ranHealp_elg(samp,v='v5_10_7',cm='',res=256,rad=''):
 	fo.close()
 	return True
 
+def mkjackf_me(samp,NS,v='test',Njack=20):
+	#defines jack-knifes
+	ranHealp_me(samp,NS,v=v)
+	mf = open('ranHeal_pix256'+samp+NS+v+'.dat').readlines()
+	fo = open('jackhpix'+samp+NS+v+str(Njack)+'.dat','w')
+	for i in range(0,Njack-1):
+		fo.write(str(mf[(len(mf)/Njack)*(i+1)].split()[0])+'\n')
+	fo.close()
+	return True
+
+def ranHealp_me(samp,NS,v='test',res=256,rad=''):
+	#pixelizes random file to create jack-knifes
+	import gzip
+	dir = dirsci
+	angm = 1.
+	if rad == 'rad':
+		angm = 180./pi
+	from healpix import healpix,radec2thphi,thphi2radec
+	pixl = []
+	h = healpix()
+	np = 12*res**2
+	for i in range(0,np):
+		pixl.append(0)
+	d2 = False
+	f = fitsio.read(dirsci+samp+NS+v+'.ran.fits')	
+	for i in range(0,len(f)):
+		ra,dec = f[i]['RA'],f[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = int(h.ang2pix_nest(res,th,phi))
+		pixl[p] += 1.
+
+	fo = open('ranHeal_pix'+str(res)+samp+NS+v+'.dat','w')
+	for i in range(0,len(pixl)):
+		if pixl[i] > 0:
+			fo.write(str(i)+' '+str(pixl[i])+'\n')
+	fo.close()
+	return True
+
+
 def mkQSO4xi_allweights(NS,version,sample='QSO',cm='',zmin=.6,zmax=1.,c='sci',app='.fits',wm='',compmin=0,gmin=0,gmax=30):
 	#note, zmin/zmax assume LRG sample these need to be change for QSO files
 	from healpix import healpix, radec2thphi
@@ -254,7 +293,7 @@ def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
 	fo.close()
 	return True
 
-def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl=.8,compls=.7,fkp='fkp',wm='wstar'):
+def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl=0,compls=0,fkp='fkp',wm='wstar',zm=''):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
@@ -279,7 +318,7 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		f2 = fitsio.read(dir+'eboss22'+'.'+v+'.latest'+app)
 	else:
 		f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest'+app) #read galaxy/quasar file
-	fo = open(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat','w')
+	fo = open(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+zm+fkp+wm+'4xi.dat','w')
 	n = 0
 	mins = 100
 	maxs = 0
@@ -292,7 +331,10 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		#	m = 1
 		if f[i]['sector_TSR'] < compl or f[i]['sector_SSR'] < compls:
 			m = 1
-		if z > zmin and z < zmax and m == 0 and f[i]['Z_reliable'] == True and f[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+		kz = 0
+		if f[i]['Z_reliable'] == True or zm == 'allz':
+			kz = 1	
+		if z > zmin and z < zmax and m == 0 and kz == 1 and f[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 			ra,dec = f[i]['ra'],f[i]['dec']
 			th,phi = radec2thphi(ra,dec)
 			if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
@@ -328,7 +370,11 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 			#	m = 1
 			if f2[i]['sector_TSR'] < compl or f2[i]['sector_SSR'] < compls:
 				m = 1
-			if z > zmin and z < zmax and m == 0 and f2[i]['Z_reliable'] == True and f2[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
+			kz = 0
+			if f2[i]['Z_reliable'] == True or zm == 'allz':
+				kz = 1	
+
+			if z > zmin and z < zmax and m == 0 and kz == 1 and f2[i]['isdupl'] == False:# and f[i]['depth_ivar_r'] > 100 and f[i]['depth_ivar_g'] > 300 and f[i]['depth_ivar_z'] > 50:
 				ra,dec = f2[i]['ra'],f2[i]['dec']
 				th,phi = radec2thphi(ra,dec)
 				if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
@@ -361,12 +407,12 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 	fo.close()
 	return True		
 
-def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=.8,compls=.7,fkp='fkp',wm='wstar'):
+def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fits',compl=0,compls=0,fkp='fkp',wm='wstar',zm=''):
 	from random import random
 	if comp == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = np.loadtxt(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat').transpose()
+	gf = np.loadtxt(dir+'gebosselg_'+samp+v+'_mz'+str(zmin)+'xz'+str(zmax)+zm+fkp+wm+'4xi.dat').transpose()
 	d2 = False
 	if samp == '21p22':
 		f = fitsio.read(dir+'eboss21'+'.'+v+'.latest.rands'+app)
@@ -393,7 +439,7 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 		indz = int(random()*len(gf[2]))
 		z = gf[2][indz]
 		wg = gf[3][indz]
-		if wm == 'noSSR':
+		if wm == 'noSSR' or zm == 'allz':
 			w = wg*f[i]['sector_TSR']
 		else:	
 			w = wg*f[i]['sector_TSR']*f[i]['plate_SSR']
@@ -411,7 +457,7 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 			indz = int(random()*len(gf[2]))
 			z = gf[2][indz]
 			wg = gf[3][indz]
-			if wm == 'noSSR':
+			if wm == 'noSSR' or zm == 'allz':
 				w = wg*f2[i]['sector_TSR']
 			else:	
 				w = wg*f2[i]['sector_TSR']*f2[i]['plate_SSR']
@@ -426,10 +472,80 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 				nw += w
 
 	print n,nw #just helps to know things worked properly
-	print n/10000.*ns #area in sq degrees
+	print nw/10000.*ns #area in sq degrees
 	fo.close()
 	return True
 
+def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',wm=''):
+	from healpix import healpix, radec2thphi
+	if c == 'sci': #AJR uses this define directory for machine he uses
+		dir = dirsci
+	f = fitsio.read(dir+samp+NS+v+'.dat.fits')
+	fo = open(dir+'geboss'+samp+'_'+NS+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat','w')
+	n = 0
+	mins = 100
+	maxs = 0
+	for i in range(0,len(f)):
+		z = f[i]['Z']
+		
+		w =1.
+		m = 0
+		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
+		#	m = 1
+		
+		if z > zmin and z < zmax: 
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			w = f[i]['WEIGHT_SYSTOT']
+			if fkp == 'fkp':
+				fkpw = f[i]['WEIGHT_FKP']
+				w = w*fkpw
+			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
+			n += 1.
+
+	print n	
+	fo.close()
+	return True		
+
+def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',wm=''):
+	from random import random
+	if c == 'sci':
+		dir = dirsci 
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+
+	f = fitsio.read(dir+samp+NS+v+'.ran.fits')
+	ns = len(f)/1000000
+	print len(f),ns
+
+	fo = open(dir+'reboss'+samp+'_'+NS+v+'_'+str(N)+wz+fkp+wm+'4xi.dat','w')
+	n = 0
+	nw = 0
+	#minc = N*10**6
+	#maxc = (N+1)*10**6 #will become relevant once files are big enough
+	
+	#if len(f) < maxc:
+	#	maxc = len(f)
+	#for i in range(minc,maxc):
+	for i in range(N,len(f),ns):
+		z = f[i]['Z']
+		
+		w =1.
+		m = 0
+		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
+		#	m = 1
+		
+		if z > zmin and z < zmax: 
+			ra,dec = f[i]['RA'],f[i]['DEC']
+			w = f[i]['WEIGHT_SYSTOT']
+			if fkp == 'fkp':
+				fkpw = f[i]['WEIGHT_FKP']
+				w = w*fkpw
+			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
+			n += 1.
+			nw += w
+	print n,nw #just helps to know things worked properly
+	print nw/10000.*ns 
+	fo.close()
+	return True
 
 def mkranELG4xifit(samp='chunk23',zmin=.7,zmax=1.,comp = 'sci',N=0):
 	from random import random
@@ -1044,10 +1160,11 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.8,zmax=2.2,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
+	#mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
+	mkgal4xime(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -1071,28 +1188,28 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',zmin=.8,zmax=2.2,ms=
 		sysw += 'zpl'	
 	sysw += wm
 	sysw += ms
-	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+sysw#gw+gri22+wm
+	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+fkp+sysw#gw+gri22+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
-		createSourcesrd_adJack(gf,i,'eboss'+cm+sample+'_'+NS+version)
+		createSourcesrd_adJack(gf,i,sample+NS+version)
 
 	rf = 'reboss'+cm+sample+'_'+NS+version+'_'
 	for rann in range(0,nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkran4xifit(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax)
-		rfi = rf+str(rann)+wz+sysw#gw+gri22+wm
+		mkran4xime(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp)
+		rfi = rf+str(rann)+wz+fkp+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
-			createSourcesrd_adJack(rfi,i,'eboss'+cm+sample+'_'+NS+version)
-	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+sysw)#gw+gri22+wm)
+			createSourcesrd_adJack(rfi,i,sample+NS+version)
+	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+fkp+sysw)#gw+gri22+wm)
 	return True
 
-def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,fkp='fkp',wm=''):
+def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,fkp='fkp',wm='',zm=''):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
-	mkgalELG4xi(v=v,zmin=zmin,zmax=zmax,samp=samp,wm=wm,fkp=fkp)
-	wz = 'mz'+str(zmin)+'xz'+str(zmax)+fkp+wm
+	mkgalELG4xi(v=v,zmin=zmin,zmax=zmax,samp=samp,wm=wm,fkp=fkp,zm=zm)
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)+fkp+zm+wm
 	gf = 'gebosselg'+'_'+samp+v+'_'+wz
 	sysw= ''
 	createSourcesrd_ad(gf)
@@ -1103,7 +1220,7 @@ def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,
 	for rann in range(sran,sran+nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkranELG4xi(samp,v=v,N=rann,zmin=zmin,zmax=zmax,wm=wm,fkp=fkp)
+		mkranELG4xi(samp,v=v,N=rann,zmin=zmin,zmax=zmax,wm=wm,fkp=fkp,zm=zm)
 		rfi = rf+str(rann)+wz
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
@@ -1214,14 +1331,18 @@ def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,n
 	return xil
 
 
-def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = ''):
+def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec=''):
 	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
 	from numpy import zeros
 	from time import time
 	#DDnl = zeros((nbin,njack),'f')
-	rf = 'reboss'+sample+'_'+NS+version+'_'
+	rf = 'reboss'+sample+'_'+NS+version+rec+'_'
+	if rec == 'rec':
+		rfnorec = 'reboss'+sample+'_'+NS+version+'_'
+		RRnorecnl = []
+		RRnorecnormt = 0
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm
 	fl = sample+'_'+NS+version+'_'+wz+wm
 	DDnl = []	
 	DDnorml = 0
@@ -1238,6 +1359,8 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		DRnl.append(0)
 		RRnl.append(0)
 		RRnl0.append(0)
+		if rec == 'rec':
+			RRnorecnl.append(0)
 	RRnorml = 0
 	RRnormt = 0
 	pl = []
@@ -1290,6 +1413,18 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 						rp = float(fr[k])
 						DRnl[k-1] += dr
 						RRnl[k-1] += rp
+
+	if rec == 'rec':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				#print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
 		
 	#print RRnl
 	
@@ -1316,15 +1451,20 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		dd = 0
 		dr = 0
 		rr = 0
+		
 		ddt = 0
 		drt = 0
 		rrt = 0
-
+		if rec == 'rec':
+			rrnorec = 0
+			rrtnorec = 0
 		for j in range(0,nmubin):
 			if wmu != 'counts':
 				dd = 0
 				dr = 0
 				rr = 0
+				if rec == 'rec':
+					rrnorec = 0
 			for k in range(0,bs):
 				bin = nmubin*(i+k)+j			
 				if bin < len(RRnl):
@@ -1338,10 +1478,16 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 					ddt +=dd
 					rrt += rr
 					drt += dr
+					if rec == 'rec':
+						rrnorec += RRnorecnl[bin]
+						rrtnorec += rrnorec
 				
 			#if rr != 0 and wm == 'muw':			
 			if wmu != 'counts':
-				xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+				if rec == 'rec':
+					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+				else:
+					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
 		if wmu == 'counts':
 			xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
 		if i/bs < nbin:
@@ -1350,12 +1496,12 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	return xil
 
 
-def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,nranf=1,njack=20,mumin=0,mumax=1.,wmu='',wf=False):
+def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,nranf=1,njack=20,mumin=0,mumax=1.,wmu='',wf=False,rec=''):
 	#write out xi to a file, no jack-knife errors
 	#for quadrupole, set mom = 1, for hexadecapole set mom = 2, ect. (odd moments not supported)
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
-	gf = 'geboss'+sample+'_'+NS+version+'_'+wz+wm
-	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf)
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm
+	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf,rec=rec)
 	print ans
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
@@ -7191,6 +7337,7 @@ def plotxiELGv(samp,bs='8st0',v='v5_10_7',wm='fkpwstar',zmin=.6,zmax=1.1):
 
 	return True
 
+
 def plotxiELGv_quad(samp,bs='8st0',v='v5_10_7',wm='fkpwstar',zmin=.6,zmax=1.1):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
@@ -7553,7 +7700,7 @@ def plotvssys_simp(xl,yl,el,sys):
 	#	plt.xlabel(xlab,size=16)
 		
 	plt.ylabel(r'$N_{\rm gal}/N_{\rm ran}$ (normalized)',size=16)
-	plt.ylim(.7,1.19)
+	#plt.ylim(.7,1.19)
 	plt.text(min(xl)+0.1*(max(xl)-min(xl)),1.1,r'$\chi^2$ null ='+str(chin)[:4],color='k')
 	plt.text(min(xl)+0.1*(max(xl)-min(xl)),1.08,r'$\chi^2$ lin ='+str(chilin)[:4],color='k')
 	plt.show()

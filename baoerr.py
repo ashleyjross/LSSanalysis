@@ -508,10 +508,11 @@ def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',kef
 		power = Pkamp*Pkamp
 		BAO_listb = BAO_list*power
 		P_listb = P_list*power
-		nP_listb = num*P_list
+		nP_listb = num*P_listb
 		for indk in range(0,len(k_list)):
 			if k_list[indk] > .2:
 				nP2 = nP_listb[indk]
+				P2 = P_listb[indk]
 				break
 		mu = .5*mustep
 		while mu<1:
@@ -539,7 +540,7 @@ def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',kef
 			sumt += sum*volume
 			sumz += sum*volume*mustep
 			mu += mustep
-		print z,bias,num,sqrt(1./sumz),nP2	
+		print z,bias,num,sqrt(1./sumz),nP2,P2	
 	Fdd *= mustep
 	Fdh *= mustep
 	Fhh *= mustep
@@ -620,7 +621,7 @@ def baoerr_fullHaloY1(recon_fac=1.,cosm='WMAP3',kmin=.02,kmax=.5,dampz='n'):
 
 def baoerr_fullqso(zmin,zmax,b0=1.5,recon_fac=1.,cosm='Challenge',kmin=.02,kmax=.5):
 	from Cosmo import distance
-	d = load('/Users/ashleyross/eboss/nbar-eboss_v1.6-QSO-N-eboss_v1.6.dat').transpose()
+	d = load('/Users/ashleyross/eboss/nbar-eboss_v1.9f-QSO-N-eboss_v1.9f.dat').transpose()
 	#d = load('/Users/ashleyross/eboss/nbarQSOzhaoforecast.dat').transpose()
 	zl = []
 	nl = []
@@ -642,7 +643,7 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 		dd = distance(.31,.69)
 	if cosm == 'WMAP3':
 		dd = distance(.24,.76)
-	d = load('/Users/ashleyross/eboss/nbar-eboss_v1.6-QSO-N-eboss_v1.6.dat').transpose()
+	#d = load('/Users/ashleyross/eboss/nbar-eboss_v1.9f-QSO-N-eboss_v1.9f.dat').transpose()
 	#d = load('/Users/ashleyross/eboss/nbarQSOzhaoforecast.dat').transpose()
 	dz = .1
 	sigz = 0.001
@@ -732,6 +733,62 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 	area = 1100.			
 	sighigh = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
 	print 'sigma BAO high is '+str(sighigh)
+	
+	return True
+
+def baoerr_ELGY1(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02,kmax=.5):
+	from Cosmo import distance
+	if cosm == 'Challenge':
+		dd = distance(.31,.69)
+	if cosm == 'WMAP3':
+		dd = distance(.24,.76)
+	dz = .1
+	sigz = 0.001
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dlong = [.60e-4,3.9e-4,3.6e-4,1.3e-4,0.52e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dlong[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 489.5			
+	sigrec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	signorec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1,cosm=cosm,kmin=kmin,kmax=kmax)
+	print sigrec,signorec
+	
+	return True
+
+def baoerr_LRGDR14(zmin=.6,zmax=1.,b0=1.7,recon_fac=.5,cosm='Challenge',kmin=.02,kmax=.5):
+	from Cosmo import distance
+	if cosm == 'Challenge':
+		dd = distance(.31,.69)
+	if cosm == 'WMAP3':
+		dd = distance(.24,.76)
+	dz = .1
+	sigz = 0.001
+	z = .65
+	zl = []
+	nl = []
+	bl = []
+	dlong = [2.1e-4,1.1e-4,.5e-4,.02e-4]
+	i = 0
+	while z < zmax:
+		if z > zmin:
+			zl.append(z)
+			nl.append(dlong[i])
+			bl.append(b0/dd.D(z))
+			i += 1
+			z += dz
+	area = 1844.			
+	sigrec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
+	signorec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1,cosm=cosm,kmin=kmin,kmax=kmax)
+	print sigrec,signorec
 	
 	return True
 
