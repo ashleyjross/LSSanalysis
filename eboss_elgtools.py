@@ -352,7 +352,7 @@ def plotELGcomp(chunk,comp='plate_SSR',cmap=cm.coolwarm,v='v5_10_7'):
 	#pp.close()
 	return True
 
-def plotELGgalchunk(chunk,v='v5_10_7',zmin=.6,zmax=1.1,compl=.8,compls=.7):
+def plotELGgalchunk(chunk,v='v5_10_7',zmin=.6,zmax=1.1,compl=.5,compls=0):
 	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
 	from matplotlib import pyplot as plt
 	from matplotlib import rc
@@ -363,21 +363,23 @@ def plotELGgalchunk(chunk,v='v5_10_7',zmin=.6,zmax=1.1,compl=.8,compls=.7):
 	plt.clf()
 	fig = plt.figure(figsize=(12,6.7))
 	ax = fig.add_subplot(111)
-	f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.fits')
+	#f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.fits')
+	f = fitsio.read(dirfits +'ELG.'+v+'.latest.fits')
 	ral = []
 	decl = []
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		if z < zmax:
-			if z > zmin and z < zmax and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['isdupl'] == False:
+			if z > zmin and z < zmax and f[i]['chunk'] == chunk and f[i]['Z_reliable']==True and f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['isdupl'] == False:
 				ral.append(f[i]['ra'])
 				decl.append(f[i]['dec'])
 
-	f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.rands.fits')
+	#f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.rands.fits')
+	f = fitsio.read(dirfits +'ELG.'+v+'.latest.rands.fits')
 	rarl = []
 	decrl = []
 	for i in range(0,len(f)):
-			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls:
+			if f[i]['sector_TSR'] > compl and f[i]['sector_SSR'] > compls and f[i]['chunk'] == chunk:
 				rarl.append(f[i]['ra'])
 				decrl.append(f[i]['dec'])
 

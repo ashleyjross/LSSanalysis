@@ -182,7 +182,7 @@ def plotY3compY1(zr,b=1.8,res=512,baor=(0,0),f=.82,offset=0):
 		zb = '3'
 	if zr == '0910':
 		zb = '4'
-	dth = load('/Users/ashleyross/Dropbox/BAO-DES-Y3/Templates/w_template/wtheta_model_D5.2_TD1_MockData5_cosmo1_dtheta0.01_phi1_nzbins4_Ver4bin_'+zb+'.txt').transpose()
+	dth = load('/Users/ashleyross/Dropbox/BAO-DES-Y3/Templates/w_template/wtheta_model_D5.2_TD1_MockData5_cosmo1_dtheta0.01_phi1_nzbins4_Ver4bin_'+zb+'.txt').transpose() #blinded template from DR1
 	thl = []
 	thl1 = []
 	wl = []
