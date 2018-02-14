@@ -9,13 +9,13 @@ except:
     print 'no healpy, this will cause problems '
     hpm = False
 from math import *
+import numpy as np
 from numpy import loadtxt as load
 from numpy import array,zeros
 import pylab as plb
 from random import random
 from math import *
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib import rc
 from matplotlib import rcParams
@@ -28,14 +28,172 @@ plt.rc('font', family='serif', size=14)
 
 #mask = '_footprint_xcorr_4096_gt22_nimgriz_' #used for DR1
 #mask = 'mask_v0_lssred'
-mask = '_no2massfaint'
+#mask = '_no2massfaint'
+mask = '_c08'
 
-def mkgalmapY3ac(res,zr,md='',fore='',wm='',syscut=''):
+def compY1Y3():
+	f1 = fitsio.read('/Users/ashleyross/Dropbox/DESY3/Y1mag22.fits')
+	fs_1 = fitsio.read('/Users/ashleyross/Dropbox/DESY3/Y3red_1.fits')
+	fs_2 = fitsio.read('/Users/ashleyross/Dropbox/DESY3/Y3red_2.fits')
+	maskf = open('/Users/ashleyross/DESY1/mask_Y1redBAO_mean_z_bpz_VFF_4096ring.dat')
+	npix = 12*4096*4096
+	mask = []
+	pixl1 = np.zeros(f1.size)
+	pixl3_1 = np.zeros(fs_1.size)
+	pixl3_2 = np.zeros(fs_2.size)
+	for i in range(0,npix):
+		mask.append(0)
+	for line in maskf:
+		pix = int(float(line.split()[0]))
+		mask[pix] = 1
+	print 'mask done'	
+	ng = 0
+	ng3 = 0
+	for i in range(0,f1.size):
+		ra,dec = f1[i]['RA'],f1[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = hp.ang2pix(4096,th,phi)
+		if mask[int(p)] == 1:
+			pixl1[i] = 1
+	print 'f1 done'
+	for i in range(0,fs_1.size):
+		ra,dec = fs_1[i]['RA'],fs_1[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = hp.ang2pix(4096,th,phi)
+		if mask[int(p)] == 1:
+			pixl3_1[i] = 1
+	print 'f3_1 done'		
+	for i in range(0,fs_2.size):
+		ra,dec = fs_2[i]['RA'],fs_2[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = hp.ang2pix(4096,th,phi)
+		if mask[int(p)] == 1:
+			pixl3_2[i] = 1
+	print 'f3_2 done'		
+	w1 = (pixl1 == 1) & (f1['MAG_AUTO_I']-f1['MAG_AUTO_Z'] +2.*(f1['MAG_AUTO_R']-f1['MAG_AUTO_I'])>1.7) & (f1['MAG_AUTO_I'] >17.5)
+	f1m = f1[w1]
+	w3_1 = (pixl3_1 == 1)
+	f3_1m = fs_1[w3_1]
+	w3_2 = (pixl3_2 == 1)
+	f3_2m = fs_2[w3_2]
+	print f1m.size, f3_1m.size+f3_2m.size 
+
+	
+
+def compSOFMA():
+	fma = fitsio.read('/Users/ashleyross/Dropbox/DESY3/allgal22magauto_1.fits')
+	fs = fitsio.read('/Users/ashleyross/Dropbox/DESY3/allgal22_1.fits')
+	f1 = fitsio.read('/Users/ashleyross/Dropbox/DESY3/Y1mag22.fits')
+	facs = 5.3
+	facm = 6.
+	fac1 = 3.
+	print np.mean(fma['SOF_CM_MAG_CORRECTED_I']),np.mean(fma['MAG_AUTO_I']-1.569*fma['EBV_SFD98'])
+	print fma.size*facm,fs.size*facs,f1.size*fac1,f1.size
+	wa = (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fma['SOF_CM_MAG_CORRECTED_I']>17.5)
+	ws =  (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fs['SOF_CM_MAG_CORRECTED_I']>17.5)
+	w1 = (f1['MAG_AUTO_I']-f1['MAG_AUTO_Z'] +2.*(f1['MAG_AUTO_R']-f1['MAG_AUTO_I'])>1.7) & (f1['MAG_AUTO_I'] >17.5)
+	print fma[wa].size*6.,fs[ws].size*facs,f1[w1].size*fac1,f1[w1].size
+	wa = (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fma['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])<3.)
+	ws =  (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fs['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])<3.)
+
+	w1 = (f1['MAG_AUTO_I']-f1['MAG_AUTO_Z'] +2.*(f1['MAG_AUTO_R']-f1['MAG_AUTO_I'])>1.7) & (f1['MAG_AUTO_I'] >17.5)\
+	& ((f1['MAG_AUTO_G'] - f1['MAG_AUTO_R'])>-1.) & ((f1['MAG_AUTO_G'] - f1['MAG_AUTO_R'])<3.)
+
+	print fma[wa].size*6.,fs[ws].size*facs,f1[w1].size*fac1,f1[w1].size
+
+	wa = (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fma['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])<3.)\
+	& ((fma['SOF_CM_MAG_CORRECTED_R'] - fma['SOF_CM_MAG_CORRECTED_I'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_R'] - fma['SOF_CM_MAG_CORRECTED_I'])<2.5)
+
+	ws =  (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fs['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])<3.)\
+	& ((fs['SOF_CM_MAG_CORRECTED_R'] - fs['SOF_CM_MAG_CORRECTED_I'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_R'] - fs['SOF_CM_MAG_CORRECTED_I'])<2.5)
+
+	w1 = (f1['MAG_AUTO_I']-f1['MAG_AUTO_Z'] +2.*(f1['MAG_AUTO_R']-f1['MAG_AUTO_I'])>1.7) & (f1['MAG_AUTO_I'] >17.5)\
+	& ((f1['MAG_AUTO_G'] - f1['MAG_AUTO_R'])>-1.) & ((f1['MAG_AUTO_G'] - f1['MAG_AUTO_R'])<3.)\
+	& ((f1['MAG_AUTO_R'] - f1['MAG_AUTO_I'])>-1.) & ((f1['MAG_AUTO_R'] - f1['MAG_AUTO_I'])<2.5)
+	print fma[wa].size*6.,fs[ws].size*facs,f1[w1].size*fac1,f1[w1].size
+
+	wa = (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fma['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_G'] - fma['SOF_CM_MAG_CORRECTED_R'])<3.)\
+	& ((fma['SOF_CM_MAG_CORRECTED_R'] - fma['SOF_CM_MAG_CORRECTED_I'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_R'] - fma['SOF_CM_MAG_CORRECTED_I'])<2.5)\
+	& ((fma['SOF_CM_MAG_CORRECTED_I'] - fma['SOF_CM_MAG_CORRECTED_Z'])>-1.) & ((fma['SOF_CM_MAG_CORRECTED_I'] - fma['SOF_CM_MAG_CORRECTED_Z'])<2.)
+	
+	ws =  (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7) & (fs['SOF_CM_MAG_CORRECTED_I']>17.5)\
+	& ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_G'] - fs['SOF_CM_MAG_CORRECTED_R'])<3.)\
+	& ((fs['SOF_CM_MAG_CORRECTED_R'] - fs['SOF_CM_MAG_CORRECTED_I'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_R'] - fs['SOF_CM_MAG_CORRECTED_I'])<2.5)\
+	& ((fs['SOF_CM_MAG_CORRECTED_I'] - fs['SOF_CM_MAG_CORRECTED_Z'])>-1.) & ((fs['SOF_CM_MAG_CORRECTED_I'] - fs['SOF_CM_MAG_CORRECTED_Z'])<2.)
+
+	f1 = fitsio.read('/Users/ashleyross/Dropbox/DESY3/Y1mag22_chbpz.fits')
+
+	w1 = (f1['mag_auto_i']-f1['mag_auto_z'] +2.*(f1['mag_auto_r']-f1['mag_auto_i'])>1.7) & (f1['mag_auto_i'] >17.5)\
+	& ((f1['mag_auto_g'] - f1['mag_auto_r'])>-1.) & ((f1['mag_auto_g'] - f1['mag_auto_r'])<3.)\
+	& ((f1['mag_auto_r'] - f1['mag_auto_i'])>-1.) & ((f1['mag_auto_r'] - f1['mag_auto_i'])<2.5)\
+	& ((f1['mag_auto_i'] - f1['mag_auto_z'])>-1.) & ((f1['mag_auto_i'] - f1['mag_auto_z'])<2.)
+	print fma[wa].size*6.,fs[ws].size*facs,f1[w1].size*fac1,f1[w1].size
+	fmaw = fma[wa]
+	fsw = fs[ws]
+	f1w = f1[w1]
+	maskf = open('/Users/ashleyross/DESY1/mask_Y1redBAO_mean_z_bpz_VFF_4096ring.dat')
+	npix = 12*4096*4096
+	mask = []
+	for i in range(0,npix):
+		mask.append(0)
+	for line in maskf:
+		pix = int(float(line.split()[0]))
+		mask[pix] = 1
+	ng = 0
+	ng3 = 0
+	for i in range(0,f1w.size):
+		ra,dec = f1w[i]['ra'],f1w[i]['dec']
+		th,phi = radec2thphi(ra,dec)
+		p = hp.ang2pix(4096,th,phi)
+		if mask[int(p)] == 1:
+			ng += 1.
+	for i in range(0,fsw.size):
+		ra,dec = fsw[i]['RA'],fsw[i]['DEC']
+		th,phi = radec2thphi(ra,dec)
+		p = hp.ang2pix(4096,th,phi)
+		if mask[int(p)] == 1:
+			ng3 += 1.
+
+	print ng,ng3
+
+	
+
+
+
+	ws = (fsw['SOF_CM_MAG_CORRECTED_I']<19.+(3*fsw['DNF_ZMEAN_SOF']))
+	w1 = (f1w['mag_auto_i'] < 19.+(3.*f1w['mean_z_bpz']))
+	print fsw[ws].size*facs,f1w[w1].size*fac1,f1w[w1].size
+
+	ws = (fsw['SOF_CM_MAG_CORRECTED_I']<19.+(3*fsw['DNF_ZMEAN_SOF'])) & (fsw['DNF_ZMEAN_SOF'] > 0.6) & (fsw['DNF_ZMEAN_SOF'] < 1.)
+	w1 = (f1w['mag_auto_i'] < 19.+(3.*f1w['mean_z_bpz']))  & (f1w['mean_z_bpz']>0.6) & (f1w['mean_z_bpz']<1.)
+	print fsw[ws].size*facs,f1w[w1].size*fac1,f1w[w1].size
+
+	wa = (fma['DNF_ZMEAN_SOF'] > 0.6) & (fma['DNF_ZMEAN_SOF'] < 1.0)
+	ws = (fs['DNF_ZMEAN_SOF'] > 0.6) & (fs['DNF_ZMEAN_SOF'] < 1.0)
+
+	print fma[wa].size*6.,fs[ws].size*facs
+	wa = (fma['DNF_ZMEAN_SOF'] > 0.6) & (fma['DNF_ZMEAN_SOF'] < 1.0) & (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7)
+	ws = (fs['DNF_ZMEAN_SOF'] > 0.6) & (fs['DNF_ZMEAN_SOF'] < 1.0) & (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7)
+	print fma[wa].size*6.,fs[ws].size*facs
+	wa = (fma['DNF_ZMEAN_SOF'] > 0.6) & (fma['DNF_ZMEAN_SOF'] < 1.0) & (fma['SOF_CM_MAG_CORRECTED_I']-fma['SOF_CM_MAG_CORRECTED_Z'] +2.*(fma['SOF_CM_MAG_CORRECTED_R']-fma['SOF_CM_MAG_CORRECTED_I'])>1.7)\
+	& (fma['MAG_AUTO_I']-1.569*fma['EBV_SFD98'] <19.+(3*fma['DNF_ZMEAN_SOF']))
+	ws = (fs['DNF_ZMEAN_SOF'] > 0.6) & (fs['DNF_ZMEAN_SOF'] < 1.0) & (fs['SOF_CM_MAG_CORRECTED_I']-fs['SOF_CM_MAG_CORRECTED_Z'] +2.*(fs['SOF_CM_MAG_CORRECTED_R']-fs['SOF_CM_MAG_CORRECTED_I'])>1.7)\
+	& (fs['SOF_CM_MAG_CORRECTED_I']<19.+(3*fs['DNF_ZMEAN_SOF']))
+	print fma[wa].size*6.,fs[ws].size*facs
+	print np.mean(fma['SOF_CM_MAG_CORRECTED_I'][wa]),np.mean(fma['MAG_AUTO_I'][wa]-1.569*fma['EBV_SFD98'][wa])
+
+
+def mkgalmapY3ac(res,zr,gz='.gz',md='',fore='',wm='',syscut=''):
 	gl = []
 	for i in range(0,12*res*res):
 		gl.append(0)
 	#f = fitsio.read(dir+'dr1_lss_red_'+zr+'_v0_redux.fits.gz',ext=1)
-	f = fitsio.read(dir+'test'+zr+mask+'.fits',ext=1)
+	f = fitsio.read(dir+'test'+zr+mask+'.fits'+gz,ext=1)
 	ngt = 0
 	w = 1.
 	zem = 0
@@ -81,9 +239,9 @@ def calczerr(zr,md='',fore='',wm='',syscut=''):
 	print sqrt(dnoout/nno)		
 	return True
 
-def maskd(res):
+def maskd(res,gz='.gz'):
     #degrade mask
-	f = fitsio.read(dir+'mask'+mask+'_lssred.fits')
+	f = fitsio.read(dir+'mask'+mask+'_lssred.fits'+gz)
 	mo = []
 	for i in range(0,12*res*res):
 		mo.append(0)
@@ -118,7 +276,7 @@ def mkgalodensY3ac4w(zr,res=256,tol=.2,md='',fore=''):
 	for i in range(0,len(mf)):
 		p = int(mf[i].split()[0])
 		ml[p] = float(mf[i].split()[1])
-	gl = mkgalmapY3ac(res,zr,md,fore)
+	gl = mkgalmapY3ac(res,zr)#,md,fore)
 		
 
 	ng = 0
