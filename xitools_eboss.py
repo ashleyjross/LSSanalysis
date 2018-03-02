@@ -476,12 +476,12 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 	fo.close()
 	return True
 
-def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',wm=''):
+def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='cp',wm=''):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
-	f = fitsio.read(dir+samp+NS+v+'.dat.fits')
-	fo = open(dir+'geboss'+samp+'_'+NS+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+wm+'4xi.dat','w')
+	f = fitsio.read(dir+samp+NS+v+cp+'.dat.fits')
+	fo = open(dir+'geboss'+samp+'_'+NS+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+'4xi.dat','w')
 	n = 0
 	mins = 100
 	maxs = 0
@@ -506,17 +506,17 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',wm=''):
 	fo.close()
 	return True		
 
-def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',wm=''):
+def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='cp',wm=''):
 	from random import random
 	if c == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 
-	f = fitsio.read(dir+samp+NS+v+'.ran.fits')
+	f = fitsio.read(dir+samp+NS+v+cp+wm+'.ran.fits')
 	ns = len(f)/1000000
 	print len(f),ns
 
-	fo = open(dir+'reboss'+samp+'_'+NS+v+'_'+str(N)+wz+fkp+wm+'4xi.dat','w')
+	fo = open(dir+'reboss'+samp+'_'+NS+v+'_'+str(N)+wz+fkp+cp+wm+'4xi.dat','w')
 	n = 0
 	nw = 0
 	#minc = N*10**6
@@ -1160,11 +1160,11 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',cp='cp',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
 	#mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-	mkgal4xime(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp)
+	mkgal4xime(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -1188,7 +1188,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',zmin=.6,zm
 		sysw += 'zpl'	
 	sysw += wm
 	sysw += ms
-	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+fkp+sysw#gw+gri22+wm
+	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+fkp+cp+sysw#gw+gri22+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
 		createSourcesrd_adJack(gf,i,sample+NS+version)
@@ -1197,12 +1197,12 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',zmin=.6,zm
 	for rann in range(0,nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkran4xime(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp)
-		rfi = rf+str(rann)+wz+fkp+sysw#gw+gri22+wm
+		mkran4xime(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp)
+		rfi = rf+str(rann)+wz+fkp+cp+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
 			createSourcesrd_adJack(rfi,i,sample+NS+version)
-	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+fkp+sysw)#gw+gri22+wm)
+	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+fkp+cp+sysw)#gw+gri22+wm)
 	return True
 
 def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,fkp='fkp',wm='',zm=''):
@@ -1428,6 +1428,126 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		
 	#print RRnl
 	
+	if wf:
+		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
+		fD.write('#r_center mu_center DD DR RR\n')
+		#fD.write(str(DDnormt)+'\n')
+		#fDR.write(str(DRnormt)+'\n')
+		#fR.write(str(RRnormt)+'\n')
+		for j in range(0,100):
+			for i in range(0,rmax):
+				fD.write(str(.5+i)+' '+str(.01*j+.005)+' '+str(DDnl[j+100*i])+' '+str(DRnl[j+100*i])+' '+str(RRnl[j+100*i])+'\n')
+				#fDR.write(str(DRnl[j+100*i])+' ')
+				#fR.write(str(RRnl[j+100*i])+' ')
+			#fD.write('\n')
+			#fDR.write('\n')
+			#fR.write('\n')
+		fD.close()
+		#fDR.close()
+		#fR.close()
+	xil = zeros((nbin),'f')
+	for i in range(start,rmax,bs):
+		xi = 0
+		dd = 0
+		dr = 0
+		rr = 0
+		
+		ddt = 0
+		drt = 0
+		rrt = 0
+		if rec == 'rec':
+			rrnorec = 0
+			rrtnorec = 0
+		for j in range(0,nmubin):
+			if wmu != 'counts':
+				dd = 0
+				dr = 0
+				rr = 0
+				if rec == 'rec':
+					rrnorec = 0
+			for k in range(0,bs):
+				bin = nmubin*(i+k)+j			
+				if bin < len(RRnl):
+					#if RRnl[bin] == 0:
+					#	pass
+				
+					#else:
+					dd += DDnl[bin]
+					rr += RRnl[bin]
+					dr += DRnl[bin]
+					ddt +=dd
+					rrt += rr
+					drt += dr
+					if rec == 'rec':
+						rrnorec += RRnorecnl[bin]
+						rrtnorec += rrnorec
+				
+			#if rr != 0 and wm == 'muw':			
+			if wmu != 'counts':
+				if rec == 'rec':
+					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+				else:
+					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+		if wmu == 'counts':
+			xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
+		if i/bs < nbin:
+			xil[i/bs] = xi
+		print ddt/DDnormt,drt/DRnormt,rrt/RRnormt	
+	return xil
+
+def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec=''):
+	#finds xi, just one set of input file
+	from numpy import zeros
+	from time import time
+	#DDnl = zeros((nbin,njack),'f')
+	rf = 'rr'+file
+	gf = 'dd'+file
+	DDnl = []	
+	DDnorml = 0
+	DDnormt = 0
+	DRnl = []
+	DRnorml = 0
+	DRnormt = 0
+	RRnl = []
+	RRnl0 = []
+	nmubin = 100
+	nbin = rmax/bs
+	for i in range(0,rmax*nmubin):
+		DDnl.append(0)
+		DRnl.append(0)
+		RRnl.append(0)
+		RRnl0.append(0)
+		if rec == 'rec':
+			RRnorecnl.append(0)
+	RRnorml = 0
+	RRnormt = 0
+	pl = []
+#	pl.append((0,0,0,0))
+	nmut = 0
+	for i in range(0,nmubin):
+		mu = i/float(nmubin)+.5/float(nmubin)
+		mub = int(mu*nmubin)
+		#print mu
+		if mu > mumin and mu < mumax:
+			pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
+			nmut += 1.
+		else:
+			pl.append((0,0,0,0,0,0))	
+	fdp = open(dir+gf+gf+'2ptdmu.dat').readlines()
+	DDnormt += float(fdp[0])
+	fdnp = open(dir+gf+rf+'2ptdmu.dat').readlines()
+	fr = open(dir+rf+rf+'2ptdmu.dat').readlines()
+	DRnormt += float(fdnp[0])
+	RRnormt += float(fr[0])
+	for k in range(1,len(fdp)):
+		dp = float(fdp[k])
+		dr = float(fdnp[k])
+		rp = float(fr[k])
+		DDnl[k-1] += dp
+		DRnl[k-1] += dr
+		RRnl[k-1] += rp
+					
+	print DDnormt,DRnormt,RRnormt				
 	if wf:
 		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
 		fD.write('#r_center mu_center DD DR RR\n')
