@@ -328,7 +328,7 @@ def plotodens(chunk,res=256,zmin=.6,zmax=1.1,v='v5_10_7',nranmin=40,cmap=cm.cool
 	#pp.close()
 	return True
 
-def plotELGcomp(chunk,comp='plate_SSR',cmap=cm.coolwarm,v='v5_10_7'):
+def plotELGcomp_full(ver='test',reg='SGC',cmap=cm.coolwarm,comp='COMP_BOSS'):
 	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
 	from matplotlib import pyplot as plt
 	from matplotlib import rc
@@ -339,8 +339,44 @@ def plotELGcomp(chunk,comp='plate_SSR',cmap=cm.coolwarm,v='v5_10_7'):
 	plt.clf()
 	fig = plt.figure(figsize=(12,6.7))
 	ax = fig.add_subplot(111)
-	f = fitsio.read(dirfits +'eboss'+chunk+'.'+v+'.latest.rands.fits')
-	map = plt.scatter(f['ra'],f['dec'],c=f[comp],s=.1,cmap=cmap,vmin=.5,lw=0)
+	f = fitsio.read(dirfits +'ELG'+reg+ver+'full.ran.fits')
+	for i in range(0,f.size):
+		if f[i]['RA'] > 180:
+			f[i]['RA'] -= 360
+	#w = (f['RA'] > 180)
+	#f[w]['RA'] -= 360
+	map = plt.scatter(f['RA'],f['DEC'],c=f[comp],s=.1,cmap=cmap,vmin=.5,lw=0)
+	#cbar = plt.colorbar(map)
+	plt.xlabel('right ascension J2000 (degrees)',fontsize=24)
+	plt.ylabel('declination J2000 (degrees)',fontsize=24)
+	plt.colorbar(map,orientation='horizontal',ticks=[.5, .6, .7, .8, .9, 1.])
+	#plt.drawmeridians(arange(0,360,20),linewidth=.2,fontsize=20)
+	plt.savefig(ebossdir+'elg'+reg+ver+comp+'.png')
+	#plt.show()
+	#pp.savefig()
+	#pp.close()
+	return True
+
+def plotELGcomp_AR(chunk,comp='sector_TSR',cmap=cm.coolwarm,v='v5_10_7'):
+	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	import fitsio
+	import matplotlib.cm as cm
+	
+	plt.clf()
+	fig = plt.figure(figsize=(12,6.7))
+	ax = fig.add_subplot(111)
+	f = fitsio.read(dirfits +'ELG'+'.'+v+'.latest.rands.fits')
+	w = (f['ra'] <1e6) # just something stupid
+	if chunk != 'ALL':
+		w = (f['chunk'] == 'eboss'+str(chunk))
+	for i in range(0,f.size):
+		if f[i]['ra'] > 180:
+			f[i]['ra'] -= 360
+	
+	map = plt.scatter(f[w]['ra'],f[w]['dec'],c=f[w][comp],s=.1,cmap=cmap,vmin=.5,lw=0)
 	#cbar = plt.colorbar(map)
 	plt.xlabel('right ascension J2000 (degrees)',fontsize=24)
 	plt.ylabel('declination J2000 (degrees)',fontsize=24)
@@ -351,6 +387,32 @@ def plotELGcomp(chunk,comp='plate_SSR',cmap=cm.coolwarm,v='v5_10_7'):
 	#pp.savefig()
 	#pp.close()
 	return True
+
+
+def plotELGcomp_simp(ver='test',reg='SGC',sys='cpgdepth',cmap=cm.coolwarm,comp='COMP'):
+	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	import fitsio
+	import matplotlib.cm as cm
+	
+	plt.clf()
+	fig = plt.figure(figsize=(12,6.7))
+	ax = fig.add_subplot(111)
+	f = fitsio.read(dirfits +'ELG'+reg+ver+sys+'.ran.fits')
+	map = plt.scatter(f['RA'],f['DEC'],c=f[comp],s=.1,cmap=cmap,vmin=.5,lw=0)
+	#cbar = plt.colorbar(map)
+	plt.xlabel('right ascension J2000 (degrees)',fontsize=24)
+	plt.ylabel('declination J2000 (degrees)',fontsize=24)
+	plt.colorbar(map,orientation='horizontal',ticks=[.5, .6, .7, .8, .9, 1.])
+	#plt.drawmeridians(arange(0,360,20),linewidth=.2,fontsize=20)
+	plt.savefig(ebossdir+'elg'+reg+ver+comp+'.png')
+	#plt.show()
+	#pp.savefig()
+	#pp.close()
+	return True
+
 
 def plotELGgalchunk(chunk,v='v5_10_7',zmin=.6,zmax=1.1,compl=.5,compls=0):
 	#remember!!! export PATH=$PATH:/Users/ashleyross/mangle2.2/bin
@@ -2048,30 +2110,319 @@ def plotvssys_simp(xl,yl,el,sys):
 	#pp.close()
 	return True
 
-def plotxiELG(chunk='21p22',bs='8st0',v='v5_10_7',wm='fkp',zmin=.7,zmax=1.1):
+
+def plotxi2ELG(reg,bs='8st0',v='test',wm='fkpcpgdepth',wm1='fkpgdepth',zmin=.6,zmax=1.1,l1='',l2=''):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
-	pp = PdfPages(ebossdir+'xi0ELG'+chunk+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	pp = PdfPages(ebossdir+'xi2ELG'+reg+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
-	d2 = np.loadtxt(ebossdir+'xi0gebossELG_SGCtest'+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d1 = np.loadtxt(ebossdir+'xi2gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm1+bs+'.dat').transpose()
+
+	d2 = np.loadtxt(ebossdir+'xi2gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi2Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	#plt.plot(dt[0],dt[0]*dt[1]*.9,'k:')
+	plt.plot(d1[0],d1[0]*(d1[1]))
+	plt.plot(d2[0],d2[0]*(d2[1]))
+	plt.xlim(10,200)
+	#plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s \xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in, '+reg+' '+str(zmin)+' < z < '+str(zmax))
+	if l1 == '':
+		plt.legend(labels=['model','eBOSS'])
+	else:
+		plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+
+def plotxiELGcomb(reg = 'ALL',mom=0,bs='8st0',v='test',rec='',zmin=.7,zmax=1.1,l1='',l2='',modplot=True):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELGcomb'+reg+v+rec+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	a1 = 1.2
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss21'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a2 = 3.1
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss22'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a3 = 2.5
+	d3 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss23'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a5 = 1.4
+	d5 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss25'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	if reg == 'ALL':
+		dc = (d1*a1+d2*a2+d3*a3+d5*a5)/(a1+a2+a3+a5)
+	if reg == 'SGC':
+		dc = (d1*a1+d2*a2)/(a1+a2)
+	if reg == 'NGC':
+		dc = (d3*a3+d5*a5)/(a3+a5)		
+	if rec == '_rec':
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
+	else:
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if modplot:
+		if mom == 0:
+			plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+		if mom == 2:
+			plt.plot(dt[0],dt[0]*dt[1]*.9,'k:')	
+	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	#plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	if mom ==0:	
+		plt.plot(dc[0],dc[0]**2.*dc[1])
+	if mom ==2:	
+		plt.plot(dc[0],dc[0]*dc[1])
+
+	plt.xlim(10,200)
+	
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	if mom == 0:
+		plt.ylim(-30,60)
+		plt.ylabel(r'$s^2\xi_0(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	if mom == 2:
+		plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	if rec == '_rec':
+		plt.title(r'post-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	else:
+		plt.title(r'pre-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	if l1 == '':
+		if modplot:
+			if reg == 'ALL':
+				plt.legend(labels=['model','eboss21+eboss22+eboss23+eboss25'])
+			if reg == 'NGC':
+				plt.legend(labels=['model','eboss23+eboss25'])
+			if reg == 'SGC':
+				plt.legend(labels=['model','eboss21+eboss22'])
+		else:
+			plt.legend(labels=[wm1,wm])
+	else:
+		plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+def plotxiELGcombNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',modplot=True):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELGcombNS'+v+rec+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	a1 = 1.2+3.1
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a2 = 2.5+1.4
+	dc = (d1*a1+d2*a2)/(a1+a2)
+	if rec == '_rec':
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
+	else:
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if modplot:
+		if mom == 0:
+			plt.plot(dt[0],dt[0]**2.*dt[1]*.75,'k:')
+		if mom == 2:
+			plt.plot(dt[0],dt[0]*dt[1]*.75,'k:')	
+	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	#plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	if mom ==0:	
+		plt.plot(dc[0],dc[0]**2.*dc[1])
+	if mom ==2:	
+		plt.plot(dc[0],dc[0]*dc[1])
+
+	plt.xlim(10,200)
+	
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	if mom == 0:
+		plt.ylim(-15,45)
+		plt.ylabel(r'$s^2\xi_0(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	if mom == 2:
+		plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+		plt.ylim(-1.5,1)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	if rec == '_rec':
+		plt.title(r'post-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	else:
+		plt.title(r'pre-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	if l1 == '':
+		if modplot:
+			#if reg == 'ALL':
+			plt.legend(labels=['model','NGC+SGC'])
+			#if reg == 'NGC':
+			#	plt.legend(labels=['model','eboss23+eboss25'])
+			#if reg == 'SGC':
+			#	plt.legend(labels=['model','eboss21+eboss22'])
+		else:
+			plt.legend(labels=[wm1,wm])
+	else:
+		plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+def plotxiELGcompNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',modplot=True):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELGcompNS'+v+rec+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	a1 = 1.2+3.1
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a2 = 2.5+1.4
+	dc = (d1*a1+d2*a2)/(a1+a2)
+	if rec == '_rec':
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
+	else:
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if modplot:
+		if mom == 0:
+			plt.plot(dt[0],dt[0]**2.*dt[1]*.75,'k:')
+		if mom == 2:
+			plt.plot(dt[0],dt[0]*dt[1]*.75,'k:')	
+	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	#plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	if mom ==0:	
+		plt.plot(d2[0],d2[0]**2.*d2[1])
+		plt.plot(d1[0],d1[0]**2.*d1[1])
+	if mom ==2:	
+		plt.plot(d2[0],d2[0]*d2[1])
+		plt.plot(d1[0],d1[0]*d1[1])
+
+	plt.xlim(10,200)
+	
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	if mom == 0:
+		plt.ylim(-15,45)
+		plt.ylabel(r'$s^2\xi_0(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	if mom == 2:
+		plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+		plt.ylim(-1.5,1)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	if rec == '_rec':
+		plt.title(r'post-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	else:
+		plt.title(r'pre-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	if l1 == '':
+		if modplot:
+			#if reg == 'ALL':
+			plt.legend(labels=['model','NGCcomb','SGCcomb'])
+			#if reg == 'NGC':
+			#	plt.legend(labels=['model','eboss23+eboss25'])
+			#if reg == 'SGC':
+			#	plt.legend(labels=['model','eboss21+eboss22'])
+		else:
+			plt.legend(labels=['NGCcomb','SGCcomb'])
+	else:
+		plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+
+def plotxiELGcomp(mom=0,bs='8st0',v='test',rec='',zmin=.7,zmax=1.1,l1='',l2='',modplot=False):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELGcomp'+v+rec+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	a1 = 1.2
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss21'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a2 = 3.1
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss22'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a3 = 2.5
+	d3 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss23'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a5 = 1.4
+	d5 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_eboss25'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	dc = (d1*a1+d2*a2+d3*a3+d5*a5)/(a1+a2+a3+a5)
 	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()
-	plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
-	plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	if modplot:
+		plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	#plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	if mom == 0:
+		plt.plot(d1[0],d1[0]**2.*d1[1],d2[0],d2[0]**2.*d2[1],d3[0],d3[0]**2.*d3[1],d5[0],d5[0]**2.*d5[1])
+	if mom == 2:
+		plt.plot(d1[0],d1[0]*d1[1],d2[0],d2[0]*d2[1],d3[0],d3[0]*d3[1],d5[0],d5[0]*d5[1])
+		
+	plt.xlim(10,200)
+	
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	if mom == 0:
+		plt.ylim(-30,60)
+		plt.ylabel(r'$s^2\xi_0(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	if mom == 2:
+		plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	if rec == '_rec':
+		plt.title(r'post-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	else:
+		plt.title(r'pre-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	#if l1 == '':
+	#	if modplot:
+	plt.legend(labels=['eboss21','eboss22','eboss23','eboss25'])
+	#	else:
+	#		plt.legend(labels=[wm1,wm])
+	#else:
+	#	plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+
+def plotxiELG(reg,mom=0,bs='8st0',v='1',wm='fkp',wm1=False,zmin=.7,zmax=1.1,l1='',l2='',modplot=True):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELG'+reg+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	if wm1:
+		d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm1+bs+'.dat').transpose()
+	
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if modplot:
+		plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+	if wm1:
+		plt.plot(d1[0],d1[0]**2.*(d1[1]))
 	plt.plot(d2[0],d2[0]**2.*(d2[1]))
 	plt.xlim(10,200)
-	plt.ylim(-30,60)
+	if mom == 0:
+		plt.ylim(-30,60)
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
 	plt.ylabel(r'$s^2\xi(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
 	#plt.text(30,180,v,color='b')
 	#plt.text(30,170,v2,color='r')
-	plt.title(r'Correlation function of ELGs in chunk, '+chunk+' '+str(zmin)+' < z < '+str(zmax))
-	plt.legend(labels=['model','eBOSS'])
-
+	plt.title(r'Correlation function of ELGs in, '+reg+' '+str(zmin)+' < z < '+str(zmax))
+	
+	#if l1 == '':
+	#	if modplot:
+	#		plt.legend(labels=['model',wm1,wm])
+	#	else:
+	#		plt.legend(labels=[wm1,wm])
+	#else:
+	#	plt.legend(labels=[l1,l2])
 	pp.savefig()
 	pp.close()
+	return True
 	pp = PdfPages(ebossdir+'xi0ELG'+chunk+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'xr.pdf')
 	plt.clf()
 	plt.minorticks_on()
@@ -2088,7 +2439,43 @@ def plotxiELG(chunk='21p22',bs='8st0',v='v5_10_7',wm='fkp',zmin=.7,zmax=1.1):
 
 	return True
 
-def plotxiELGrec(reg='SGC',bs='8st0',v='test',wm='fkp',zmin=.6,zmax=1.1):
+def plotxiELGr(reg,bs='8st0',v='test',wm='fkpcpgdepth',wm1='fkpgdepth',zmin=.6,zmax=1.1,l1='',l2='',modplot=True):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi0ELG'+reg+v+wm+'mz'+str(zmin)+'xz'+str(zmax)+bs+'r.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d1 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm1+bs+'.dat').transpose()
+
+	d2 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if modplot:
+		plt.plot(dt[0],dt[0]*dt[1]*.9,'k:')
+	plt.plot(d1[0],d1[0]*(d1[1]))
+	plt.plot(d2[0],d2[0]*(d2[1]))
+	plt.xlim(10,200)
+	#plt.ylim(-30,60)
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	plt.ylabel(r'$s\xi(s)$ ($h^{-1}$Mpc)',size=16)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	plt.title(r'Correlation function of ELGs in, '+reg+' '+str(zmin)+' < z < '+str(zmax))
+	if l1 == '':
+		if modplot:
+			plt.legend(labels=['model',wm1,wm])
+		else:
+			plt.legend(labels=[wm1,wm])
+	else:
+		plt.legend(labels=[l1,l2])
+	pp.savefig()
+	pp.close()
+	return True
+
+
+
+def plotxiELGrec(reg='eboss21',bs='8st0',v='test',wm='fkp',zmin=.6,zmax=1.1):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -2096,11 +2483,11 @@ def plotxiELGrec(reg='SGC',bs='8st0',v='test',wm='fkp',zmin=.6,zmax=1.1):
 	plt.clf()
 	plt.minorticks_on()
 	d1 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
-	d2 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'rec_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi0gebossELG_'+reg+v+'_rec_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
 	dt = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.04.07.015.00.dat').transpose()
 	dtrec = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
-	plt.plot(dt[0],dt[0]**2.*dt[1]*.9+.3*dt[0]-.001*dt[0]**2.,'k:')
-	plt.plot(dt[0],dt[0]**2.*dtrec[1]*.9+.3*dt[0]-.001*dt[0]**2.,'k--')
+	plt.plot(dt[0],dt[0]**2.*dt[1]*.9,'k:')
+	plt.plot(dt[0],dt[0]**2.*dtrec[1]*.9,'k--')
 	plt.plot(d1[0],d1[0]**2.*(d1[1]))
 	plt.plot(d2[0],d2[0]**2.*(d2[1]))
 	plt.xlim(10,200)

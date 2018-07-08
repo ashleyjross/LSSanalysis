@@ -314,6 +314,80 @@ def mkgalodensY3ac4w(zr,res=256,tol=.2,md='',fore=''):
 	#ft.close()
 	fo.close()
 	return True
+
+def mkgalodensY3ac4w_split(zr,res=256,tol=.2,splt=1.,md='',fore=''):
+	from healpix import pix2ang_ring,thphi2radec
+	np = 12*res*res
+	ml = []
+	gl = []
+	for i in range(0,np):
+		ml.append(0)
+		gl.append(0)
+		
+	mf = open(dir+'Y3mask'+mask+'lssred'+str(res)+'nest.dat').readlines()
+	print 'mask read'
+	for i in range(0,len(mf)):
+		p = int(mf[i].split()[0])
+		ml[p] = float(mf[i].split()[1])
+	gl = mkgalmapY3ac(res,zr)#,md,fore)
+		
+
+	ng = 0
+	np = 0 
+	for i in range(0,len(gl)):
+		if ml[i] > tol:
+			m = 0
+			#if maskst == 'y':
+			#th,phi = pix2ang_ring(res,i)
+			if m == 0:
+				ng += gl[i]
+				np += ml[i]
+	print ng,np
+	ave = ng/np
+	print ave
+	gll = zeros((len(gl)))
+	glh = zeros((len(gl)))
+	ngl = 0
+	ngh = 0
+	for i in range(0,len(gl)):
+		if ml[i] > tol:
+			if gl[i]/ml[i] > ave*splt:
+				glh[i] = gl[i]
+				ngh += gl[i]
+			else:
+				gll[i] = gl[i]
+				ngl += gl[i]
+	avel = ngl/np
+	aveh = ngh/np			
+	cw = ''
+	fol = open(dir+'galY3'+mask+'lssred'+zr+str(res)+'lowodenspczw.dat','w')
+	ftl = open(dir+'galY3'+mask+'lssred'+zr+str(res)+'lowrdodens.dat','w')
+	foh = open(dir+'galY3'+mask+'lssred'+zr+str(res)+'highodenspczw.dat','w')
+	fth = open(dir+'galY3'+mask+'lssred'+zr+str(res)+'highrdodens.dat','w')
+	no = 0		
+	for i in range(0,len(ml)):
+		if ml[i] > tol:
+			th,phi = hp.pix2ang(res,i,nest=True)
+			m = 0
+			#dec = -180./pi*th+90.
+			ra,dec = thphi2radec(th,phi)
+			if m == 0:
+				sra = sin(phi)
+				cra = cos(phi)
+				sdec = sin(-1.*(th-pi/2.))
+				cdec = cos(-1.*(th-pi/2.))
+				odl = gll[i]/(avel*ml[i]) -1.
+				odh = glh[i]/(aveh*ml[i]) -1.
+				fol.write(str(sra)+' '+str(cra)+' '+str(sdec)+' '+str(cdec)+' '+str(odl)+' '+str(ml[i])+'\n')
+				ftl.write(str(th)+' '+str(phi)+' '+str(odl)+' '+str(ml[i])+'\n')
+				foh.write(str(sra)+' '+str(cra)+' '+str(sdec)+' '+str(cdec)+' '+str(odh)+' '+str(ml[i])+'\n')
+				fth.write(str(th)+' '+str(phi)+' '+str(odh)+' '+str(ml[i])+'\n')
+	print no
+	#ft.close()
+	fol.close()
+	foh.close()
+	return True
+
 	
 def plotY3compY1(zr,b=1.8,res=512,baor=(0,0),f=.82,offset=0):
 	if zr == '0607':

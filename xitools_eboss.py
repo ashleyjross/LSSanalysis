@@ -196,7 +196,7 @@ def ranHealp_me(samp,NS,v='test',res=256,rad=''):
 	for i in range(0,np):
 		pixl.append(0)
 	d2 = False
-	f = fitsio.read(dirsci+samp+NS+v+'.ran.fits')	
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+'.ran.fits')
 	for i in range(0,len(f)):
 		ra,dec = f[i]['RA'],f[i]['DEC']
 		th,phi = radec2thphi(ra,dec)
@@ -476,13 +476,15 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 	fo.close()
 	return True
 
-def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='cp',wm=''):
+def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',rec=''):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
-	f = fitsio.read(dir+samp+NS+v+cp+'.dat.fits')
-	fo = open(dir+'geboss'+samp+'_'+NS+v+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+'4xi.dat','w')
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.dat.fits')
+	fo = open(dir+'geboss'+samp+'_'+NS+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+'4xi.dat','w')
 	n = 0
+	nw = 0
+	nnan = 0
 	mins = 100
 	maxs = 0
 	for i in range(0,len(f)):
@@ -493,30 +495,37 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='cp',wm=''
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
 		
-		if z > zmin and z < zmax: 
+		if z > zmin and z < zmax or rec == '_rec': 
 			ra,dec = f[i]['RA'],f[i]['DEC']
-			w = f[i]['WEIGHT_SYSTOT']
+			if rec == '_rec':
+				w = f[i]['WEIGHT_SYSTOT']
+			else:	
+				w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']
+			if w*0 != 0:
+				w = 1.
+				nnan += 1.
+				#print 'nan removed'
 			if fkp == 'fkp':
 				fkpw = f[i]['WEIGHT_FKP']
 				w = w*fkpw
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
-
-	print n	
+			nw += w
+	print n,nw,nnan	
 	fo.close()
 	return True		
 
-def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='cp',wm=''):
+def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',wm='',rec=''):
 	from random import random
 	if c == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 
-	f = fitsio.read(dir+samp+NS+v+cp+wm+'.ran.fits')
-	ns = len(f)/1000000
-	print len(f),ns
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.ran.fits')
+	#ns = len(f)/1000000
+	#print len(f),ns
 
-	fo = open(dir+'reboss'+samp+'_'+NS+v+'_'+str(N)+wz+fkp+cp+wm+'4xi.dat','w')
+	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+'4xi.dat','w')
 	n = 0
 	nw = 0
 	#minc = N*10**6
@@ -525,6 +534,7 @@ def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='cp',w
 	#if len(f) < maxc:
 	#	maxc = len(f)
 	#for i in range(minc,maxc):
+	nnan = 0
 	for i in range(N,len(f),ns):
 		z = f[i]['Z']
 		
@@ -533,16 +543,22 @@ def mkran4xime(samp,NS,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='cp',w
 		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
 		#	m = 1
 		
-		if z > zmin and z < zmax: 
+		if z > zmin and z < zmax or rec == '_rec': 
 			ra,dec = f[i]['RA'],f[i]['DEC']
-			w = f[i]['WEIGHT_SYSTOT']
+			if rec == '_rec':
+				w = f[i]['WEIGHT_SYSTOT']
+			else:
+				w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']	
+			if w*0 != 0:
+				w = 1.
+				nnan += 1.
 			if fkp == 'fkp':
 				fkpw = f[i]['WEIGHT_FKP']
 				w = w*fkpw
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
 			nw += w
-	print n,nw #just helps to know things worked properly
+	print n,nw,nnan #just helps to know things worked properly
 	print nw/10000.*ns 
 	fo.close()
 	return True
@@ -1160,11 +1176,11 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',cp='cp',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',fkp='fkp',cp='',zmin=.7,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
 	#mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-	mkgal4xime(sample,NS,version,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp)
+	mkgal4xime(sample,NS,version,rec=rec,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -1188,20 +1204,20 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,wm='',fkp='fkp',cp='cp',zm
 		sysw += 'zpl'	
 	sysw += wm
 	sysw += ms
-	gf = 'geboss'+cm+sample+'_'+NS+version+'_'+wz+fkp+cp+sysw#gw+gri22+wm
+	gf = 'geboss'+cm+sample+'_'+NS+version+rec+'_'+wz+fkp+cp+sysw#gw+gri22+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
-		createSourcesrd_adJack(gf,i,sample+NS+version)
+		createSourcesrd_adJack(gf,i,sample+NS+version+rec)
 
-	rf = 'reboss'+cm+sample+'_'+NS+version+'_'
+	rf = 'reboss'+cm+sample+'_'+NS+version+rec+'_'
 	for rann in range(0,nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkran4xime(sample,NS,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp)
+		mkran4xime(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec)
 		rfi = rf+str(rann)+wz+fkp+cp+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
-			createSourcesrd_adJack(rfi,i,sample+NS+version)
+			createSourcesrd_adJack(rfi,i,sample+NS+version+rec)
 	mksuball_nran_Dmufbfjack(rf,gf,nran,wr=wz+fkp+cp+sysw)#gw+gri22+wm)
 	return True
 
@@ -1337,7 +1353,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	from time import time
 	#DDnl = zeros((nbin,njack),'f')
 	rf = 'reboss'+sample+'_'+NS+version+rec+'_'
-	if rec == 'rec':
+	if rec == '_rec':
 		rfnorec = 'reboss'+sample+'_'+NS+version+'_'
 		RRnorecnl = []
 		RRnorecnormt = 0
@@ -1359,7 +1375,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		DRnl.append(0)
 		RRnl.append(0)
 		RRnl0.append(0)
-		if rec == 'rec':
+		if rec == '_rec':
 			RRnorecnl.append(0)
 	RRnorml = 0
 	RRnormt = 0
@@ -1414,7 +1430,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 						DRnl[k-1] += dr
 						RRnl[k-1] += rp
 
-	if rec == 'rec':
+	if rec == '_rec':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
 				#print i
@@ -1455,7 +1471,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		ddt = 0
 		drt = 0
 		rrt = 0
-		if rec == 'rec':
+		if rec == '_rec':
 			rrnorec = 0
 			rrtnorec = 0
 		for j in range(0,nmubin):
@@ -1463,7 +1479,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 				dd = 0
 				dr = 0
 				rr = 0
-				if rec == 'rec':
+				if rec == '_rec':
 					rrnorec = 0
 			for k in range(0,bs):
 				bin = nmubin*(i+k)+j			
@@ -1478,13 +1494,13 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 					ddt +=dd
 					rrt += rr
 					drt += dr
-					if rec == 'rec':
+					if rec == '_rec':
 						rrnorec += RRnorecnl[bin]
 						rrtnorec += rrnorec
 				
 			#if rr != 0 and wm == 'muw':			
 			if wmu != 'counts':
-				if rec == 'rec':
+				if rec == '_rec':
 					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
 				else:
 					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
