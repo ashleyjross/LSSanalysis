@@ -1,7 +1,7 @@
 dir = '/Users/ashleyross/Dropbox/DESY3/'
 dirs = '/Users/ashleyross/Dropbox/BAO-DES-Y3/Data/ACF-Santi/'
 import fitsio
-from healpix import thphi2radec,radec2thphi#,healpix,ang2pix_ring,pix2ang_ring# #comes from AJR's healpix routines
+from healpix import thphi2radec,radec2thphi,healpix,ang2pix_ring,pix2ang_ring# #comes from AJR's healpix routines
 try:
     import healpy as hp
     hpm = True
@@ -486,3 +486,46 @@ def plotY3compmd(zr,baor=(0,0)):
 	plt.clf()
 	return True
 		
+def ngvext(file,mask,res=256,mc=.8,extmax=.15,nbin=10):
+	extmap = np.loadtxt('maps/healSFD_r_256_fullsky.dat')
+	extc = 2.751
+	h = healpix()
+	ml = zeros((4096*4096*12))
+	mask = fitsio.read(dir+mask+'.fits.gz')
+	for i in range(0,len(mask)):
+		ml[mask[i]['PIXEL']] = mask[i]['SIGNAL']
+	data = fitsio.read(dir+file+'.fits.gz')
+	ngl = np.zeros((12.*res*res))
+	ngt = 0
+	for i in range(0,len(data)):
+		if data[i]['HPIX_4096'] > mc:
+			th,phi = radec2thphi(data[i]['RA'],data[i]['DEC'])
+			pix = h.ang2pix_nest(res,th,phi)
+			ngl[pix] += 1.
+			ngt += 1.
+	print ngt, len(data)
+	mlr = zeros((12.*res*res))
+	for i in range(0,len(mask)):
+		if 	mask[i]['SIGNAL'] > mc:
+			th,phi = h.pix2ang_nest(4096,mask[i]['PIXEL'])
+			pix = h.ang2pix_nest(res,th,phi)
+			mlr[pix] += (res/4096.)**2.
+	ave = sum(ngl)/sum(mlr)
+	print ave
+	bing = zeros((nbin))
+	binr = zeros((nbin))
+	
+	for i in range(0,12*res*res):
+		extv = extmap[i]/extc
+		if extv < extmax:
+			bin = int(extv/extmax*nbin) 		
+			bing[bin] += ngl[i]
+			binr[bin] += mlr[i]		
+	print bing, binr,bing/(binr*ave)
+	fo = open(dir+file+'vsext.dat','w')
+	for i in range(0,nbin):
+		extv = i*extmax/float(nbin)+extmax/float(2.*nbin)
+		fo.write(str(extv)+' '+str(bing[i]/(binr[i]*ave))+' '+str(sqrt(bing[i])/(binr[i]*ave))+'\n')
+	fo.close()
+	return True
+			

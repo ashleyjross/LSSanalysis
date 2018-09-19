@@ -501,6 +501,8 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 				w = f[i]['WEIGHT_SYSTOT']
 			else:	
 				w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']
+			if samp == 'LRGpCMASS':
+				w = f[i]['WEIGHT_ALL_NOFKP']
 			if w*0 != 0:
 				w = 1.
 				nnan += 1.
@@ -549,6 +551,9 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 				w = f[i]['WEIGHT_SYSTOT']
 			else:
 				w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']	
+			if samp == 'LRGpCMASS':
+				w = f[i]['WEIGHT_ALL_NOFKP']
+
 			if w*0 != 0:
 				w = 1.
 				nnan += 1.
@@ -3388,6 +3393,72 @@ def docovsandbao():
 	xibao('QSO','v0.7',0.9,2.2,'wdepth',md=1.,m=1.)
 	xibao('lrg','v0.8_IRc',0.6,1.,'wstar')
 
+def mkcov_mockELG(reg,mom=0,N=499):
+	xiave = np.zeros((25))
+	cov = np.zeros((25,25))
+	dir = ('/Users/ashleyross/eBOSS/ELGmockxi_MV/')
+	Ntot = 0
+	fac = 1.
+	if reg == 'SGC':
+		fac = 1.4
+	for i in range(1,1+N):
+		zer = ''
+		if i < 100:
+			zer += '0'
+		if i < 10:
+			zer += '0'
+		try:		
+			xiave += np.loadtxt(dir+'qpm_mock_anymask_ELG_recon_specweights_'+reg+'_0'+zer+str(i)+'.mul').transpose()[1+mom/2]*fac
+			Ntot += 1.
+		except:
+			print i
+	print Ntot		
+	xiave = xiave/float(Ntot)
+	for i in range(1,1+N):
+		zer = ''
+		if i < 100:
+			zer += '0'
+		if i < 10:
+			zer += '0'
+		try:		
+			xii = np.loadtxt(dir+'qpm_mock_anymask_ELG_recon_specweights_'+reg+'_0'+zer+str(i)+'.mul').transpose()[1+mom/2]*fac
+			for j in range(0,25):
+				xij = xii[j]
+				for k in range(0,25):
+					xik = xii[k]
+					cov[j][k] += (xij-xiave[j])*(xik-xiave[k])
+		except:
+			print i
+	cov = cov/float(Ntot)					
+	fo = open('xiaverec'+str(mom)+reg+'ELG_MV8st0.dat','w')
+	errl = []
+	for i in range(0,25):
+		fo.write(str(4+8.*i)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
+		errl.append(sqrt(cov[i][i]))
+	fo.close()	
+	fo = open('covrec'+str(mom)+reg+'ELG_MV8st0.dat','w')
+	
+	for i in range(0,25):
+		for j in range(0,25):
+			fo.write(str(cov[i][j])+' ')
+		fo.write('\n')
+	fo.close()
+	from matplotlib import pyplot as plt
+	if reg != 'comb':
+		d = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_'+reg+'3_rec_mz0.6xz1.1fkp8st0.dat').transpose()
+		plt.errorbar(d[0][:25],d[0][:25]**2.*d[1][:25],d[0][:25]**2.*errl,fmt='ko')
+		plt.plot(d[0][:25],d[0][:25]**2.*xiave,'r-')
+		plt.show()
+	else:
+		dn = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_NGC3_rec_mz0.6xz1.1fkp8st0.dat').transpose()
+		ds = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_SGC3_rec_mz0.6xz1.1fkp8st0.dat').transpose()
+		d = (dn*.8+1.*ds)/1.8
+		plt.errorbar(d[0][:25],d[0][:25]**2.*d[1][:25],d[0][:25]**2.*errl,fmt='ko')
+		plt.plot(d[0][:25],d[0][:25]**2.*xiave,'r-')
+		plt.show()
+		
+	return True
+				
 ### Find the BAO scale
 
 def doallBAOqsomocks(sig=1,covmd='mock',bs=10):
@@ -4291,7 +4362,7 @@ def pkstats(file,amin=.85,amax=1.15):
 	sa = sqrt(sa/n-am*am)
 	return am,sa,n	
 
-def xibao(sample,zmin,zmax,version='v1.9f',wm='',zerr='',bs=8,start=0,npar=3,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=.4,v='n',mockn='',mocks='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower'):
+def xibao(sample,zmin,zmax,version='test',wm='fkp',zerr='',bs=8,start=0,npar=3,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=.4,v='n',mockn='',mocks='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower'):
 	#does baofits, set mb='nobao' to do no BAO fit
 	ebossdir = '/Users/ashleyross/eboss/'
 	outdir = ebossdir
@@ -4299,12 +4370,12 @@ def xibao(sample,zmin,zmax,version='v1.9f',wm='',zerr='',bs=8,start=0,npar=3,rmi
 	from Cosmo import distance
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	bsst = str(bs)+'st'+str(start)
-	ws = .58
-	wn = .89
+	ws = 1.4
+	wn = 2.4
 
 	if sample == 'lrg' or sample == 'QSO' or sample == 'QSOsys':
-		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'.dat').transpose()
-		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_S'+version+'_'+wz+wm+bsst+'.dat').transpose()
+		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
 		#dn = (np.loadtxt(ebossdir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'.dat').transpose()+np.loadtxt(ebossdir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'_1.dat').transpose())/2.
 		#ds = (np.loadtxt(ebossdir+'xi0geboss'+sample+'_S'+version+'_'+wz+wm+bsst+'.dat').transpose()+np.loadtxt(ebossdir+'xi0geboss'+sample+'_S'+version+'_'+wz+wm+bsst+'_1.dat').transpose())/2.
 	#if sample == 'QPM_QSO':	
@@ -4371,6 +4442,9 @@ def xibao(sample,zmin,zmax,version='v1.9f',wm='',zerr='',bs=8,start=0,npar=3,rmi
 		if version == 'v1.8' or version == 'v1.84':
 			ws = .58
 			wn = .89
+		if version == 'test':
+			ws = 1.4
+			wn = 2.4	
 		wt = (ds[1]*ws+dn[1]*wn)/(ws+wn)
 		#else:
 		#	wt = (ds[1]+dn[1])/2.
@@ -4428,6 +4502,9 @@ def xibao(sample,zmin,zmax,version='v1.9f',wm='',zerr='',bs=8,start=0,npar=3,rmi
 	if version == 'v1.9f' or version == 'v1.9f4':
 		fn = 1.069/1.019
 		fs = 1.073/1.047
+	if version == 'test':
+		fn = .5
+		fs = .857/1.4	
 	print fn,fs	
 	if covmd == 'EZmock':
 		cov = np.loadtxt(ebossdir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
@@ -4456,7 +4533,7 @@ def xibao(sample,zmin,zmax,version='v1.9f',wm='',zerr='',bs=8,start=0,npar=3,rmi
 	print a
 	return a[0],(a[2]+a[1])/2.,(a[2]-a[1])/2.
 
-def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower'):
+def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='_rec'):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -4474,7 +4551,9 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	if sample == 'QSOaveEZPZ':	
 		dn = np.loadtxt(ebossdir+'xiave0EZPZNGC'+bsst+'.dat').transpose()
 		ds = np.loadtxt(ebossdir+'xiave0EZPZSGC'+bsst+'.dat').transpose()
-
+	if sample == 'ELG':
+		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+rec+'_'+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+rec+'_'+wz+wm+bsst+'.dat').transpose()
 	if sample == 'lrg':
 		wt = (ds[1]*1.8+1.3*dn[1])/3.1
 	if sample == 'QSO' or sample == 'QPM_QSO' or sample == 'aveQPM_QSO':
@@ -4500,6 +4579,9 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	if mb == 'nobao':
 		#mod = np.loadtxt('/Users/ashleyross/DR12/xi0smChallenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
 		mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
+		if sample == 'ELG' and rec == '_rec':
+			mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
+			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
 	else:
 		#mod = np.loadtxt('/Users/ashleyross/DR12/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
 		mod = np.loadtxt('BAOtemplates/xi0iso'+template+damp+'.dat').transpose()[1]
@@ -4509,7 +4591,9 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
 		else:
 			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
-	
+		if sample == 'ELG' and rec == '_rec':
+			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
+			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
 	fn = 1.
 	fs = 1.
 	if version == 'v1.8':
@@ -4535,7 +4619,10 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 
 		#covN = np.loadtxt(ebossdir+'covEZPZ0NGC5st0.dat')
 		#covS = np.loadtxt(ebossdir+'covEZPZ0SGC5st0.dat')
-				
+	if covmd == 'ELG' and rec == '_rec':
+		covN = np.loadtxt(ebossdir+'covrec0NGCELG_MV'+bsst+'.dat')#*fn
+		covS = np.loadtxt(ebossdir+'covrec0SGCELG_MV'+bsst+'.dat')#*fs
+					
 	
 	chiln = doxi_isolike(dn[1],covN,mod,modsmooth,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+version+mb,Bp=Bp,Nmock=Nmock)
 
@@ -6667,7 +6754,7 @@ def plotxiQSONS(bs='10st0',v='v0.7'):
 
 	return True
 
-def plotxiQSONScompEZ(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0,mumax=1):
+def plotxiQSONScompEZ(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumin=0,mumax=1):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -6683,12 +6770,15 @@ def plotxiQSONScompEZ(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0,mu
 	pp = PdfPages(ebossdir+'xi'+str(mom)+'QSONScompEZ'+muw+v+wm+bs+'.pdf')
 	plt.clf()
 	plt.minorticks_on()
-	ds = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_S'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
-	dn = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_N'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
-	aves = np.loadtxt(ebossdir+'xiave'+mom+'gEZmock_QSOsgcv1.6mz0.8xz2.2'+muw+bs+'.dat').transpose()
-	aven = np.loadtxt(ebossdir+'xiave'+mom+'gEZmock_QSOngcv1.6mz0.8xz2.2'+muw+bs+'.dat').transpose()
-	covs = np.loadtxt(ebossdir+'cov'+mom+'EZmock_QSOv1.6sgc'+bs+'.dat')[mini:maxi,mini:maxi]
-	covn = np.loadtxt(ebossdir+'cov'+mom+'EZmock_QSOv1.6ngc'+bs+'.dat')[mini:maxi,mini:maxi]
+	#ds = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_S'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+	#dn = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_N'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+	ds = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_SGC'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+	dn = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_NGC'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+
+	aves = np.loadtxt(ebossdir+'xiave'+mom+'EZmockv1.8sgc'+bs+'.dat').transpose()
+	aven = np.loadtxt(ebossdir+'xiave'+mom+'EZmockv1.8ngc'+bs+'.dat').transpose()
+	covs = np.loadtxt(ebossdir+'cov'+mom+'EZmockv1.8sgc'+bs+'.dat')[mini:maxi,mini:maxi]*.857/1.4
+	covn = np.loadtxt(ebossdir+'cov'+mom+'EZmockv1.8ngc'+bs+'.dat')[mini:maxi,mini:maxi]/2.
 	diffs = aves[1][mini:maxi]*norm**2.-ds[1][mini:maxi]
 	facn = 1.
 	facs = 1.
@@ -6698,6 +6788,12 @@ def plotxiQSONScompEZ(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0,mu
 	if v == 'v1.8' or v == 'v1.84':
 		facs = 857/822.
 		facn = 1.192
+	if v == 'test':
+		ws = 1.4
+		wn = 2.4
+		facs = 822./857.
+		facn = 1./1.192
+
 	chis = np.dot(np.dot(diffs,np.linalg.pinv(covs)),diffs)*facs
 	diffn = aven[1][mini:maxi]*norm**2.-dn[1][mini:maxi]
 	chin = np.dot(np.dot(diffn,np.linalg.pinv(covn)),diffn)*facn
@@ -6901,7 +6997,7 @@ def plotxiQSONScompQPM(mom='0',bs='8st0',v='v1.62',mini=1,maxi=25,wm='',mumin=0,
 	return True
 
 
-def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0,mumax=1):
+def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumin=0,mumax=1):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -6922,14 +7018,18 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0
 		facn = 1./1.192
 		ws = .58
 		wn = .89
-	
+	if v == 'test':
+		ws = 1.4
+		wn = 2.4
+		facs = 822./857.
+		facn = 1./1.192
 
-	ds = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_S'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
-	dn = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_N'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+	ds = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_SGC'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
+	dn = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_NGC'+v+'_mz0.8xz2.2'+wm+muwd+bs+'.dat').transpose()
 	dt = (ds*ws+dn*wn)/(ws+wn)
-	dsnw = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_S'+v+'_mz0.8xz2.2nw'+muwd+bs+'.dat').transpose()
-	dnnw = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_N'+v+'_mz0.8xz2.2nw'+muwd+bs+'.dat').transpose()
-	dtnw = (dsnw*ws+dnnw*wn)/(ws+wn)
+	#dsnw = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_S'+v+'_mz0.8xz2.2nw'+muwd+bs+'.dat').transpose()
+	#dnnw = np.loadtxt(ebossdir+'xi'+mom+'gebossQSO_N'+v+'_mz0.8xz2.2nw'+muwd+bs+'.dat').transpose()
+	#dtnw = (dsnw*ws+dnnw*wn)/(ws+wn)
 
 	aves = np.loadtxt(ebossdir+'xiave'+mom+'gEZmock_QSOsgcv1.6mz0.8xz2.2'+muw+bs+'.dat').transpose()
 	aven = np.loadtxt(ebossdir+'xiave'+mom+'gEZmock_QSOngcv1.6mz0.8xz2.2'+muw+bs+'.dat').transpose()
@@ -6937,7 +7037,7 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0
 	covn = np.loadtxt(ebossdir+'cov'+mom+'EZmock_QSOv1.6ngc'+bs+'.dat')[mini:maxi,mini:maxi]*facn
 	
 	avet = (aves*.537+aven*.716)/(.537+.716)
-	covti = np.linalg.pinv(covs)+np.linalg.pinv(covn)
+	covti = np.linalg.pinv(covs*.857/1.4)+np.linalg.pinv(covn/2.)
 	#avesq = np.loadtxt(ebossdir+'xi'+mom+'gaveqpm_qsosgcv1.6mz0.8xz2.2'+bs+'.dat').transpose()
 	#avenq = np.loadtxt(ebossdir+'xi'+mom+'gaveqpm_qsongcv1.6mz0.8xz2.2'+bs+'.dat').transpose()
 	avesq = np.loadtxt(ebossdir+'xi'+mom+'aveQPMmockv1.81PZsgc'+bs+'.dat').transpose()
@@ -6952,18 +7052,18 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0
 	covtqi = np.linalg.pinv(covsq)+np.linalg.pinv(covnq)
 	diff = avet[1][mini:maxi]*norm**2.-dt[1][mini:maxi]
 	diffq = aveqt[1][mini:maxi]*norm**2.-dt[1][mini:maxi]
-	diffnw= avet[1][mini:maxi]*norm**2.-dtnw[1][mini:maxi]
-	diffnwq = aveqt[1][mini:maxi]*norm**2.-dtnw[1][mini:maxi]
-	diffd = dt[1][mini:maxi]-dtnw[1][mini:maxi]
+	#diffnw= avet[1][mini:maxi]*norm**2.-dtnw[1][mini:maxi]
+	#diffnwq = aveqt[1][mini:maxi]*norm**2.-dtnw[1][mini:maxi]
+	#diffd = dt[1][mini:maxi]-dtnw[1][mini:maxi]
 	chi = np.dot(np.dot(diff,covti),diff)
 	chiq = np.dot(np.dot(diffq,covtqi),diffq)
-	chinw = np.dot(np.dot(diffnw,covti),diffnw)
-	chinwq = np.dot(np.dot(diffnwq,covtqi),diffnwq)
-	chidnw = np.dot(np.dot(diffd,covti),diffd)
-	chidnwq = np.dot(np.dot(diffd,covtqi),diffd)
-	print chi,chiq,chinw,chinwq,chidnw,chidnwq
+	#chinw = np.dot(np.dot(diffnw,covti),diffnw)
+	#chinwq = np.dot(np.dot(diffnwq,covtqi),diffnwq)
+	#chidnw = np.dot(np.dot(diffd,covti),diffd)
+	#chidnwq = np.dot(np.dot(diffd,covtqi),diffd)
+	print chi,chiq#,chinw,chinwq,chidnw,chidnwq
 	plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]**2.*dt[1][mini:maxi],'k-',linewidth=2)
-	plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]**2.*dtnw[1][mini:maxi],'--',color='.5',linewidth=1)
+	#plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]**2.*dtnw[1][mini:maxi],'--',color='.5',linewidth=1)
 	plt.errorbar(avet[0][mini:maxi]-.5,avet[0][mini:maxi]**2.*avet[1][mini:maxi],avet[0][mini:maxi]**2.*avet[2][mini:maxi]*norm**2.,fmt='g:')
 	plt.plot(avet[0][mini:maxi]-.5,avet[0][mini:maxi]**2.*avet[1][mini:maxi],'go',markeredgecolor='k')
 	plt.errorbar(avet[0][mini:maxi]+.5,aveqt[0][mini:maxi]**2.*aveqt[1][mini:maxi],aveqt[0][mini:maxi]**2.*aveqt[2][mini:maxi]*norm**2.,fmt=':',color='gold')
@@ -6977,13 +7077,15 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='v1.8',mini=1,maxi=25,wm='',mumin=0
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
 	plt.ylabel(r'$s^2\xi_{'+mom+'}(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
 	if mom == '0':
-		plt.text(20,-20,r'EZ, $\chi^2$/dof ='+str(chi)[:4]+'/'+str(maxi-mini)+' ('+str(chinw)[:3]+')',color='g')
-		plt.text(20,-27,r'QPM, $\chi^2$/dof ='+str(chiq)[:4]+'/'+str(maxi-mini)+' ('+str(chinwq)[:3]+')',color='gold')
+		#plt.text(20,-20,r'EZ, $\chi^2$/dof ='+str(chi)[:4]+'/'+str(maxi-mini)+' ('+str(chinw)[:3]+')',color='g')
+		#plt.text(20,-27,r'QPM, $\chi^2$/dof ='+str(chiq)[:4]+'/'+str(maxi-mini)+' ('+str(chinwq)[:3]+')',color='gold')
+		plt.text(20,-20,r'EZ, $\chi^2$/dof ='+str(chi)[:4]+'/'+str(maxi-mini),color='g')
+		plt.text(20,-27,r'QPM, $\chi^2$/dof ='+str(chiq)[:4]+'/'+str(maxi-mini),color='gold')
 		#if wm == '':
 		#	plt.text(30,76,'DR14 QSO sample, '+v+', 0.8<z<2.2, no extra cuts/weights')
 		#else:
-		plt.text(30,-34,'DR14 QSO sample')#, '+v+' no extra cuts/weights='+wm)
-		plt.text(30,-41,r'DR14 QSO sample, no $w_{\rm sys}$',color='.5')
+		plt.text(30,-34,'4-year version '+v+' QSO sample')#, '+v+' no extra cuts/weights='+wm)
+		#plt.text(30,-41,r'DR14 QSO sample, no $w_{\rm sys}$',color='.5')
 	else:
 		plt.text(30,80,r'EZ, $\chi^2$/dof ='+str(chi)[:4]+'/'+str(maxi-mini),color='b')
 		plt.text(30,70,r'QPM, $\chi^2$/dof ='+str(chiq)[:4]+'/'+str(maxi-mini),color='r')

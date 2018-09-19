@@ -2210,7 +2210,7 @@ def plotxiELGcomb(reg = 'ALL',mom=0,bs='8st0',v='test',rec='',zmin=.7,zmax=1.1,l
 	pp.close()
 	return True
 
-def plotxiELGcombNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',modplot=True):
+def plotxiELGcombNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',comb='',modplot=True):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -2218,10 +2218,10 @@ def plotxiELGcombNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2=''
 	plt.clf()
 	plt.minorticks_on()
 	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
-	a1 = 1.2+3.1
-	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
-	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
-	a2 = 2.5+1.4
+	a1 = .558
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGC'+comb+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGC'+comb+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	a2 = .479
 	dc = (d1*a1+d2*a2)/(a1+a2)
 	if rec == '_rec':
 		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
@@ -2270,7 +2270,7 @@ def plotxiELGcombNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2=''
 	pp.close()
 	return True
 
-def plotxiELGcompNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',modplot=True):
+def plotxiELGcompNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2='',modplot=True,comb=''):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -2279,8 +2279,8 @@ def plotxiELGcompNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2=''
 	plt.minorticks_on()
 	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
 	a1 = 1.2+3.1
-	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
-	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGCcomb'+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_SGC'+comb+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_NGC'+comb+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+bs+'.dat').transpose()
 	a2 = 2.5+1.4
 	dc = (d1*a1+d2*a2)/(a1+a2)
 	if rec == '_rec':
