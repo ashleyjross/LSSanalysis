@@ -372,9 +372,10 @@ class baofitPk:
 		self.psl = []
 		self.ks = .001
 		kt = self.ks
+		fo = open('psmoothtemp.dat','w')
 		while kt < .6:
 			ps = s.Psmooth(kt,0)*norm
-			
+			fo.write(str(kt)+' '+str(ps)+'\n')
 			pw = np.interp(kt,self.ptkl,ptemp[1])
 			self.pwigl.append(pw/ps)
 			kt += self.ks
