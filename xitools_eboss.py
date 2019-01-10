@@ -476,7 +476,7 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 	fo.close()
 	return True
 
-def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',rec='',dr='',brickm='',ramax=False):
+def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',rec='',dr='',brickm='',ranshuff='',ramax=False,gdmin=0):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
@@ -484,7 +484,11 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 	rx = ''
 	if ramax:
 		rx += 'rax'+str(ramax)
-	fo = open(dir+'geboss'+samp+'_'+NS+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+brickm+dr+rx+'4xi.dat','w')
+	gw = ''
+	if gdmin != 0:
+		gw = 'gdm'+str(gdmin)
+		
+	fo = open(dir+'geboss'+samp+'_'+NS+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+brickm+dr+rx+gw+ranshuff+'4xi.dat','w')
 	n = 0
 	nw = 0
 	nnan = 0
@@ -497,6 +501,29 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 	if brickm == 'brickext':
 		brickl = np.loadtxt('brickexpdiffext.dat',dtype='S8')
 		brickmask = True
+	wl = np.ones(len(f['RA']))
+	if wm == 'debv':
+		import healpy as hp
+		thphi = radec2thphi(f['RA'],f['DEC'])	
+		r = hp.Rotator(coord=['C','G'])
+		thphiG = r(thphi[0],thphi[1])
+		pix = hp.ang2pix(1024,thphiG[0],thphiG[1])
+		emap = fitsio.read('ebv_lhd.hpx.fits')['EBV']
+		ebvl = []
+		for i in range(0,len(pix)):
+			ebvl.append(emap[pix[i]])
+		ebvl = np.array(ebvl)
+		de = ebvl-f['ebv']
+		w = (np.isfinite(de) & (de > -0.01) & (de < 0.015))
+		if NS == 'NGC':
+			wl[w] = 1./(0.9842-12.424*de[w])
+			wl[~w] = 1./.931
+		if NS == 'SGC':
+			wl[w] = 1./(1.015-10.7*de[w])
+			wl[~w] = 1./.948
+			
+		
+			
 	for i in range(0,len(f)):
 		z = f[i]['Z']
 		
@@ -511,7 +538,9 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 		if dr != '':
 			ddr = f[i]['decals_dr']
 			if ddr != dr:
-				m = 0		
+				m = 0
+		if f[i]['galdepth_g'] < gdmin:
+			m = 0				
 		ra,dec = f[i]['RA'],f[i]['DEC']
 		if ramax:
 			if ra > 180:
@@ -531,13 +560,17 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 					w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']
 				if samp == 'LRGpCMASS':
 					w = f[i]['WEIGHT_ALL_NOFKP']
+				if wm == 'nosys':
+					w = 1.
 				if w*0 != 0:
 					w = 1.
 					nnan += 1.
 					#print 'nan removed'
+					
 				if fkp == 'fkp':
 					fkpw = f[i]['WEIGHT_FKP']
 					w = w*fkpw
+				w = w*wl[i]	
 				fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
@@ -557,8 +590,11 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 	rx = ''
 	if ramax:
 		rx += 'rax'+str(ramax)
+	gw = ''
+	if gdmin != 0:
+		gw = 'gdm'+str(gdmin)
 
-	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+brickm+dr+rx+'4xi.dat','w')
+	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+brickm+dr+rx+gw+'4xi.dat','w')
 	n = 0
 	nw = 0
 	#minc = N*10**6
@@ -588,15 +624,17 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 			if np.isin(brick,brickl):
 				m = 0
 		ra,dec = f[i]['RA'],f[i]['DEC']
-		if ra > 180:
-			ra -= 360
 		if ramax:
+			if ra > 180:
+				ra -= 360
 			if ra > ramax:
 				m = 0		
 		if dr != '':
 			ddr = f[i]['decals_dr']
 			if ddr != dr:
 				m = 0		
+		if f[i]['galdepth_g'] < gdmin:
+			m = 0				
 
 		if m == 1:
 			if z > zmin and z < zmax or rec == '_rec': 
@@ -624,6 +662,94 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 	print nw/10000.*ns 
 	fo.close()
 	return True
+
+def mkran4xi_shuff(samp,NS,ns,v='test',zmin=.6,zmax=1.1,nran=5e5,N=0,c='sci',fkp='fkp',cp='',wm='',rec='',dr='',brickm='',ramax=False):
+	from random import random
+	nran = int(nran)
+	if c == 'sci':
+		dir = dirsci 
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.dat.fits')
+	#ns = len(f)/1000000
+	#print len(f),ns
+	rx = ''
+	if ramax:
+		rx += 'rax'+str(ramax)
+
+	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+brickm+dr+rx+'shuff4xi.dat','w')
+	n = 0
+	nw = 0
+
+	nnan = 0
+	brickmask = False
+	if brickm == 'zexpg7':
+		brickl = np.loadtxt('brickzexpg7.dat',dtype='S8')
+		brickmask = True
+	if brickm == 'brickext':
+		brickl = np.loadtxt('brickexpdiffext.dat',dtype='S8')
+		brickmask = True
+
+	for i in range(0,nran):
+		rant = int(random()*len(f))
+		ranz = int(random()*len(f))
+		z = f[ranz]['Z']
+		ra,dec = f[rant]['RA'],f[rant]['DEC']
+		if ramax:
+			if ra > 180:
+				ra -= 360
+		if ramax:
+			if ra > ramax:
+				m = 0		
+		
+		w =1.
+		m = 1
+		#if f[i]['dec'] < .5 and f[i]['ra'] > 350 and f[i]['ra'] < 355:
+		#	m = 1
+		if brickmask:
+			brick = f[ranz]['brickname']
+			if np.isin(brick,brickl):
+				m = 0
+			brick = f[rant]['brickname']
+			if np.isin(brick,brickl):
+				m = 0
+
+		if dr != '':
+			ddr = f[ranz]['decals_dr']
+			if ddr != dr:
+				m = 0		
+			ddr = f[rant]['decals_dr']
+			if ddr != dr:
+				m = 0		
+
+		if m == 1:
+			if z > zmin and z < zmax or rec == '_rec': 
+				
+				#if rec == '_rec':
+				#	w = f[i]['WEIGHT_SYSTOT']
+				#else:
+				if wm == 'nofibcorr':
+					w = f[rant]['WEIGHT_SYSTOT']
+				if wm == '':	
+					w = f[rant]['WEIGHT_SYSTOT']*f[rant]['WEIGHT_CP']*f[rant]['WEIGHT_NOZ']	
+				if samp == 'LRGpCMASS':
+					w = f[rant]['WEIGHT_ALL_NOFKP']
+				if wm == 'nosys':
+					w = 1.
+				if w*0 != 0:
+					w = 1.
+					nnan += 1.
+				if fkp == 'fkp':
+					fkpw = f[ranz]['WEIGHT_FKP']
+					w = w*fkpw
+				fo.write(str(ra)+' '+str(dec)+' '+str(z)+' '+str(w)+'\n')
+				n += 1.
+				nw += w
+	print n,nw,nnan #just helps to know things worked properly
+	#print nw/10000.*ns 
+	fo.close()
+	return True
+
 
 def mkranELG4xifit(samp='chunk23',zmin=.7,zmax=1.,comp = 'sci',N=0):
 	from random import random
@@ -1238,11 +1364,11 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm='',fkp='fkp',cp='',zmin=.7,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False,ramax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm='',fkp='fkp',ranshuff='',cp='',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False,ramax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
 	#mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-	mkgal4xime(sample,NS,version,rec=rec,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,dr=dr,brickm=brickm,ramax=ramax)
+	mkgal4xime(sample,NS,version,rec=rec,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,dr=dr,ranshuff=ranshuff,brickm=brickm,ramax=ramax,gmax=gmax)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -1270,7 +1396,9 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 	sysw += ms
 	sysw += brickm
 	sysw += dr
-	gf = 'geboss'+cm+sample+'_'+NS+version+rec+'_'+wz+fkp+cp+sysw#gw+gri22+wm
+	sysw += ranshuff
+	sysw += gw
+	gf = 'geboss'+cm+sample+'_'+NS+version+rec+'_'+wz+fkp+cp+sysw#+gri22+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
 		createSourcesrd_adJack(gf,i,sample+NS+version+rec)
@@ -1279,7 +1407,10 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 	for rann in range(0,nran):	
 		print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-		mkran4xime(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
+		if ranshuff == 'shuff':
+			mkran4xi_shuff(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
+		else:
+			mkran4xime(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax,gmax=gmax)
 		rfi = rf+str(rann)+wz+fkp+cp+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
@@ -1530,53 +1661,70 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		#fDR.close()
 		#fR.close()
 	xil = zeros((nbin),'f')
-	for i in range(start,rmax,bs):
-		xi = 0
-		dd = 0
-		dr = 0
-		rr = 0
+	if mom != 'rp':
+		for i in range(start,rmax,bs):
+			xi = 0
+			dd = 0
+			dr = 0
+			rr = 0
 		
-		ddt = 0
-		drt = 0
-		rrt = 0
-		if rec == '_rec':
-			rrnorec = 0
-			rrtnorec = 0
-		for j in range(0,nmubin):
-			if wmu != 'counts':
-				dd = 0
-				dr = 0
-				rr = 0
-				if rec == '_rec':
-					rrnorec = 0
-			for k in range(0,bs):
-				bin = nmubin*(i+k)+j			
-				if bin < len(RRnl):
-					#if RRnl[bin] == 0:
-					#	pass
-				
-					#else:
-					dd += DDnl[bin]
-					rr += RRnl[bin]
-					dr += DRnl[bin]
-					ddt +=dd
-					rrt += rr
-					drt += dr
+			ddt = 0
+			drt = 0
+			rrt = 0
+			if rec == '_rec':
+				rrnorec = 0
+				rrtnorec = 0
+			for j in range(0,nmubin):
+				if wmu != 'counts':
+					dd = 0
+					dr = 0
+					rr = 0
 					if rec == '_rec':
-						rrnorec += RRnorecnl[bin]
-						rrtnorec += rrnorec
+						rrnorec = 0
+				for k in range(0,bs):
+					bin = nmubin*(i+k)+j			
+					if bin < len(RRnl):
+						#if RRnl[bin] == 0:
+						#	pass
 				
-			#if rr != 0 and wm == 'muw':			
-			if wmu != 'counts':
-				if rec == '_rec':
-					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
-				else:
-					xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
-		if wmu == 'counts':
-			xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
-		if i/bs < nbin:
-			xil[i/bs] = xi
-		print ddt/DDnormt,drt/DRnormt,rrt/RRnormt	
+						#else:
+						dd += DDnl[bin]
+						rr += RRnl[bin]
+						dr += DRnl[bin]
+						ddt +=dd
+						rrt += rr
+						drt += dr
+						if rec == '_rec':
+							rrnorec += RRnorecnl[bin]
+							rrtnorec += rrnorec
+				
+				#if rr != 0 and wm == 'muw':			
+				if wmu != 'counts':
+					if rec == '_rec':
+						xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+					else:
+						xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+			if wmu == 'counts':
+				xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
+			if i/bs < nbin:
+				xil[i/bs] = xi
+			print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+	else:
+		xiDDl = zeros((nbin),'f')
+		xiDRl = zeros((nbin),'f')
+		xiRRl = zeros((nbin),'f')
+		for i in range(0,rmax):
+			for j in range(0,nmubin):
+				bin = nmubin*i+j
+				r = .5+i
+				mu = j/float(nmubin)+0.5/float(nmubin)
+				rp = sqrt(1.-mu)*r
+				rbin = int(rp/bs)
+				xiDDl[rbin] += DDnl[bin]
+				xiDRl[rbin] += DRnl[bin]
+				xiRRl[rbin] += RRnl[bin]
+		for i in range(0,nbin):
+			xil[i] = (xiDDl[i]/DDnormt-2*xiDRl[i]/DRnormt+xiRRl[i]/RRnormt)*RRnormt/xiRRl[i] 	
 	return xil
 
 def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec=''):
@@ -1715,7 +1863,10 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=2
 	print gf
 	for i in range(0,rmax/bs):
 		r = float(bs)/2.+float(bs)*i+float(start)
-		fo.write(str(r)+' '+str(ans[i]*(4.*mom+1.))+'\n')
+		if mom != 'rp':
+			fo.write(str(r)+' '+str(ans[i]*(4.*mom+1.))+'\n')
+		else:
+			fo.write(str(r)+' '+str(ans[i])+'\n')
 	fo.close()
 	return True
 

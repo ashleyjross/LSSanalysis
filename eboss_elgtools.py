@@ -11,6 +11,12 @@ dirfits = '/Users/ashleyross/fitsfiles/' #change to where your catalog files are
 ebossdir = '/Users/ashleyross/eboss/' #where AJR puts correlation functions, writes out results
 dirscio = '/mnt/lustre/ashleyr/eboss/mocks/'
 
+def P2(mu):
+	return .5*(3.*mu**2.-1.)
+	
+def P4(mu):
+	return .125*(35.*mu**4.-30.*mu**2.+3.)
+
 
 def mkjackf_elg(samp,v='v5_10_7',cm='',Njack=20):
 	#defines jack-knifes
@@ -2361,6 +2367,268 @@ def nzdr(reg='SGC',zb=0.01):
 	#plt.show()
 	#zl = np.arange(0.605,1.1,.01)
 	#nzl = np.zeros(50)
+
+def mknznorm(reg='NGC',dz=0.001):
+	from matplotlib import pyplot as plt
+	import fitsio
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/4/'
+	f = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+	zl = np.arange(.6,1.11,dz)
+	zhist = np.histogram(f['Z'],bins=zl,normed=True)
+	print(sum(zhist[0])*dz)
+	fo = open('nznormELG'+reg+'.dat','w')
+	for i in range(0,len(zl)-1):
+		zb = zl[i] +dz/2.
+		fo.write(str(zb)+' '+str(zhist[0][i])+'\n')
+	fo.close()
+	return True
+
+def mkwrp(reg,dr=1.,rmin=1.,rmax=300.,zeff=.85):		
+	from Cosmo import distance
+	from photoztools import calcwxi
+	d = distance(.31,.69)
+	rz = d.dc(zeff) #in radians theta = rp/rz
+	rp = rmin
+	fo = open('/Users/ashleyross/eBOSS/xirpELG'+reg+'mod.dat','w')
+	while rp < rmax:
+		th = rp/rz*180./pi
+		w = calcwxi('/Users/ashleyross/eBOSS/nznormELG'+reg,th,cosm='BOSS')
+		fo.write(str(rp)+' '+str(w)+'\n')
+		rp += dr
+		print rp
+	fo.close()
+	return True
+ 
+def calc_w024(r,reg='SGC',dmu=0.01):
+	d = np.loadtxt('/Users/ashleyross/eBOSS/xirpELG'+reg+'mod.dat').transpose()
+	rpl = d[0]
+	mu = dmu/2.
+	xi0 = 0
+	xi2 = 0
+	xi4 = 0
+	while mu < 1.:
+		rp = sqrt(1.-mu)*r
+		if rp < 1.:
+			xirp = d[1][0]
+		else:
+			bl = int(rp/1.)
+			bh = bl + 1
+			fac = rp/1.-bl
+			xirp = d[1][bh]*fac+(1.-fac)*d[1][bl]
+		xi0 += dmu*xirp
+		xi2 += dmu*5/2.*P2(mu)*xirp
+		xi4 += dmu*9/2.*P4(mu)*xirp
+		mu += dmu
+	return xi0,xi2,xi4	
+
+def mkw024(reg='SGC',dmu=0.01,rmin=10,rmax=300,dr=1.):
+	d = np.loadtxt('/Users/ashleyross/eBOSS/xirpELG'+reg+'mod.dat').transpose()
+	fo = open('wrp024ELG'+reg+'.dat','w')
+	rpl = d[0]
+	r = rmin
+	
+	while r < rmax:
+		mu = dmu/2.
+		xi0 = 0
+		xi2 = 0
+		xi4 = 0
+	
+		while mu < 1.:
+			rp = sqrt(1.-mu)*r
+			if rp < 1.:
+				xirp = d[1][0]
+			else:
+				bl = int(rp/1.)
+				if bl >= len(d[1])-2:
+					bh = bl
+					print(r,rp,mu)
+				else:
+					bh = bl + 1
+				fac = rp/1.-bl
+				xirp = d[1][bh]*fac+(1.-fac)*d[1][bl]
+			xi0 += dmu*xirp
+			xi2 += dmu*5/2.*P2(mu)*xirp
+			xi4 += dmu*9/2.*P4(mu)*xirp
+			mu += dmu
+		fo.write(str(r)+' '+str(xi0)+' '+str(xi2)+' '+str(xi4)+'\n')
+		#print r
+		r += dr
+	fo.close()	
+	return True
+
+def mkw024_data(reg='SGC',dmu=0.01,bs=8,rmax=250):
+	d = np.loadtxt('/Users/ashleyross/eBOSS/xirprpgebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
+	fo = open('/Users/ashleyross/eBOSS/wrp024ELG'+reg+'_data'+str(bs)+'st0.dat','w')
+	rpl = d[0]
+	nb = int(rmax/bs)
+	for i in range(0,nb):
+		mu = dmu/2.
+		rbmin = float(i*bs)
+		rbmax = rbmin+bs
+		xi0 = 0
+		xi2 = 0
+		xi4 = 0
+	
+		while mu < 1.:
+			rpmin = sqrt(1.-mu)*rbmin-.5
+			if rpmin < 4.:
+				print(rbmin,mu)
+			rpmax = sqrt(1.-mu)*rbmax+.5
+			w = (rpl > rpmin) & (rpl <= rpmax)
+			#print(mu,rpmin,rpmax,rbmin,rbmax,sum(w))
+			xirp = np.mean(d[1][w])
+			xi0 += dmu*xirp
+			xi2 += dmu*5/2.*P2(mu)*xirp
+			xi4 += dmu*9/2.*P4(mu)*xirp
+			mu += dmu
+		r = i*bs+bs/2.
+		fo.write(str(r)+' '+str(xi0)+' '+str(xi2)+' '+str(xi4)+'\n')
+		#print r
+		
+	fo.close()	
+	return True
+
+
+
+def nzdepth(reg='NGC',gmax=30,rzmin=0,rzmax=2,grmin=0,grmax=2,sldmin=0,rmax=30,zmax=30):
+	from matplotlib import pyplot as plt
+	import fitsio
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/4/'
+	f = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+	#fr = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.ran.fits')
+	#drl = np.unique(f['decals_dr'])
+	offl = [0,0,0.0,0.0]
+	cl = ['r','b','purple','green']
+	hl = []
+	w = ( (f['Z'] > 0.6) & (f['Z'] < 1.1))
+	#hist = np.histogram((0.112*f[w]['rz']-f[w]['gr']),bins=20,normed=False)
+	#hist = np.histogram((-f[w]['rz']+.218*f[w]['gr']),bins=20,normed=False)	
+	hist = np.histogram(f['Z'],bins=20,normed=False)	
+	hbins = hist[1]
+	print(hbins)
+	
+	binsize = (hist[1][-1]-hist[1][0])/float(len(hist[1])-1)
+	xlm = np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
+	chunkl = np.unique(f['chunk'])
+	for chunk in chunkl:
+		print(chunk)
+		if reg == 'NGC':
+			sld = f['rz']-0.637*f['gr']
+		if reg == 'SGC':
+			sld = f['rz']-0.218*f['gr']	
+		rmag = -1.*(f['gr'] - f['g'])
+		zmag = -1.*(f['rz']-rmag)	
+		plt.hist(sld,bins='auto')
+		plt.show()
+		w = ((f['galdepth_g']+f['galdepth_r']*2+f['galdepth_z']*10 < 700) & (f['g'] < gmax) & (sld > sldmin) & (f['gr'] > grmin) & (f['gr'] < grmax) & (f['rz'] > rzmin) & (f['rz'] < rzmax) & (f['chunk'] == chunk) & (rmag < rmax) & (zmag < zmax))
+		hist = np.histogram(f[w]['Z'],bins=hbins,normed=True)
+		xl = xlm
+		plt.plot(xl,hist[0],color=cl[0])
+		print(len(f[w]))
+		hl.append(hist[0])
+		w = ((f['galdepth_g']+f['galdepth_r']*2+f['galdepth_z']*10 > 700) & (f['g'] < gmax) & (sld > sldmin) & (f['gr'] > grmin) & (f['gr'] < grmax) & (f['rz'] > rzmin) & (f['rz'] < rzmax) & (f['chunk'] == chunk) & (rmag < rmax) & (zmag < zmax))
+		hist = np.histogram(f[w]['Z'],bins=hbins,normed=True)
+		xl = xlm
+		plt.plot(xl,hist[0],color=cl[1])
+		print(len(f[w]))
+		hl.append(hist[0])
+	
+		plt.show()
+	#plt.plot(xlm,hl[3]-hl[1])
+	#plt.plot(xlm,hl[2]-hl[1])
+	#plt.show()
+	#zl = np.arange(0.605,1.1,.01)
+	#nzl = np.zeros(50)
+
+def plotcol(reg='NGC',gmax=30):
+	from matplotlib import pyplot as plt
+	import fitsio
+	
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/4/'
+	f = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+	chunkl = np.unique(f['chunk'])
+	for chunk in chunkl:
+		w = ((f['Z'] > 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['rz'],f[w]['gr'],'ko')
+
+		w = ((f['Z'] < 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['rz'],f[w]['gr'],'ro')
+		plt.show()
+		w = ((f['Z'] > 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['g'],f[w]['gr'],'ko')
+
+		w = ((f['Z'] < 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['g'],f[w]['gr'],'ro')
+		plt.show()
+		w = ((f['Z'] > 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['g'],f[w]['rz'],'ko')
+
+		w = ((f['Z'] < 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(f[w]['g'],f[w]['rz'],'ro')
+		plt.show()
+
+		r = -1.*(f['gr'] - f['g'])
+		plt.hist(r,bins='auto')
+		plt.show()
+		
+		w = ((f['Z'] > 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(r[w],f[w]['gr'],'ko')
+
+		w = ((f['Z'] < 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(r[w],f[w]['gr'],'ro')
+		plt.show()
+
+		zmag = -1.*(f['rz']-r)
+		plt.hist(zmag,bins='auto')
+		plt.xlabel('z band magnitude')
+		plt.show()
+		
+		w = ((f['Z'] > 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(zmag[w],f[w]['rz'],'ko')
+
+		w = ((f['Z'] < 0.7) & (f['chunk'] == chunk) & (f['g'] < gmax))
+		plt.plot(zmag[w],f[w]['rz'],'ro')
+		plt.show()
+
+	
+def gmaghist(reg='SGC'):
+	from matplotlib import pyplot as plt
+	import fitsio
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/4/'
+	f = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+	fr = fitsio.read(dir+'eBOSS_ELG_clustering_'+reg+'_v4.ran.fits')
+	drl = np.unique(f['decals_dr'])
+	print(drl)
+	offl = [0,0,0.0,0.0]
+	cl = ['r','b','purple','green']
+	hl = []
+	w = ( (f['Z'] > 0.6) & (f['Z'] < 1.1))
+	#hist = np.histogram((0.112*f[w]['rz']-f[w]['gr']),bins=20,normed=False)
+	#hist = np.histogram((-f[w]['rz']+.218*f[w]['gr']),bins=20,normed=False)	
+	hist = np.histogram(f['g'],bins=20,normed=False)	
+	hbins = hist[1]
+	print(hbins)
+	histm = hist[0]/float(len(fr))
+	binsize = (hist[1][-1]-hist[1][0])/float(len(hist[1])-1)
+	xlm = np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
+	plt.plot(xlm,hist[0])
+	plt.show()
+	for i in range(0,len(drl)):
+		w = (f['decals_dr'] == drl[i])
+		wr = (fr['decals_dr'] == drl[i])
+		hist = np.histogram(f[w]['g'],bins=hbins,normed=False)
+		
+		
+		xl = xlm
+		plt.plot(xl,hist[0]/float(len(fr[wr])),color=cl[i])
+		print(len(f[w]),len(f[w])/float(len(fr[wr])))
+		hl.append(hist[0]/float(len(fr[wr])))
+	plt.show()
+	#plt.plot(xlm,hl[3]-hl[1])
+	#plt.plot(xlm,hl[2]-hl[1])
+	#plt.show()
+	#zl = np.arange(0.605,1.1,.01)
+	#nzl = np.zeros(50)
 	
 
 
@@ -2413,6 +2681,45 @@ def bricks():
 	#plt.hist(bzf,bins=30)
 	#plt.show()
 	return bd,bzf
+
+def brick_zmag():
+	from matplotlib import pyplot as plt
+	import fitsio
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/4/'
+	f = fitsio.read(dir+'eBOSS_ELG_full_ALL_v4.dat.fits')
+	fr = fitsio.read(dir+'eBOSS_ELG_full_ALL_v4.ran.fits')
+	bricks = np.unique(f['brickname'])
+	fo = open('brickstats_zmag.dat','w')
+	bd = []
+	bzf = []
+	mfrac = 1
+	xfrac = 0
+	mbz = 1
+	xbz = 0
+	n = 0
+	for brick in bricks:
+		w = (f['brickname'] == brick)
+		gals = f[w]
+		rmag = -1.*(gals['gr'] - gals['g'])
+		zmag = -1.*(gals['rz']-rmag)	
+		zm = np.mean(zmag)
+		bd.append(zm)
+		fo.write(brick+' '+str(len(gals))+' '+str(zm)+'\n')			
+		n += 1	
+	fo.close()
+	plt.hist(bd,bins='auto')
+	plt.show()
+	#plt.hist(bzf,bins=30)
+	#plt.show()
+	return True
+	#return bd,bzf
+
+def brick_zmag_ff():
+	from matplotlib import pyplot as plt
+	d = np.loadtxt('brickstats_zmag.dat',dtype={'names':('brick','ngal','meanz'),'formats':('S8','f4','f4')})
+	plt.hist(d['meanz'],bins='auto')
+	plt.show()
+	return True
 
 def exttest(reg='SGC'):
 	import healpy as hp
@@ -2501,6 +2808,7 @@ def debv(reg='SGC',debv=0.01):
 def ngalvdebv():
 	import healpy as hp
 	from healpix import radec2thphi
+	from optimize import fmin
 	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'
 	regl = ['SGC','NGC']
 	cl  =['b','r']
@@ -2508,7 +2816,7 @@ def ngalvdebv():
 		reg = regl[k]
 		f = fitsio.read(dir+'4/eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
 		thphi = radec2thphi(f['RA'],f['DEC'])	
-		r = hp.Rotator(coord=['C','G'])
+		r = hp.Rotator(coord=['C','G'],deg=False)
 		thphiG = r(thphi[0],thphi[1])
 		pix = hp.ang2pix(1024,thphiG[0],thphiG[1])
 		emap = fitsio.read('ebv_lhd.hpx.fits')['EBV']
@@ -2517,19 +2825,22 @@ def ngalvdebv():
 			ebvl.append(emap[pix[i]])
 		ebvl = np.array(ebvl)
 		de = ebvl-f['ebv']
-		denan = de[np.isnan(de)]
+		#denan = de[np.isnan(de)]
 		wts=f[np.isfinite(de)]['WEIGHT_SYSTOT']
-		de = de[np.isfinite(de)]
+		w = (np.isfinite(de) & (de > -0.01) & (de < 0.015))
+		denan = de[~w]
+		de = de[w]
+		
 		be = [-0.06,-0.02,-0.01,-0.007,-0.005,-0.003,-0.001,0.001,0.005,0.01,0.02]
-		hist = np.histogram(de,bins=be,normed=False)#,weights=wts)	
+		hist = np.histogram(de,bins=10,normed=False)#,weights=wts)	
 		hbins = hist[1]
 		print(hbins)
 		print(hist[0])
 		binsize = (hist[1][-1]-hist[1][0])/float(len(hist[1])-1)
-		xlm = []
-		for i in range(0,len(be)-1):
-			xlm.append((be[i]+be[i+1])/2.) 
-		#np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
+		#xlm = []
+		#for i in range(0,len(be)-1):
+		#	xlm.append((be[i]+be[i+1])/2.) 
+		xlm = np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
 	
 		fr = fitsio.read(dir+'4/eBOSS_ELG_clustering_'+reg+'_v4.ran.fits')
 		nr = len(fr)/float(len(f))
@@ -2542,25 +2853,99 @@ def ngalvdebv():
 			ebvlr.append(emap[pixr[i]])
 		ebvlr = np.array(ebvlr)
 		der = ebvlr-fr['ebv']
-		dernan = der[np.isnan(der)]
-		der = der[np.isfinite(der)]
+		#dernan = der[np.isnan(der)]
+		wr = (np.isfinite(der) & (der > -0.01) & (der < 0.015))
+		dernan = der[~wr]
+		der = der[wr]
+		
 		histr = np.histogram(der,bins=hbins,normed=False)
 		nr = len(der)/float(len(de))
 		print(nr)
 		
 		print(histr[0])
 		print(hist[0]/histr[0]*nr)
-		#plt.plot(xlm,hist[0]/histr[0].astype('float')*nr,color=cl[k])
+		print('nan ratio is',len(denan)/float(len(dernan))*nr,len(denan),len(dernan)/float(len(fr)))
+		fo = open('nELG'+reg+'vsdEBV.dat','w')
+		for i in range(0,len(xlm)):
+			fo.write(str(xlm[i])+' '+str(hist[0][i]/histr[0][i].astype('float')*nr)+' '+str(sqrt(hist[0][i])/histr[0][i].astype('float')*nr)+'\n')
+		fo.close()
+		lf = linfit(xlm,hist[0]/histr[0].astype('float')*nr,np.sqrt(hist[0])/histr[0].astype('float')*nr)
+		inl = np.array([1.,-10.])
+		b0,m0 = fmin(lf.chilin,inl)
+		print(b0,m0)
+		print( lf.chilin((b0,m0)))
+		plt.plot(xlm,b0+m0*xlm,'--',color=cl[k])
 		plt.errorbar(xlm,hist[0]/histr[0].astype('float')*nr,np.sqrt(hist[0])/histr[0].astype('float')*nr,color=cl[k])
-		print('nan ratio is',len(denan)/float(len(dernan))*nr,len(denan))
-	plt.xlim(-0.05,0.02)
+
+	#plt.xlim(-0.05,0.02)
 	plt.xlabel(r'$\Delta$E(B-V) (Lenz et al - SFD)')
 	plt.ylabel(r'$n_{\rm gal}/\langle n_{\rm gal} \rangle$')
-	plt.text(-0.04,1.1,'NGC',color='r')
-	plt.text(-0.04,1.08,'SGC',color='b')
+	#plt.text(-0.04,1.1,'NGC',color='r')
+	#plt.text(-0.04,1.08,'SGC',color='b')
 	plt.show()
 	#plt.savefig('nELGvsdeltaEBV.png')
 	return True
+
+def nzsplitdebv():
+	import healpy as hp
+	from healpix import radec2thphi
+	from optimize import fmin
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'
+	regl = ['SGC','NGC']
+	cl  =['b','r']
+	for k in range(0,2):
+		reg = regl[k]
+		f = fitsio.read(dir+'4/eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+		thphi = radec2thphi(f['RA'],f['DEC'])	
+		r = hp.Rotator(coord=['C','G'],deg=False)
+		thphiG = r(thphi[0],thphi[1])
+		pix = hp.ang2pix(1024,thphiG[0],thphiG[1])
+		emap = fitsio.read('ebv_lhd.hpx.fits')['EBV']
+		ebvl = []
+		for i in range(0,len(pix)):
+			ebvl.append(emap[pix[i]])
+		ebvl = np.array(ebvl)
+		de = ebvl-f['ebv']
+		#denan = de[np.isnan(de)]
+		wts=f[np.isfinite(de)]['WEIGHT_SYSTOT']
+		if reg == 'NGC':
+			w = (np.isfinite(de) & (de > -0.01) & (de < 0.00) & (f['chunk']=='eboss23'))
+		else:
+			w = (np.isfinite(de) & (de > -0.01) & (de < 0.00))
+		
+		hist = np.histogram(f[w]['Z'],bins=20,normed=True)#,weights=wts)	
+		hbins = hist[1]
+		print(hbins)
+		print(hist[0])
+		binsize = (hist[1][-1]-hist[1][0])/float(len(hist[1])-1)
+		xlm = np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
+		print(len(f[w]))
+		plt.plot(xlm,hist[0],color=cl[0])
+		if reg == 'NGC':
+			w = (np.isfinite(de) & (de > 0.00) & (f['chunk']=='eboss23'))
+		else:
+			w = (np.isfinite(de) & (de > 0.00))	
+		hist = np.histogram(f[w]['Z'],bins=hbins,normed=True)
+		plt.plot(xlm,hist[0],color=cl[1])
+		print(len(f[w]))
+		plt.show()
+	return True
+
+
+class linfit:
+	def __init__(self,xl,yl,el):
+		self.xl = xl
+		self.yl = yl
+		self.el = el
+		
+	def chilin(self,bml):
+		chi = 0
+		b = bml[0]
+		m = bml[1]
+		for i in range(0,len(self.xl)):
+			y = b+m*self.xl[i]
+			chi += (self.yl[i]-y)**2./self.el[i]**2.
+		return chi	
 
 
 def brickanalysis(ebossdir=ebossdir):
@@ -3001,6 +3386,60 @@ def plotxiELGcompNS(mom=0,bs='8st0',v='test',rec='',zmin=.6,zmax=1.1,l1='',l2=''
 		plt.legend(labels=[l1,l2])
 	pp.savefig()
 	pp.close()
+	return True
+
+def plotxiELGcompth(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,thfac=.75,l1='',l2='',wm='',modplot=True,comb='',angfac=2.,md='subang'):
+	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xi'+str(mom)+'ELGcompNS'+v+rec+'mz'+str(zmin)+'xz'+str(zmax)+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	#d1 = np.loadtxt(ebossdir+'xi0gebosselg_'+chunk+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+bs+'.dat').transpose()
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+comb+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+wm+bs+'.dat').transpose()
+	ave = np.loadtxt(ebossdir+'xiave'+str(mom)+reg+'ELG_EZv'+v+bs+'.dat').transpose()
+	rl = d1[0][:len(ave[0])]
+	xil = d1[1][:len(ave[0])]
+	if md == 'subang':
+		print('subtracting angular clustering with factor '+str(angfac))
+		wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
+		xil = xil-angfac*wp[mom/2+1][:len(ave[0])]
+	if rec == '_rec':
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
+	else:
+		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
+	if wm == 'nosysshuff' or md == 'subang':
+		dt = dt - angfac*np.loadtxt('/Users/ashleyross/eBOSS/wrp024ELG'+reg+'.dat').transpose()[mom/2+1]
+	if modplot:
+		if mom == 0:
+			plt.plot(dt[0],dt[0]**2.*dt[1]*thfac,'k:')
+		if mom == 2:
+			plt.plot(dt[0],dt[0]*dt[1]*thfac,'k:')	
+	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
+	#plt.plot(d2[0],d2[0]**2.*(d2[1]))
+	if mom ==0:	
+		
+		plt.errorbar(d1[0][:len(ave[0])],d1[0][:len(ave[0])]**2.*xil,d1[0][:len(ave[0])]**2.*ave[2][:len(ave[0])],fmt='ko')
+	if mom ==2:	
+		
+		plt.errorbar(d1[0][:len(ave[0])],d1[0][:len(ave[0])]*xil,d1[0][:len(ave[0])]*ave[2][:len(ave[0])],fmt='ko')
+
+	plt.xlim(10,200)
+	
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)',size=16)
+	if mom == 0:
+		plt.ylim(-15*thfac/.75,45*thfac/.75)
+		plt.ylabel(r'$s^2\xi_0(s)$ ($h^{-2}$Mpc$^{2}$)',size=16)
+	if mom == 2:
+		plt.ylabel(r'$s\xi_2(s)$ ($h^{-1}$Mpc)',size=16)
+		plt.ylim(-1.5,1)
+	#plt.text(30,180,v,color='b')
+	#plt.text(30,170,v2,color='r')
+	if rec == '_rec':
+		plt.title(r'post-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	else:
+		plt.title(r'pre-recon correlation function of ELGs '+' '+str(zmin)+' < z < '+str(zmax))
+	plt.show()
 	return True
 
 
