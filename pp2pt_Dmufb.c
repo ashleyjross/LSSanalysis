@@ -21,8 +21,8 @@
 #include <time.h>
 //#include <gsl/gsl_math.h>
 //#include <gsl/gsl_linalg.h>
-//const char *ddir={"/global/u2/a/ajross/patchypcfiles/"};
-const char *ddir={""};
+const char *ddir={"/mnt/lustre/ashleyr/pcadw/"};
+const char *odir={"/mnt/lustre/ashleyr/paircounts/"};
 
 main(int argc, char *argv[]) {
 	double *lcd = dvector(1,2000000);
@@ -175,7 +175,7 @@ main(int argc, char *argv[]) {
 	}
 
 	//sprintf(foname,s1);
-	sprintf(foname,"%s%s",ddir,s1);
+	sprintf(foname,"%s%s",odir,s1);
 	FILE *fo;
 	fo =fopen(foname,"w");
 	fprintf(fo,"%lf \n",gtot);
