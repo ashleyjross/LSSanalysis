@@ -1801,8 +1801,256 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 	plt.show()
 	return True
 
+def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
+	dir = '/mnt/lustre/ashleyr/eboss/EZmockELGv4/'
+	af = fitsio.read(dir+'2PCF_ELGv4_'+reg+'_merge.fits')
+	#ddnorm = af['ddnorm'][0][num]/2.
+	#drnorm = af['drnorm'][0][num]/2.
+	ddnorm = 1.
+	drnorm = .1
+	rrnorm = .01/4.
+	#print(ddnorm,drnorm,ddnorm/drnorm)
+	dd = af['dd'].transpose()[num]*ddnorm
+	dr = af['dr'].transpose()[num]*drnorm
+	rr = np.loadtxt(dir+'2PCF_EZmock_eBOSS_ELG_'+reg+'_v4_z0.6z1.1.rr').transpose()[-2]*rrnorm
+	nb = 200/bs
+	xil = np.zeros(nb)
+	nmub = 120
+	dmu = 1./float(nmub)
+	mubm = 0
+	if mumin != 0:
+		mubm = mumin*nmub
+	mubx = nmub
+	if mumax != 1:
+		mubx = mumax*nmub
+	for i in range(0,200,bs):
+		xib = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+		for m in range(mubm,mubx):
+			ddb = 0
+			drb = 0
+			rrb = 0
+		
+			for b in range(0,bs):
+				bin = nmub*(i+b)+m
+				ddb += dd[bin]
+				drb += dr[bin]
+				rrb += rr[bin]
+				#ddt += dd[bin]
+				#drt += dr[bin]
+				#rrt += rr[bin]
+					
+			xi = (ddb-drb+rrb)/rrb
+			xib += xi*dmu		
+		xil[i/bs] = xib
+		#print(ddt,drt,rrt)
+	#print xil
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	fo = open(dir+'xi/xi'+str(mom)+'ELG'+reg+'EZmock'+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	for i in range(0,len(xil)):
+		r = bs/2.+i*bs
+		fo.write(str(r)+' '+str(xil[i])+'\n')
+	fo.close()
+	return True
 
-def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,rec='_recon',v='v4'):
+def calcwrp_mockELGEZ(num,reg='SGC',bs=1,mom=0,mumin=0,mumax=1,start=0):
+	dir = '/mnt/lustre/ashleyr/eboss/EZmockELGv4/'
+	af = fitsio.read(dir+'2PCF_ELGv4_'+reg+'_merge.fits')
+	#ddnorm = af['ddnorm'][0][num]/2.
+	#drnorm = af['drnorm'][0][num]/2.
+	ddnorm = 1.
+	drnorm = .1
+	rrnorm = .01/4.
+	#print(ddnorm,drnorm,ddnorm/drnorm)
+	dd = af['dd'].transpose()[num]*ddnorm
+	dr = af['dr'].transpose()[num]*drnorm
+	rr = np.loadtxt(dir+'2PCF_EZmock_eBOSS_ELG_'+reg+'_v4_z0.6z1.1.rr').transpose()[-2]*rrnorm
+	nb = 200/bs
+	ddl = np.zeros(nb)
+	drl = np.zeros(nb)
+	rrl = np.zeros(nb)
+	nmub = 120
+	dmu = 1./float(nmub)
+	mubm = 0
+	if mumin != 0:
+		mubm = mumin*nmub
+	mubx = nmub
+	if mumax != 1:
+		mubx = mumax*nmub
+	for i in range(0,200):
+		xib = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+		for m in range(mubm,mubx):
+			bin = nmub*i+m
+			ddb = dd[bin]
+			drb = dr[bin]
+			rrb = rr[bin]
+				#ddt += dd[bin]
+				#drt += dr[bin]
+				#rrt += rr[bin]
+			rp = (i+.5)*sqrt(1.-(m/float(nmub)+.5/float(nmub))**2.)
+			brp = rp/200
+			ddl[brp] += ddb
+			drl[brp] += drb
+			rrl[brp] += rrb 		
+	#print xil
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	fo = open(dir+'xi/wrpELG'+reg+'EZmock'+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	for i in range(0,nb):
+		r = bs/2.+i*bs
+		xi = (ddl[i]-drl[i]+rrl[i])/rrl[i]
+		fo.write(str(r)+' '+str(xi)+'\n')
+	fo.close()
+	return True
+
+
+def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1):
+	dir = '/mnt/lustre/ashleyr/eboss/EZmockELGv4/xi/'
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	bsst = str(bs)+'st'+str(start)
+	nbin = 200/bs
+	xiave = np.zeros((nbin))
+	cov = np.zeros((nbin,nbin))
+
+	Ntot = 0
+	fac = 1.
+	for i in range(0,N):
+		
+		try:
+			xiave += np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+		except:
+			calcxi_mockELGEZ(i,reg=reg,bs=bs,mom=mom,mumin=mumin,mumax=mumax,start=start)
+			xiave += np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+
+		Ntot += 1.
+		#except:
+		#	print i
+		print i
+	print Ntot		
+	xiave = xiave/float(Ntot)
+	for i in range(0,N):
+		xii = np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+		for j in range(0,nbin):
+			xij = xii[j]
+			for k in range(0,nbin):
+				xik = xii[k]
+				cov[j][k] += (xij-xiave[j])*(xik-xiave[k])
+#		except:
+#			print i
+	cov = cov/float(Ntot)					
+	fo = open('xiave'+str(mom)+reg+'ELG_EZ'+muw+bsst+'.dat','w')
+	errl = []
+	for i in range(0,nbin):
+		fo.write(str(bs/2.+bs*i)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
+		errl.append(sqrt(cov[i][i]))
+	fo.close()	
+	fo = open('cov'+str(mom)+reg+'ELG_EZ'+muw+bsst+'.dat','w')
+	
+	for i in range(0,nbin):
+		for j in range(0,nbin):
+			fo.write(str(cov[i][j])+' ')
+		fo.write('\n')
+	fo.close()
+# 	from matplotlib import pyplot as plt
+# 	
+# 	if reg != 'comb':
+# 		if rec == '_recon':
+# 			rec = '_rec'
+# 
+# 		d = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_'+reg+'3'+rec+'_mz0.6xz1.1fkp'+str(bs)+'st0.dat').transpose()
+# 		print(len(d[0]),len(errl),len(d[1]))
+# 		plt.errorbar(d[0][:nbin],d[0][:nbin]**2.*d[1][:nbin],d[0][:nbin]**2.*errl,fmt='ko')
+# 		plt.plot(d[0][:nbin],d[0][:nbin]**2.*xiave,'r-')
+# 		plt.show()
+# 	else:
+# 		if rec == '_recon':
+# 			rec = '_rec'
+# 		dn = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_NGC3'+rec+'_mz0.6xz1.1fkp'+str(bs)+'st0.dat').transpose()
+# 		ds = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_SGC3'+rec+'_mz0.6xz1.1fkp'+str(bs)+'st0.dat').transpose()
+# 		d = (dn*.8+1.*ds)/1.8
+# 		plt.errorbar(d[0][:nbin],d[0][:nbin]**2.*d[1][:nbin],d[0][:nbin]**2.*errl,fmt='ko')
+# 		plt.plot(d[0][:nbin],d[0][:nbin]**2.*xiave,'r-')
+# 		plt.show()
+		
+	return True
+
+def putallBAOmocks(N=1000,sig=1,sigtest=.04,reg='NScomb',samp='ELGEZ',bs=8,start=0,version='4',mb='',Bp='0.4',mumin=0,mumax=1,rec='',damp='0.5933.058.5',chitest=20):
+	ma = 0
+	sa = 0
+	siga = 0
+	chia = 0
+	n = 0
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+
+	bsst = str(bs)+'st'+str(start)
+	ng = 0
+	sg = 0
+	ag = 0
+	errg = 0
+	wf = version+rec+damp+mb+muw+bsst
+	nchi = 0
+	fo = open('BAOfits'+samp+wf+'.dat','w')
+	for i in range(0,N):
+		fl = ''
+# 		if i < 1000:
+# 			fl += '0'
+# 		if i < 100:
+# 			fl += '0'
+# 		if i < 10:
+# 			fl += '0'
+		fl += str(i)
+		a = sigreg_c12(dirsci+'EZmockELGv4/BAOfits/BAOxichil'+reg+samp+fl+wf)
+		fo.write(str(a[0])+' '+str((a[2]-a[1])/2.)+'\n')
+		if sig == 1:
+			s1b = float(a[1]),float(a[2])
+		if sig == 2:
+			s1b = float(a[3]),float(a[4])	
+		if s1b[0] > .8 and s1b[1] < 1.2:
+
+			ma += a[0]
+			sa += a[0]**2.
+			sigone = (float(a[2])-float(a[1]))/2.
+			if sigone < sigtest and abs((a[0]-1.)/sigone)<3.:
+				ng += 1.
+				sg += a[0]**2.
+				ag += a[0]
+				errg += sigone
+			siga += (float(a[2])-float(a[1]))/2.
+			chia += a[-1]
+			n += 1.
+		if a[-1] > chitest:
+			nchi += 1	
+	ma = ma/n
+	sa = sqrt(sa/n-ma**2.)
+	siga = siga/n
+	chia = chia/n
+	ag = ag/ng
+	sg = sqrt(sg/ng-ag**2.)
+	fo.close()
+	return ma,sa,siga,chia,n,ng,ag,sg,errg/ng,nchi
+
+	
+def mkcov_mockELG_EZ_old(reg,bs=8,mom=0,N=1000,rec='_recon',v='v4'):
 	if bs == 5:
 		#dir = ('/Users/ashleyross/eBOSS/ELG_EZmock_clustering/2PCF_ELG'+rec+'/')
 		dir = (dirsci+'EZmockELG'+v+'/')
@@ -2460,10 +2708,14 @@ def mkw024(reg='SGC',dmu=0.01,rmin=10,rmax=300,dr=1.):
 	fo.close()	
 	return True
 
-def mkw024_data(reg='SGC',dmu=0.01,bs=8,rmax=250):
+def mkw024_data(reg='SGC',dmu=0.01,bs=8,rmax=250,zeff=0.85):	
+	from Cosmo import distance
+	dz = distance(.31,.69)
+	dm = dz.dc(zeff)*pi/180.
 	d = np.loadtxt('/Users/ashleyross/eBOSS/xirp0gebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
+	#d = np.loadtxt('/Users/ashleyross/eBOSS/wthgebossELG_'+reg+'4_mz0.6xz1.1fkp.dat').transpose()
 	fo = open('/Users/ashleyross/eBOSS/wrp024ELG'+reg+'_data'+str(bs)+'st0.dat','w')
-	rpl = d[0]
+	rpl = d[0]#*dm
 	nb = int(rmax/bs)
 	for i in range(0,nb):
 		mu = dmu/2.
@@ -2873,6 +3125,7 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 		pixlg[pix] = map[1][i]
 		pixlr[pix] = map[2][i]
 		pixlz[pix] = map[3][i]
+	pixlgrz = pixlgr+pixlrz
 	w = (pixlgr < 1)
 	print(sum(w))
 	print(min(pixlgr[w]),max(pixlgr[w]))	
@@ -2882,16 +3135,16 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 	ng = np.zeros(res*res*12)
 	for i in range(0,len(pix)):
 		pixel = pix[i]
-		ng[pixel] += 1.
+		ng[pixel] += f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']*f[i]['WEIGHT_FKP']
 	fr = fitsio.read(dir+'4/eBOSS_ELG_clustering_SGC_v4.ran.fits')
-	rann = len(fr)/float(len(f))
-	print(rann)
+	rann = len(fr)/sum(f['WEIGHT_FKP']*f['WEIGHT_CP']*f['WEIGHT_NOZ'])
+	print(rann,sum(f['WEIGHT_FKP']*f['WEIGHT_CP']*f['WEIGHT_NOZ']))
 	thphir = radec2thphi(fr['RA'],fr['DEC'])	
-	pixr = hp.ang2pix(128,thphir[0],thphir[1])
+	pixr = hp.ang2pix(res,thphir[0],thphir[1])
 	nr = np.zeros(res*res*12)	
 	for i in range(0,len(pixr)):
 		pixel = pixr[i]
-		nr[pixel] += 1.
+		nr[pixel] += fr[i]['WEIGHT_SYSTOT']
 	nbin = 10
 	hgr = np.zeros(nbin)
 	hgr_ran = np.zeros(10)
@@ -2908,34 +3161,50 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 	#xlm = np.arange(mins+binsize/2.,maxs,binsize)
 	#plt.plot(xlm,hgr/hgr_ran*rann,'ko-')
 	#plt.show()		
-	histgr = np.histogram(pixlgr,bins=10,normed=False,range=(-.02,.025),weights=ng)
-	hbins = histgr[1]
-	histgr_ran = np.histogram(pixlgr,bins=hbins,normed=False,range=(-.02,.025),weights=nr)	
+	histgrz = np.histogram(pixlgrz,bins=10,normed=False,weights=ng,range=(-0.02,.045))
+	hbins = histgrz[1]
+	histgrz_ran = np.histogram(pixlgrz,bins=hbins,normed=False,weights=nr,range=(-0.02,.045))	
 	
 	print(hbins)
-	print(histgr[0])
+	print(histgrz[0],sum(histgrz[0]))
+	binsize = (histgrz[1][-1]-histgrz[1][0])/float(len(histgrz[1])-1)
+	xlm = np.arange(histgrz[1][0]+binsize/2.,histgrz[1][-1]*1.001,binsize)
+	plt.errorbar(xlm,histgrz[0]/histgrz_ran[0]*rann,np.sqrt(histgrz[0])/histgrz_ran[0]*rann,fmt='ko')
+	plt.xlabel(r'$\Delta$ (g-r)+$\Delta$ (r-z)')
+	print(sum((histgrz[0]/histgrz_ran[0]*rann-1.)**2./(np.sqrt(histgrz[0])/histgrz_ran[0]*rann)**2.))
+	plt.show()
+
+
+	histgr = np.histogram(pixlgr,bins=10,normed=False,range=(-.02,.02),weights=ng)
+	hbins = histgr[1]
+	histgr_ran = np.histogram(pixlgr,bins=hbins,normed=False,range=(-.02,.02),weights=nr)	
+	
+	print(hbins)
+	print(histgr[0],sum(histgr[0]))
 	binsize = (histgr[1][-1]-histgr[1][0])/float(len(histgr[1])-1)
 	xlm = np.arange(histgr[1][0]+binsize/2.,histgr[1][-1]*1.001,binsize)
 	plt.errorbar(xlm,histgr[0]/histgr_ran[0]*rann,np.sqrt(histgr[0])/histgr_ran[0]*rann,fmt='ko')
 	plt.xlabel(r'$\Delta$ (g-r)')
+	print(sum((histgr[0]/histgr_ran[0]*rann-1.)**2./(np.sqrt(histgr[0])/histgr_ran[0]*rann)**2.))
 	plt.show()
 
-	histg = np.histogram(pixlg,bins=10,normed=False,range=(0.005,.045),weights=ng)
+	histg = np.histogram(pixlg,bins=10,normed=False,range=(0.01,.04),weights=ng)
 	hbins = histg[1]
-	histg_ran = np.histogram(pixlg,bins=hbins,normed=False,range=(0.005,.045),weights=nr)	
+	histg_ran = np.histogram(pixlg,bins=hbins,normed=False,range=(0.01,.04),weights=nr)	
 	
 	print(hbins)
-	print(histg[0])
+	print(histg[0],sum(histg[0]))
 	binsize = (histg[1][-1]-histg[1][0])/float(len(histg[1])-1)
 	xlm = np.arange(histg[1][0]+binsize/2.,histg[1][-1]*1.001,binsize)
 	plt.errorbar(xlm,histg[0]/histg_ran[0]*rann,np.sqrt(histg[0])/histg_ran[0]*rann,fmt='ko')
 	plt.xlabel(r'$\Delta$ (g)')
+	print(sum((histg[0]/histg_ran[0]*rann-1.)**2./(np.sqrt(histg[0])/histg_ran[0]*rann)**2.))
 	plt.show()
 
 
-	histrz = np.histogram(pixlrz,bins=10,normed=False,range=(-.02,.03),weights=ng)
+	histrz = np.histogram(pixlrz,bins=10,normed=False,range=(-.015,.035),weights=ng)
 	hbins = histrz[1]
-	histrz_ran = np.histogram(pixlrz,bins=hbins,normed=False,range=(-.02,.03),weights=nr)	
+	histrz_ran = np.histogram(pixlrz,bins=hbins,normed=False,range=(-.015,.035),weights=nr)	
 	
 	print(hbins)
 	print(histrz[0],sum(histrz[0]))
@@ -2943,11 +3212,12 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 	xlm = np.arange(histrz[1][0]+binsize/2.,histrz[1][-1]*1.001,binsize)
 	plt.errorbar(xlm,histrz[0]/histrz_ran[0]*rann,np.sqrt(histrz[0])/histrz_ran[0]*rann,fmt='ko')
 	plt.xlabel(r'$\Delta$ (r-z)')
+	print(sum((histrz[0]/histrz_ran[0]*rann-1.)**2./(np.sqrt(histrz[0])/histrz_ran[0]*rann)**2.))
 	plt.show()
 
-	histr = np.histogram(pixlr,bins=10,normed=False,range=(0.005,.045),weights=ng)
+	histr = np.histogram(pixlr,bins=10,normed=False,range=(0.005,.04),weights=ng)
 	hbins = histr[1]
-	histr_ran = np.histogram(pixlr,bins=hbins,normed=False,range=(0.005,.045),weights=nr)	
+	histr_ran = np.histogram(pixlr,bins=hbins,normed=False,range=(0.005,.04),weights=nr)	
 	
 	print(hbins)
 	print(histr[0],sum(histr[0]))
@@ -2955,11 +3225,12 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 	xlm = np.arange(histr[1][0]+binsize/2.,histr[1][-1]*1.001,binsize)
 	plt.errorbar(xlm,histr[0]/histr_ran[0]*rann,np.sqrt(histr[0])/histr_ran[0]*rann,fmt='ko')
 	plt.xlabel(r'$\Delta$ (r)')
+	print(sum((histr[0]/histr_ran[0]*rann-1.)**2./(np.sqrt(histr[0])/histr_ran[0]*rann)**2.))
 	plt.show()
 
-	histz = np.histogram(pixlz,bins=10,normed=False,range=(-0.005,.04),weights=ng)
+	histz = np.histogram(pixlz,bins=10,normed=False,range=(-0.01,.035),weights=ng)
 	hbins = histz[1]
-	histz_ran = np.histogram(pixlz,bins=hbins,normed=False,range=(-0.005,.04),weights=nr)	
+	histz_ran = np.histogram(pixlz,bins=hbins,normed=False,range=(-0.01,.035),weights=nr)	
 	
 	print(hbins)
 	print(histz[0],sum(histz[0]))
@@ -2967,6 +3238,7 @@ def ngalvdcol(res=128,mins=-.1,maxs=.1):
 	xlm = np.arange(histz[1][0]+binsize/2.,histz[1][-1]*1.001,binsize)
 	plt.errorbar(xlm,histz[0]/histz_ran[0]*rann,np.sqrt(histz[0])/histz_ran[0]*rann,fmt='ko')
 	plt.xlabel(r'$\Delta$ (z)')
+	print(sum((histz[0]/histz_ran[0]*rann-1.)**2./(np.sqrt(histz[0])/histz_ran[0]*rann)**2.))
 	plt.show()
 
 
@@ -3053,6 +3325,97 @@ def ngalvdebv():
 	plt.show()
 	#plt.savefig('nELGvsdeltaEBV.png')
 	return True
+
+def ngalvH2():
+	import healpy as hp
+	from healpix import radec2thphi
+	from optimize import fmin
+	from astropy.io import fits
+	H2map = fits.open('NHI_HPX.fits.gz')[1].data['NHI']
+	dir = '/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'
+	regl = ['SGC','NGC']
+	cl  =['b','r']
+	for k in range(0,2):
+		reg = regl[k]
+		f = fitsio.read(dir+'4/eBOSS_ELG_clustering_'+reg+'_v4.dat.fits')
+		thphi = radec2thphi(f['RA'],f['DEC'])	
+		r = hp.Rotator(coord=['C','G'],deg=False)
+		thphiG = r(thphi[0],thphi[1])
+		pix = hp.ang2pix(1024,thphiG[0],thphiG[1])
+		#emap = fitsio.read('ebv_lhd.hpx.fits')['EBV']
+		ebvl = []
+		for i in range(0,len(pix)):
+			ebvl.append(log(H2map[pix[i]]))
+		ebvl = np.array(ebvl)
+		de = ebvl#-f['ebv']
+		#denan = de[np.isnan(de)]
+		#wts=f[np.isfinite(de)]['WEIGHT_SYSTOT']
+		w = (np.isfinite(de))# & (de > -0.01) & (de < 0.015))
+		denan = de[~w]
+		de = de[w]
+		wts = f[w]['WEIGHT_SYSTOT']
+		#be = [-0.06,-0.02,-0.01,-0.007,-0.005,-0.003,-0.001,0.001,0.005,0.01,0.02]
+		hist = np.histogram(de,bins=10,normed=False,weights=wts)	
+		hbins = hist[1]
+		print(hbins)
+		print(hist[0])
+		binsize = (hist[1][-1]-hist[1][0])/float(len(hist[1])-1)
+		#xlm = []
+		#for i in range(0,len(be)-1):
+		#	xlm.append((be[i]+be[i+1])/2.) 
+		xlm = np.arange(hist[1][0]+binsize/2.,hist[1][-1]*1.001,binsize)
+	
+		fr = fitsio.read(dir+'4/eBOSS_ELG_clustering_'+reg+'_v4.ran.fits')
+		#nr = len(fr)/float(len(f))
+		nr = sum(fr['WEIGHT_SYSTOT'])/sum(f['WEIGHT_SYSTOT'])
+		print(nr)
+		thphir = radec2thphi(fr['RA'],fr['DEC'])	
+		thphiG = r(thphir[0],thphir[1])
+		pixr = hp.ang2pix(1024,thphiG[0],thphiG[1])
+		ebvlr = []
+		for i in range(0,len(pixr)):
+			ebvlr.append(log(H2map[pixr[i]]))
+		ebvlr = np.array(ebvlr)
+		der = ebvlr#-fr['ebv']
+		#dernan = der[np.isnan(der)]
+		wr = (np.isfinite(der))# & (der > -0.01) & (der < 0.015))
+		dernan = der[~wr]
+		der = der[wr]
+		wts = fr[wr]['WEIGHT_SYSTOT']
+		histr = np.histogram(der,bins=hbins,normed=False,weights=wts)
+		#nr = len(der)/float(len(de))
+		#print(nr)
+		
+		print(histr[0])
+		print(hist[0]/histr[0]*nr)
+		#print('nan ratio is',len(denan)/float(len(dernan))*nr,len(denan),len(dernan)/float(len(fr)))
+		fo = open('nELG'+reg+'vsHII.dat','w')
+		chinull = 0
+		for i in range(0,len(xlm)):
+			fo.write(str(xlm[i])+' '+str(hist[0][i]/histr[0][i].astype('float')*nr)+' '+str(sqrt(hist[0][i])/histr[0][i].astype('float')*nr)+'\n')
+			diff = hist[0][i]/histr[0][i].astype('float')*nr-1.
+			err = sqrt(hist[0][i])/histr[0][i].astype('float')*nr
+			print(diff,err)
+			chinull += (diff)**2./(err**2.)
+		fo.close()
+		print(chinull)
+		lf = linfit(xlm,hist[0]/histr[0].astype('float')*nr,np.sqrt(hist[0])/histr[0].astype('float')*nr)
+		inl = np.array([1.,-10.])
+		b0,m0 = fmin(lf.chilin,inl)
+		print(b0,m0)
+		print( lf.chilin((b0,m0)))
+		plt.plot(xlm,b0+m0*xlm,'--',color=cl[k])
+		plt.errorbar(xlm,hist[0]/histr[0].astype('float')*nr,np.sqrt(hist[0])/histr[0].astype('float')*nr,color=cl[k])
+
+	#plt.xlim(-0.05,0.02)
+	plt.xlabel(r'HII')
+	plt.ylabel(r'$n_{\rm gal}/\langle n_{\rm gal} \rangle$')
+	plt.text(hbins[1],1.1,'NGC',color='r')
+	plt.text(hbins[1],1.08,'SGC',color='b')
+	#plt.show()
+	plt.savefig('nELGvsHII.png')
+	return True
+
 
 def nQSOvdebv(zmin=1.5):
 	import healpy as hp
@@ -3209,7 +3572,7 @@ def put4dr7():
 	gl = []
 	rl = []
 	zl = []
-	for i in range(0,4):
+	for i in range(0,6):
 		file = '/Users/ashleyross/eBOSS/dr7g1821_'+str(i)+'.txt'
 		f = open(file)
 		f.readline()
@@ -3233,20 +3596,19 @@ def put4dr7():
 				pass
 	print(len(ral))
 	tab = Table([ral,decl,gl,rl,zl],names=('RA','DEC','dered_mag_g','dered_mag_r','dered_mag_z'))	
-	tab.write('decalsDR7_g1821_ra050_absdec5_PSF.fits', format='fits', overwrite=True) 			
+	tab.write('decalsDR7_g1821_ELGSGC_PSF.fits', format='fits', overwrite=True) 			
 	from matplotlib import pyplot as plt
 	plt.plot(ral,decl,',')
 	plt.show()
 	
-def put4des():
-	
+def put4des():	
 	#'ra,dec,wavg_mag_psf_g_dered,wavg_mag_psf_r_dered,wavg_mag_psf_z_dered\n'\n'
 	ral = []
 	decl = []
 	gl = []
 	rl = []
 	zl = []
-	for i in range(0,4):
+	for i in range(0,6):
 		file = '/Users/ashleyross/eBOSS/DESdr1g1821_'+str(i)+'.txt'
 		f = open(file)
 		f.readline()
@@ -3268,14 +3630,14 @@ def put4des():
 				pass
 	print(len(ral))
 	tab = Table([ral,decl,gl,rl,zl],names=('RA','DEC','wavg_mag_psf_g_dered','wavg_mag_psf_r_dered','wavg_mag_psf_z_dered'))	
-	tab.write('desDR1_g1821_ra050_absdec5_wavgpsf.fits', format='fits', overwrite=True) 			
+	tab.write('desDR1_g1821_SGCELG_wavgpsf.fits', format='fits', overwrite=True) 			
 	from matplotlib import pyplot as plt
 	plt.plot(ral,decl,',')
 	plt.show()
 
 def matchDESdecals(angle=1/3600.,ramin=0,ramax=50): 
-	des = fitsio.read('/Users/ashleyross/eBOSS/desDR1_g1821_ra050_absdec5_wavgpsf.fits')
-	ls = fitsio.read('/Users/ashleyross/eBOSS/decalsDR7_g1821_ra050_absdec5_PSF.fits')
+	des = fitsio.read('/Users/ashleyross/eBOSS/desDR1_g1821_SGCELG_wavgpsf.fits')
+	ls = fitsio.read('/Users/ashleyross/eBOSS/decalsDR7_g1821_SGCELG_PSF.fits')
 	#w = (ls['dered_mag_g'] < 20.9)
 	w = ((ls['RA'] > ramin) & (ls['RA'] < ramax))
 	ls = ls[w]
@@ -3294,7 +3656,7 @@ def matchDESdecals(angle=1/3600.,ramin=0,ramax=50):
 	mls = ls[idx2]
 	
 	tab = Table([mdes['RA'],mdes['DEC'],mdes['wavg_mag_psf_g_dered'],mdes['wavg_mag_psf_r_dered'],mdes['wavg_mag_psf_z_dered'],mls['dered_mag_g'],mls['dered_mag_r'],mls['dered_mag_z']],names=('RA','DEC','wavg_mag_psf_g_dered','wavg_mag_psf_r_dered','wavg_mag_psf_z_dered','dered_mag_g','dered_mag_r','dered_mag_z'))	
-	tab.write('matched_lsdesDR1_g1821_ra050_absdec5_PSF.fits', format='fits', overwrite=True) 			
+	tab.write('matched_lsdesDR1_g1821_SGCELG_PSF.fits', format='fits', overwrite=True) 			
 	
 
 	from matplotlib import pyplot as plot
@@ -3341,7 +3703,7 @@ def mkdiffplots_desls_hp(res=128,psize=50.):
 	import healpy as hp
 	from healpix import radec2thphi
 
-	f = fitsio.read('/Users/ashleyross/eBOSS/matched_lsdesDR1_g1821_ra050_absdec5_PSF.fits')
+	f = fitsio.read('/Users/ashleyross/eBOSS/matched_lsdesDR1_g1821_SGCELG_PSF.fits')
 
 	thphi = radec2thphi(f['RA'],f['DEC'])	
 	pix = hp.ang2pix(res,thphi[0],thphi[1])
@@ -3361,7 +3723,10 @@ def mkdiffplots_desls_hp(res=128,psize=50.):
 			if abs(dg) < 0.2 and abs(dr) < 0.2 and abs(dz) < 0.2:
 				pixel = pix[i]
 				nl[pixel] += 1.
-				ral[pixel] += f[i]['RA']
+				ra = f[i]['RA']
+				if ra > 180:
+					ra -= 360
+				ral[pixel] += ra
 				decl[pixel] += f[i]['DEC']
 				gl[pixel] += dg
 				rl[pixel] += dr
@@ -3828,6 +4193,61 @@ def plotxi2ELG(reg,bs='8st0',v='test',wm='fkpcpgdepth',wm1='fkpgdepth',zmin=.6,z
 	pp.close()
 	return True
 
+def plotxirpp(reg,v='4',samp='ELG',bs=4,rmax=200,rtick=40,vmax=0.01,vmin=-0.01,zmin=.8,zmax=2.2,interp='spline16',subperp=False,wm='fkp',angfac=.75):
+	d = np.loadtxt(ebossdir+'xirperprmugeboss'+samp+'_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'.dat')#.transpose()
+	xil = np.zeros((rmax/bs,rmax/bs))
+	if subperp:
+		ds = np.loadtxt(ebossdir+'xirprpgeboss'+samp+'_'+reg+v+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp1st0.dat').transpose()[1]
+		for i in range(0,len(d)):
+			d[i] -= angfac*ds[i]
+# 		xip = np.zeros((rmax))
+# 		for i in range(0,rmax):
+# 			xiave = np.mean(d[i])
+# 			xip[i] = xiave
+# 		for i in range(0,rmax):
+# 			for j in range(0,rmax):
+# 				print(i,j,d[i][j])
+# 				d[i][j] -= xip[i]
+				#print(d[i][j],xip[i])			
+		#print(xip)
+	d = d.transpose()
+	
+	for i in range(0,rmax,bs):
+		for j in range(0,rmax,bs):
+			xi = 0
+			nb = 0
+			for bi in range(0,bs):
+				for bj in range(0,bs):
+					if xi != -1.:
+						xi += d[i+bi][j+bj]
+						nb += 1.
+					#if subperp:
+					#	xi -= xip[i+bi]
+			xi = xi/nb#float(bs*bs)
+			xil[i/bs][j/bs] = xi
+	plt.imshow(xil,origin='lower',interpolation=interp,vmax=vmax,vmin=vmin)
+	ax = plt.gca()
+	ax.set_xticks(np.arange(0, rmax/bs, rtick/float(bs)))
+	ax.set_xticklabels(np.arange(bs/2.,rmax+1,rtick))
+	ax.set_yticks(np.arange(0, rmax/bs, rtick/float(bs)))
+	ax.set_yticklabels(np.arange(bs/2.,rmax+1,rtick))
+	plt.colorbar()
+	plt.xlabel(r'$s_{\perp}h^{-1}$Mpc')
+	plt.ylabel(r'$s_{||}h^{-1}$Mpc')
+	if subperp:
+		plt.title(reg+r' $\xi$'+'-'+str(angfac)+r'$w(r_{\perp}$)')
+	if wm == 'fkp' and subperp == False:
+		plt.title(reg+r' $\xi$')
+	if wm == 'fkp.shuffled':
+		plt.title(reg+r' $\xi_{\rm shuffled}$')		
+	plt.show()
+	sp = ''
+	if subperp:
+		sp = 'subperp'
+	#plt.savefig('xirpp'+reg+sp+wm.strip('.')+'.png')
+	plt.clf()
+	return True
+	
 
 def plotxiELGcomb(reg = 'ALL',mom=0,bs='8st0',v='test',rec='',zmin=.7,zmax=1.1,l1='',l2='',modplot=True):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
@@ -4024,7 +4444,7 @@ def plotxi_shuffsubcom(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,w
 	from matplotlib.backends.backend_pdf import PdfPages
 
 	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+wm+bs+'.dat').transpose()
-	ds = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkpnosysshuff'+bs+'.dat').transpose()
+	ds = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+'4_1'+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp.shuffled'+bs+'.dat').transpose()
 
 	rl = d1[0]
 	xil = d1[1]
@@ -4036,7 +4456,42 @@ def plotxi_shuffsubcom(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,w
 	plt.plot(rl,rl**pwr*xils,'r-')
 	plt.plot(rl,rl**pwr*ds[1],'b-')
 	plt.plot(rl,rl**pwr*xil,'r--')
-	plt.show()
+	plt.xlim(0,200)
+	#plt.ylim(-75,75)
+	xl = [130,136]
+	tx =  138
+	if mom == 0:
+		xl = [12,18]
+		tx =20
+	ymin = plt.axis()[-2]
+	ymax = plt.axis()[-1]
+
+	yl = [.2*(ymax-ymin)+ymin,.2*(ymax-ymin)+ymin]
+	plt.plot(xl,yl,'r--')
+	plt.text(tx,.19*(ymax-ymin)+ymin,'Standard')
+	
+	yl = [.15*(ymax-ymin)+ymin,.15*(ymax-ymin)+ymin]
+	plt.plot(xl,yl,'b-')
+	plt.text(tx,.14*(ymax-ymin)+ymin,'Shuffled')
+	
+	yl = [.1*(ymax-ymin)+ymin,.1*(ymax-ymin)+ymin]
+	plt.plot(xl,yl,'r-')	
+	plt.text(tx,.09*(ymax-ymin)+ymin,r'Standard -'+str(angfac)+r'$\xi(r_{\perp})$')
+	plt.title(reg)
+	plt.xlabel(r'$s$ $(h^{-1}$Mpc$)$')
+	if pwr == 2:
+		plt.ylabel(r'$s^2\xi_0$')
+	if pwr == 1:
+		if mom == 2:
+			plt.ylabel(r'$s\xi_2$')
+		if mom == 4:
+			plt.ylabel(r'$s\xi_4$')	
+	#plt.show()
+	plt.savefig(ebossdir+'xi'+str(mom)+reg+'shuffsubcom.png')
+	plt.clf()
+	return True
+	
+	#plt.show()
 
 def plotxi_shuffsubcom_mubin(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,wm='',angfac=.5,mumin=0,mumax=1):
 	from matplotlib import pyplot as plt
@@ -4107,8 +4562,11 @@ def plotxiELGcompth(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,thfa
 			print('subtracting angular clustering with factor '+str(angfac))
 			wpn = np.loadtxt(ebossdir+'wrp024ELGNGC_data'+bs+'.dat').transpose()
 			wps = np.loadtxt(ebossdir+'wrp024ELGSGC_data'+bs+'.dat').transpose()
+			xilno = xiln
+			xilso = xils
 			xiln = xiln-angfac*wpn[mom/2+1][:len(ave[0])]
 			xils = xils-angfac*wps[mom/2+1][:len(ave[0])]
+		xilo = (xilso/aves[2]**2+xilno/aven[2]**2.)/(1./aves[2]**2.+1./aven[2]**2.)	
 		xil = (xils/aves[2]**2+xiln/aven[2]**2.)/(1./aves[2]**2.+1./aven[2]**2.)
 	else:
 		if mom == 4:
@@ -4122,18 +4580,25 @@ def plotxiELGcompth(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,thfa
 		if md == 'subang':
 			print('subtracting angular clustering with factor '+str(angfac))
 			wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
+			xilo = xil
 			xil = xil-angfac*wp[mom/2+1][:len(ave[0])]
 	if rec == '_rec':
 		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()
 	else:
 		dt = np.loadtxt('BAOtemplates/xi'+str(mom)+'Challenge_matterpower0.563.04.07.015.00.dat').transpose()
 	if wm == 'nosysshuff' or md == 'subang':
-		dt = dt - angfac*np.loadtxt('/Users/ashleyross/eBOSS/wrp024ELGSGC.dat').transpose()[mom/2+1]
+		dto = dt
+		dt = dt - angfac*np.loadtxt('/Users/ashleyross/eBOSS/wrp024ELGSGC.dat').transpose()[mom/2+1]/.655**2.
 	if modplot:
 		if mom == 0:
 			plt.plot(dt[0],dt[0]**2.*dt[1]*thfac,'k:')
+			if md == 'subang':
+				plt.plot(dt[0],dt[0]**2.*dto[1]*thfac,'r:')
 		if mom == 2:
 			plt.plot(dt[0],dt[0]*dt[1]*thfac,'k:')	
+			if md == 'subang':
+				plt.plot(dt[0],dt[0]*dto[1]*thfac,'r:')
+
 		if mom == 4:
 			plt.plot(dt[0],dt[0]*dt[1]*thfac,'k:')		
 	#plt.plot(d1[0],d1[0]**2.*(d1[1]))
@@ -4141,9 +4606,12 @@ def plotxiELGcompth(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,thfa
 	if mom ==0:	
 		
 		plt.errorbar(rl,rl**2.*xil,rl**2.*ave[2],fmt='ko')
+		if md == 'subang':
+			plt.plot(rl,rl**2.*xilo,'r-')
 	if mom ==2:	
 		
 		plt.errorbar(rl,rl*xil,rl*ave[2],fmt='ko')
+		plt.plot(rl,rl*xilo,'r-')
 	if mom ==4:	
 		
 		plt.errorbar(rl,rl*xil,rl*ave[2],fmt='ko')
@@ -4646,7 +5114,7 @@ def plotELGNSbaolike(v='3',p='3',Bp='0.4',rec='',bs=''):
 	print ax
 	alph = (ax[2]+ax[1])/2.
 	err = (ax[2]-ax[1])/2.
-	dnb = np.loadtxt(ebossdir+'BAOxichilNScombELG'+v+rec+'nobao'+Bp+bs+'.dat').transpose()[1]
+	dnb = np.loadtxt(ebossdir+'BAOxichilNScombELG'+v+rec+Bp+'nobao'+bs+'.dat').transpose()[1]
 	chim = min(db[1])
 	ol = np.ones((len(db[0])))
 	plt.plot(db[0],db[1]-chim,'-',color='k',linewidth=2)

@@ -30,7 +30,7 @@ def mksubfile_Dmufbfjack(file1,file2,jack,off=0,a=''):
 	fo = open('sub'+str(jack+off)+a+'.sh','w')
 	fo.write('#!/bin/bash\n')
 	fo.write('#$ -V -cwd\n')
-	fo.write('#PBS -q sciama1.q\n')
+	#fo.write('#PBS -q sciama1.q\n')
 	for i in range(0,20):
 		fo.write('~/pp2pt_Dmufb '+file1+str(i) +' '+file2+str(jack) +' -o output.'+file1+' \n')
 	fo.close()
@@ -88,6 +88,74 @@ def mksuball_nran_Dmurpfjack(ranf,galf,nran,wr,njack=20,sran=0):
 		off = 40+40*j
 		for i in range(0,njack):
 			mksubfile_Dmurpfjack(ranf+str(j)+wr,ranf+str(j)+wr,i,off)
+			fo.write('qsub sub'+str(i+off)+'.sh \n')
+			fo.write('sleep 1 \n')
+
+	fo.close()
+	return True
+
+def mksubfile_Dmurppfjack(file1,file2,jack,off=0,a=''):
+	fo = open('sub'+str(jack+off)+a+'.sh','w')
+	fo.write('#!/bin/bash\n')
+	fo.write('#$ -V -cwd\n')
+	#fo.write('#PBS -q sciama1.q\n')
+	for i in range(0,20):
+		fo.write('~/pp2pt_Dmurpp '+file1+str(i) +' '+file2+str(jack) +' -o output.'+file1+' \n')
+	fo.close()
+	return True
+
+def mksuball_nran_Dmurppfjack(ranf,galf,nran,wr,njack=20,sran=0):
+	fo = open('suball.sh','w')
+	fo.write('#!/bin/bash\n')
+	
+	if sran == 0:
+		for i in range(0,njack):
+			mksubfile_Dmurppfjack(galf,galf,i)
+			fo.write('qsub sub'+str(i)+'.sh \n')
+			fo.write('sleep 1 \n')
+	for j in range(sran,sran+nran):	
+		off = 20+40*j
+		for i in range(0,njack):
+			mksubfile_Dmurppfjack(ranf+str(j)+wr,galf,i,off)
+			fo.write('qsub sub'+str(i+off)+'.sh \n')
+			fo.write('sleep 1 \n')
+		off = 40+40*j
+		for i in range(0,njack):
+			mksubfile_Dmurppfjack(ranf+str(j)+wr,ranf+str(j)+wr,i,off)
+			fo.write('qsub sub'+str(i+off)+'.sh \n')
+			fo.write('sleep 1 \n')
+
+	fo.close()
+	return True
+
+def mksubfile_angfjack(file1,file2,jack,off=0,a=''):
+	fo = open('sub'+str(jack+off)+a+'.sh','w')
+	fo.write('#!/bin/bash\n')
+	fo.write('#$ -V -cwd\n')
+	#fo.write('#PBS -q sciama1.q\n')
+	for i in range(0,20):
+		fo.write('~/pp2pt_ang '+file1+str(i) +' '+file2+str(jack) +' -o output.'+file1+' \n')
+	fo.close()
+	return True
+
+def mksuball_nran_angfjack(ranf,galf,nran,wr,njack=20,sran=0):
+	fo = open('suball.sh','w')
+	fo.write('#!/bin/bash\n')
+	
+	if sran == 0:
+		for i in range(0,njack):
+			mksubfile_angfjack(galf,galf,i)
+			fo.write('qsub sub'+str(i)+'.sh \n')
+			fo.write('sleep 1 \n')
+	for j in range(sran,sran+nran):	
+		off = 20+40*j
+		for i in range(0,njack):
+			mksubfile_angfjack(ranf+str(j)+wr,galf,i,off)
+			fo.write('qsub sub'+str(i+off)+'.sh \n')
+			fo.write('sleep 1 \n')
+		off = 40+40*j
+		for i in range(0,njack):
+			mksubfile_angfjack(ranf+str(j)+wr,ranf+str(j)+wr,i,off)
 			fo.write('qsub sub'+str(i+off)+'.sh \n')
 			fo.write('sleep 1 \n')
 
@@ -513,19 +581,21 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 	fo.close()
 	return True
 
-def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',rec='',dr='',brickm='',ranshuff='',ramax=False,gdmin=0):
+def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',psfx=99,cp='',shuff='',wm='',rec='',dr='',brickm='',ranshuff='',ramax=False,gdmin=0):
 	from healpix import healpix, radec2thphi
 	if c == 'sci': #AJR uses this define directory for machine he uses
 		dir = dirsci
-	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.dat.fits')
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+shuff+'.dat.fits')
 	rx = ''
 	if ramax:
 		rx += 'rax'+str(ramax)
 	gw = ''
 	if gdmin != 0:
 		gw = 'gdm'+str(gdmin)
-		
-	fo = open(dir+'geboss'+samp+'_'+NS+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+brickm+dr+rx+gw+ranshuff+'4xi.dat','w')
+	psfw = ''
+	if psfx != 99:
+		psfw += 'psfx'+str(psfx)	
+	fo = open(dir+'geboss'+samp+'_'+NS+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+fkp+cp+wm+psfw+brickm+dr+rx+gw+ranshuff+shuff+'4xi.dat','w')
 	n = 0
 	nw = 0
 	nnan = 0
@@ -559,7 +629,12 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 			wl[w] = 1./(1.015-10.7*de[w])
 			wl[~w] = 1./.948
 			
-		
+	if wm == 'MRlin':
+		import healpy as hp
+		from healpix import radec2thphi
+		wmap = fitsio.read('lin-weights.hp256.fits')['I']	
+		thphi = radec2thphi(f['RA'],f['DEC'])
+		pixl = hp.ang2pix(256,thphi[0],thphi[1])
 			
 	for i in range(0,len(f)):
 		z = f[i]['Z']
@@ -576,15 +651,19 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 			ddr = f[i]['decals_dr']
 			if ddr != dr:
 				m = 0
-		if f[i]['galdepth_g'] < gdmin:
-			m = 0				
+		if gdmin > 0:
+			if f[i]['galdepth_g'] < gdmin:
+				m = 0				
 		ra,dec = f[i]['RA'],f[i]['DEC']
 		if ramax:
 			if ra > 180:
 				ra -= 360
 
 			if ra > ramax:
-				m = 0		
+				m = 0	
+		if psfx < 99:
+			if f[i]['psfsize_g'] > psfx or f[i]['psfsize_r'] > psfx or f[i]['psfsize_z'] > psfx:	
+				m = 0	
 		if m == 1:
 			if z > zmin and z < zmax or rec == '_rec': 
 				
@@ -595,6 +674,8 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 					w = f[i]['WEIGHT_SYSTOT']
 				else:
 					w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']
+				if wm == 'MRlin':
+					w = 1./wmap[pixl[i]]*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']	
 				if samp == 'LRGpCMASS':
 					w = f[i]['WEIGHT_ALL_NOFKP']
 				if wm == 'nosys':
@@ -615,13 +696,13 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',cp='',wm='',r
 	fo.close()
 	return True		
 
-def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',wm='',rec='',dr='',brickm='',ramax=False,gdmin=0):
+def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',shuff='',fkp='fkp',psfx=99,cp='',wm='',rec='',dr='',brickm='',ramax=False,gdmin=0):
 	from random import random
 	if c == 'sci':
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 
-	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.ran.fits')
+	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+shuff+'.ran.fits')
 	#ns = len(f)/1000000
 	#print len(f),ns
 	rx = ''
@@ -630,8 +711,11 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 	gw = ''
 	if gdmin != 0:
 		gw = 'gdm'+str(gdmin)
+	psfw = ''
+	if psfx != 99:
+		psfw += 'psfx'+str(psfx)	
 
-	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+brickm+dr+rx+gw+'4xi.dat','w')
+	fo = open(dir+'reboss'+samp+'_'+NS+v+rec+'_'+str(N)+wz+fkp+cp+wm+psfw+brickm+dr+rx+gw+shuff+'4xi.dat','w')
 	n = 0
 	nw = 0
 	#minc = N*10**6
@@ -670,8 +754,13 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',fkp='fkp',cp='',
 			ddr = f[i]['decals_dr']
 			if ddr != dr:
 				m = 0		
-		if f[i]['galdepth_g'] < gdmin:
-			m = 0				
+		if gdmin > 0:
+			if f[i]['galdepth_g'] < gdmin:
+				m = 0
+		if psfx < 99:	
+			if f[i]['psfsize_g'] > psfx or f[i]['psfsize_r'] > psfx or f[i]['psfsize_z'] > psfx:	
+				m = 0	
+							
 
 		if m == 1:
 			if z > zmin and z < zmax or rec == '_rec': 
@@ -1401,11 +1490,11 @@ def createSourcesrd_adJack(file,jack,NS='N2',Njack=20):
 	fo.close()
 	return True
 
-def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm='',fkp='fkp',ranshuff='',cp='',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False,ramax=False):
+def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm='',shuff='',fkp='fkp',psfx=99,ranshuff='',cp='',zmin=.6,zmax=1.1,ms='',gmax=30,gri22='',zpl=False,znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False,ramax=False):
 	#after defining jack-knifes, this makes all of the divided files and the job submission scripts
 	#./suball.sh sends all of the jobs to the queue on the system I use
 	#mkgal4xi(sample,NS,version,cm=cm,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,ms=ms,gri22=gri22,zpl=zpl,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
-	mkgal4xime(sample,NS,version,rec=rec,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,dr=dr,ranshuff=ranshuff,brickm=brickm,ramax=ramax)
+	mkgal4xime(sample,NS,version,rec=rec,wm=wm,zmin=zmin,zmax=zmax,psfx=psfx,shuff=shuff,fkp=fkp,cp=cp,dr=dr,ranshuff=ranshuff,brickm=brickm,ramax=ramax)
 	gw = ''
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
@@ -1430,11 +1519,14 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 	if ramax:
 		sysw += 'rax'+str(ramax)		
 	sysw += wm
+	if psfx != 99:
+		sysw += 'psfx'+str(psfx)
 	sysw += ms
 	sysw += brickm
 	sysw += dr
 	sysw += ranshuff
 	sysw += gw
+	sysw += shuff
 	gf = 'geboss'+cm+sample+'_'+NS+version+rec+'_'+wz+fkp+cp+sysw#+gri22+wm
 	createSourcesrd_ad(gf)
 	for i in range(0,20):
@@ -1447,7 +1539,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 		if ranshuff == 'shuff':
 			mkran4xi_shuff(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
 		else:
-			mkran4xime(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
+			mkran4xime(sample,NS,nran,version,N=rann,wm=wm,psfx=psfx,zmin=zmin,zmax=zmax,shuff=shuff,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
 		rfi = rf+str(rann)+wz+fkp+cp+sysw#gw+gri22+wm
 		createSourcesrd_ad(rfi)
 		for i in range(0,20):
@@ -1777,6 +1869,237 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		for i in range(0,nbin):
 			xil[i] = (xiDDl[i]/DDnormt-2*xiDRl[i]/DRnormt+xiRRl[i]/RRnormt)*RRnormt/xiRRl[i] 	
 	return xil
+
+def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec='',rpw='',shuff=''):
+	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
+	from numpy import zeros
+	from time import time
+	#DDnl = zeros((nbin,njack),'f')
+	rf = 'reboss'+sample+'_'+NS+version+rec+'_'
+	if rec == '_rec' or shuff == 'shuff':
+		rfnorec = 'reboss'+sample+'_'+NS+version+'_'
+		RRnorecnl = []
+		RRnorecnormt = 0
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	wm += shuff
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm#+shuff
+	fl = sample+'_'+NS+version+'_'+wz+wm#+shuff
+	DDnl = []	
+	DDnorml = 0
+	DDnormt = 0
+	DRnl = []
+	DRnorml = 0
+	DRnormt = 0
+	RRnl = []
+	RRnl0 = []
+	for i in range(0,rmax*rmax):
+		DDnl.append(0)
+		DRnl.append(0)
+		RRnl.append(0)
+		RRnl0.append(0)
+		if rec == '_rec' or shuff == 'shuff':
+			RRnorecnl.append(0)
+	RRnorml = 0
+	RRnormt = 0
+	pl = []
+#	pl.append((0,0,0,0))
+	if wf:
+		fD = open(dirsci+'paircounts/Paircounts_un_'+fl+'.dat','w')
+		#fDR = open('DRcounts'+file+'.dat','w')
+		#fR = open('RRcounts'+file+'.dat','w')
+	for i in range(0,njack):
+		#print i
+		for j in range(0,njack):
+			if jack != i and jack != j:
+				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmurp.dat').readlines()
+				DDnormt += float(fdp[0])
+				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmurp.dat').readlines()
+				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmurp.dat').readlines()
+				DRnormt += float(fdnp[0])
+				RRnormt += float(fr[0])
+				for k in range(1,len(fdp)):
+					dp = float(fdp[k])
+					dr = float(fdnp[k])
+					rp = float(fr[k])
+					DDnl[k-1] += dp
+					DRnl[k-1] += dr
+					RRnl[k-1] += rp
+					
+	print DDnormt,DRnormt,RRnormt				
+	for nr in range(1,nranf):
+		for i in range(0,njack):
+			#print i
+			for j in range(0,njack):
+				if jack != i and jack != j:
+					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmurp.dat').readlines()
+					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptdmurp.dat').readlines()
+					DRnormt += float(fdnp[0])
+					RRnormt += float(fr[0])
+					for k in range(1,len(fdp)):						
+						dr = float(fdnp[k])
+						rp = float(fr[k])
+						DRnl[k-1] += dr
+						RRnl[k-1] += rp
+
+	if rec == '_rec':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				#print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmurp.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+	if shuff == 'shuff':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				#print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmurp.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+		
+	#print RRnl
+	
+	xil = zeros((rmax,rmax),'f')
+	for i in range(0,rmax):
+		for j in range(0,rmax):
+			bin = rmax*i+j
+			if RRnl[bin] > 0:
+				xil[i][j] = (DDnl[bin]/DDnormt-2*DRnl[bin]/DRnormt+RRnl[bin]/RRnormt)*RRnormt/RRnl[bin]
+			#else:
+			#	print(i,j)
+	if jack == -1:
+		fo = open('xirperprmu'+gf+'.dat','w')
+		for i in range(0,rmax):
+			for j in range(0,rmax):
+				fo.write(str(xil[i][j])+' ')
+			fo.write('\n')
+		fo.close()
+		return True
+		
+	return xil
+
+def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,thmax=6,bins=0.05,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec='',rpw='',shuff=''):
+	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
+	from numpy import zeros
+	from time import time
+	#DDnl = zeros((nbin,njack),'f')
+	rf = 'reboss'+sample+'_'+NS+version+rec+'_'
+	if rec == '_rec' or shuff == 'shuff':
+		rfnorec = 'reboss'+sample+'_'+NS+version+'_'
+		RRnorecnl = []
+		RRnorecnormt = 0
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	wm += shuff
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm#+shuff
+	fl = sample+'_'+NS+version+'_'+wz+wm#+shuff
+	DDnl = []	
+	DDnorml = 0
+	DDnormt = 0
+	DRnl = []
+	DRnorml = 0
+	DRnormt = 0
+	RRnl = []
+	RRnl0 = []
+	nbin = int((1.0001*thmax)/bins)
+	for i in range(0,nbin):
+		DDnl.append(0)
+		DRnl.append(0)
+		RRnl.append(0)
+		RRnl0.append(0)
+		if rec == '_rec' or shuff == 'shuff':
+			RRnorecnl.append(0)
+	RRnorml = 0
+	RRnormt = 0
+	pl = []
+#	pl.append((0,0,0,0))
+	if wf:
+		fD = open(dirsci+'paircounts/Paircounts_un_'+fl+'.dat','w')
+		#fDR = open('DRcounts'+file+'.dat','w')
+		#fR = open('RRcounts'+file+'.dat','w')
+	for i in range(0,njack):
+		#print i
+		for j in range(0,njack):
+			if jack != i and jack != j:
+				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptth.dat').readlines()
+				DDnormt += float(fdp[0])
+				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptth.dat').readlines()
+				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptth.dat').readlines()
+				DRnormt += float(fdnp[0])
+				RRnormt += float(fr[0])
+				for k in range(1,len(fdp)):
+					dp = float(fdp[k])
+					dr = float(fdnp[k])
+					rp = float(fr[k])
+					DDnl[k-1] += dp
+					DRnl[k-1] += dr
+					RRnl[k-1] += rp
+					
+	print DDnormt,DRnormt,RRnormt				
+	for nr in range(1,nranf):
+		for i in range(0,njack):
+			#print i
+			for j in range(0,njack):
+				if jack != i and jack != j:
+					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptth.dat').readlines()
+					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptth.dat').readlines()
+					DRnormt += float(fdnp[0])
+					RRnormt += float(fr[0])
+					for k in range(1,len(fdp)):						
+						dr = float(fdnp[k])
+						rp = float(fr[k])
+						DRnl[k-1] += dr
+						RRnl[k-1] += rp
+
+	if rec == '_rec':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				#print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptth.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+	if shuff == 'shuff':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				#print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptth.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+		
+	#print RRnl
+	
+	xil = zeros((nbin),'f')
+	for i in range(0,nbin):
+		bin = i
+		if RRnl[bin] > 0:
+			xil[i] = (DDnl[bin]/DDnormt-2*DRnl[bin]/DRnormt+RRnl[bin]/RRnormt)*RRnormt/RRnl[bin]
+		else:
+			print(i)
+	if jack == -1:
+		fo = open('wth'+gf+'.dat','w')
+		print('wth'+gf+'.dat')
+		for i in range(0,nbin):
+			theta = thmax-bins/2.-i*bins
+			fo.write(str(theta)+' '+str(xil[i])+'\n ')
+		fo.close()
+		return True
+		
+	return xil
+
 
 def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec=''):
 	#finds xi, just one set of input file
@@ -4982,19 +5305,26 @@ def doall_ELGQPM():
 	print N,Nd,ave/Nd,std/Nd-(ave/Nd)**2.,errave/Nd		
 	return True
 
-def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='_rec',covv='v4'):
+def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='_rec',covv='v4',mumin=0,mumax=1):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	outdir = ebossdir
+	indir = ebossdir
 	bsst = str(bs)+'st'+str(start)
 	if sample == 'lrg' or sample == 'QSO':
 		if version == '4':
-			dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
-			ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
+			dn = np.loadtxt(indir+'xi0geboss'+sample+'_NGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
+			ds = np.loadtxt(indir+'xi0geboss'+sample+'_SGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
 
 		else:
-			dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'.dat').transpose()
+			dn = np.loadtxt(indir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'.dat').transpose()
 			ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_S'+version+'_'+wz+wm+bsst+'.dat').transpose()
 	if sample == 'QPM_QSO':	
 		dn = np.loadtxt(ebossdir+'xi0g'+sample+mockn+'NGC'+version+wz+wm+bsst+'.dat').transpose()
@@ -5011,6 +5341,13 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	if sample == 'ELGQPM':
 		dn = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_NGC_'+mockn+'.mul').transpose()
 		ds = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_SGC_'+mockn+'.mul').transpose()
+
+	if sample == 'ELGEZ':
+		dn = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGNGCEZmock'+mockn+muw+bsst+'.dat').transpose()
+		ds = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGSGCEZmock'+mockn+muw+bsst+'.dat').transpose()
+		indir = ''
+		outdir = dirsci+'EZmockELGv4/BAOfits/'
+
 
 	if sample == 'lrg':
 		wt = (ds[1]*1.8+1.3*dn[1])/3.1
@@ -5035,38 +5372,29 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		wt = dn[1]	
 	rl = dn[0]
 	#print rl
-	if mb == 'nobao':
-		#mod = np.loadtxt('/Users/ashleyross/DR12/xi0smChallenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
-		mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
-		if sample == 'ELG' and rec == '_rec':
-			mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-		if sample == 'ELGQPM':
-			mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			
-		if sample == 'ELG' and rec == '':
-			mod = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.563.04.07.015.00.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.563.04.07.015.00.dat').transpose()[1]
 
-	else:
-		#mod = np.loadtxt('/Users/ashleyross/DR12/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
+	if sample == 'QPM_QSO':
+		mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
+	if sample == 'QSO':
 		mod = np.loadtxt('BAOtemplates/xi0iso'+template+damp+'.dat').transpose()[1]
 		modsmooth = np.loadtxt('BAOtemplates/xi0smiso'+template+damp+'.dat').transpose()[1]
+	if sample == 'ELG' or sample == 'ELGQPM' or sample == 'ELGEZ':
+		if rec == '':
+			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower'+damp+'15.00.dat').transpose()[1]
+			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower'+damp+'15.00.dat').transpose()[1]
+		if rec == '_rec':	
+			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
+			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
 
-		if sample == 'QPM_QSO':
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
-		#else:
-		#	mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
-		if sample == 'ELG' and rec == '_rec':
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-		if sample == 'ELGQPM':
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-		if sample == 'ELG' and rec == '':
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.563.04.07.015.00.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.563.04.07.015.00.dat').transpose()[1]
+
+	if mb == 'nobao':
+		
+		mod = modsmooth
+
+	#else:
+	#	#mod = np.loadtxt('/Users/ashleyross/DR12/xi0Challenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
+	#	mod = np.loadtxt('BAOtemplates/xi0iso'+template+damp+'.dat').transpose()[1]
+	#	modsmooth = np.loadtxt('BAOtemplates/xi0smiso'+template+damp+'.dat').transpose()[1]
 			
 	fn = 1.
 	fs = 1.
@@ -5090,48 +5418,49 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		cov = np.loadtxt(ebossdir+'cov0'+csample+version+'NScomb'+str(bs)+'st'+str(start)+'.dat')
 	cov2 = ''
 	if covmd == 'EZmock':
-		covN = np.loadtxt(ebossdir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
-		covS = np.loadtxt(ebossdir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
+		covN = np.loadtxt(indir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
+		covS = np.loadtxt(indir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
 
 		#covN = np.loadtxt(ebossdir+'covEZPZ0NGC5st0.dat')
 		#covS = np.loadtxt(ebossdir+'covEZPZ0SGC5st0.dat')
 	if covmd == 'ELG' and rec == '_rec':
 		#covN = np.loadtxt(ebossdir+'cov_rec0NGCELG_MV'+bsst+'.dat')#*fn
 		#covS = np.loadtxt(ebossdir+'cov_rec0SGCELG_MV'+bsst+'.dat')#*fs
-		covN = np.loadtxt(ebossdir+'cov_recon0NGCELG_EZ'+bsst+'.dat')#*fn
+		covN = np.loadtxt(indir+'cov_recon0NGCELG_EZ'+bsst+'.dat')#*fn
 		covS = np.loadtxt(ebossdir+'cov_recon0SGCELG_EZ'+bsst+'.dat')#*fs
 
 	if covmd == 'ELG' and rec == '':
-		covN = np.loadtxt(ebossdir+'cov0NGCELG_EZ'+covv+bsst+'.dat')#*fn
-		covS = np.loadtxt(ebossdir+'cov0SGCELG_EZ'+covv+bsst+'.dat')#*fs
+		covN = np.loadtxt(indir+'cov0NGCELG_EZ'+covv+bsst+'.dat')#*fn
+		covS = np.loadtxt(indir+'cov0SGCELG_EZ'+covv+bsst+'.dat')#*fs
 					
 	
 	chiln = doxi_isolike(dn[1],covN,mod,modsmooth,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+'NGC'+version+rec+mb,Bp=Bp,Nmock=Nmock)
 
-	fo = open(ebossdir+'BAOxichilNGC'+sample+mockn+version+rec+mb+str(Bp)+'.dat','w')
+	wf = sample+mockn+version+rec+damp+mb+muw+bsst
+	fo = open(outdir+'BAOxichilNGC'+wf+'.dat','w')
 	for i in range(0,len(chiln)):
 		a = .8+.001*i+.0005
 		fo.write(str(a)+' '+str(chiln[i])+'\n')
 	fo.close()
-	an = sigreg_c12(ebossdir+'BAOxichilNGC'+sample+mockn+version+rec+mb+str(Bp))
+	an = sigreg_c12(outdir+'BAOxichilNGC'+wf)
 	print an
 	print (an[1]+an[2])/2.,(an[2]-an[1])/2.
 	chils = doxi_isolike(ds[1],covS,mod,modsmooth,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+'SGC'+version+rec+mb,Bp=Bp,Nmock=Nmock)
-	fo = open(ebossdir+'BAOxichilSGC'+sample+mockn+version+rec+mb+str(Bp)+'.dat','w')
+	fo = open(outdir+'BAOxichilSGC'+wf+'.dat','w')
 	for i in range(0,len(chils)):
 		a = .8+.001*i+.0005
 		fo.write(str(a)+' '+str(chils[i])+'\n')
 	fo.close()
-	als = sigreg_c12(ebossdir+'BAOxichilSGC'+sample+mockn+version+rec+mb+str(Bp))
+	als = sigreg_c12(outdir+'BAOxichilSGC'+wf)
 	print als
 	print (als[1]+als[2])/2.,(als[2]-als[1])/2.
 	chilt = np.array(chiln)+np.array(chils)
-	fo = open(ebossdir+'BAOxichilNScomb'+sample+mockn+version+rec+mb+str(Bp)+'.dat','w')
+	fo = open(outdir+'BAOxichilNScomb'+wf+'.dat','w')
 	for i in range(0,len(chilt)):
 		a = .8+.001*i+.0005
 		fo.write(str(a)+' '+str(chilt[i])+'\n')
 	fo.close()
-	a = sigreg_c12(ebossdir+'BAOxichilNScomb'+sample+mockn+version+rec+mb+str(Bp))
+	a = sigreg_c12(outdir+'BAOxichilNScomb'+wf)
 	
 	print a
 	return (a[1]+a[2])/2.,(a[2]-a[1])/2.,a[-1]
@@ -10113,44 +10442,45 @@ if __name__ == '__main__':
 	import sys
 	fl = ''
 	ind = int(sys.argv[1])
-	if ind < 1000:
-		fl += '0'
-	if ind < 100:
-		fl += '0'
-	if ind < 10:
-		fl += '0'
-	#mock = 'QPMmock'
-	mock = 'EZmock_QSO'
-	if mock == 'QPMmock':
-		ni = ind-4*(ind/4)
-		mf = 4*(ind/4)
-		print ni
-		if ni == 0:
-			si = ni
-		if ni == 1:
-			si = 2
-		if ni == 2:
-			si = 3
-		if ni == 3:
-			si = 1
-		mockn = fl+str(ni+mf)
-		mocks = fl+str(si+mf)
-		if si+mf >= 10 and ni+mf < 10:
-			fl = '00'
-			mocks = fl+str(si+mf)
-		if si+mf < 10 and ni+mf >= 10:
-			fl = '000'
-			mocks = fl+str(si+mf)
-		if si+mf < 100 and ni+mf >= 100:
-			fl = '00'
-			mocks = fl+str(si+mf)
-		if si+mf >= 100 and ni+mf < 100:
-			fl = '0'
-			mocks = fl+str(si+mf)
-		print mockn,mocks
-	if mock == 'EZmock_QSO':
-		mockn = fl+str(ind)
-		mocks = str(1000+ind)
-	xibao(mock,0.8,2.2,version='v1.8',wm='',bs=8,start=6,rmin=35,rmax=180.,mb='',Bp=.4,v='n',mockn=mockn,mocks=mocks,covmd='EZmock',Nmock=1000,damp='6.0')
-	
+	xibaoNS('ELGEZ',.6,1.1,'4',rec='',covv='',covmd='ELG',mockn=str(ind),damp='0.5933.06.010.0')
+# 	if ind < 1000:
+# 		fl += '0'
+# 	if ind < 100:
+# 		fl += '0'
+# 	if ind < 10:
+# 		fl += '0'
+# 	#mock = 'QPMmock'
+# 	mock = 'EZmock_QSO'
+# 	if mock == 'QPMmock':
+# 		ni = ind-4*(ind/4)
+# 		mf = 4*(ind/4)
+# 		print ni
+# 		if ni == 0:
+# 			si = ni
+# 		if ni == 1:
+# 			si = 2
+# 		if ni == 2:
+# 			si = 3
+# 		if ni == 3:
+# 			si = 1
+# 		mockn = fl+str(ni+mf)
+# 		mocks = fl+str(si+mf)
+# 		if si+mf >= 10 and ni+mf < 10:
+# 			fl = '00'
+# 			mocks = fl+str(si+mf)
+# 		if si+mf < 10 and ni+mf >= 10:
+# 			fl = '000'
+# 			mocks = fl+str(si+mf)
+# 		if si+mf < 100 and ni+mf >= 100:
+# 			fl = '00'
+# 			mocks = fl+str(si+mf)
+# 		if si+mf >= 100 and ni+mf < 100:
+# 			fl = '0'
+# 			mocks = fl+str(si+mf)
+# 		print mockn,mocks
+# 	if mock == 'EZmock_QSO':
+# 		mockn = fl+str(ind)
+# 		mocks = str(1000+ind)
+# 	xibao(mock,0.8,2.2,version='v1.8',wm='',bs=8,start=6,rmin=35,rmax=180.,mb='',Bp=.4,v='n',mockn=mockn,mocks=mocks,covmd='EZmock',Nmock=1000,damp='6.0')
+# 	
 	  

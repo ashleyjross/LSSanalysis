@@ -21,7 +21,6 @@
 #include <time.h>
 //#include <gsl/gsl_math.h>
 //#include <gsl/gsl_linalg.h>
-//const char *ddir={"/global/u2/a/ajross/patchypcfiles/"};
 const char *ddir={"/mnt/lustre/ashleyr/pcadw/"};
 const char *odir={"/mnt/lustre/ashleyr/paircounts/"};
 
@@ -44,22 +43,10 @@ main(int argc, char *argv[]) {
 	int N = 0;
 	double ptot = 0;
 	double ti = time(NULL);
-    int nangbin = 120;
-	int nbin = nangbin;
-    double minang = 0*pi/180.;
-    double maxang = 6.*pi/180.;
-    double binsize = (maxang-minang)/(1.*nbin);
-    double angl[nangbin];
-    double binedges[nangbin+1];
-    for(int bn=0;bn<nangbin+1;bn++) {
-        double num = (bn);
-        double angle = maxang - binsize*num;
-        if (angle < 0) angle = 0;
-        double angb = maxang-binsize*num-binsize/2.;
-        binedges[bn] = cos(angle);
-        printf("%0.8f %0.8f %0.8f\n",angle*180./pi,binedges[bn],cos(angle));
-    }
-
+	int nrbin = 250;
+	int nbin = nrbin*nrbin;
+	double maxr = 250.;
+	double minr = 0.0;
 	double binl[nbin];
 	for(int in=0;in<nbin;in++) {
 		binl[in] = 0;
@@ -70,7 +57,6 @@ main(int argc, char *argv[]) {
 	sprintf(s1,argv[1]);	
 	sprintf(s2,argv[2]);
 	strcpy(fxi_name,s1);
-	//sprintf(,strcat(fxi_name,"pcadw.dat"));
 	sprintf(fxi_name,"%s%spcadw.dat",ddir,s1);
 	FILE *fxi;
 	printf("%s %s\n",fxi_name,s2);
@@ -82,13 +68,15 @@ main(int argc, char *argv[]) {
 	
 	while(fgets(buf,bsz,fxi)!= NULL) {
 		int np;
-		double cd,cr,sr,sd,w;
-		sscanf(buf,"%lf %lf %lf %lf %lf ",&sr,&cr,&sd,&cd,&w);
+		double cd,cr,sr,sd,zde,w;
+		long double zd;
+		sscanf(buf,"%lf %lf %lf %lf %Lf %lf ",&sr,&cr,&sd,&cd,&zd,&w);
 		lcd[Nline] = cd;
 		lcr[Nline] = cr;
 		lsr[Nline] = sr;
 		lsd[Nline] = sd;
 		lw[Nline] = w;
+		lzd[Nline] = zd;
 		Nline++;
     }
 	char st1[200];
@@ -105,68 +93,66 @@ main(int argc, char *argv[]) {
 	char buf2[bsz2];
 	
 	while(fgets(buf2,bsz2,f2)!= NULL) {
-		double cd2,cr2,sr2,sd2,w2;
-		sscanf(buf2,"%lf %lf %lf %lf %lf ",&sr2,&cr2,&sd2,&cd2,&w2);
+		double cd2,cr2,sr2,sd2,zde2,w2;
+		long double zd2;
+		sscanf(buf2,"%lf %lf %lf %lf %Lf %lf ",&sr2,&cr2,&sd2,&cd2,&zd2,&w2);
 		lcd2[Nline2] = cd2;
 		lcr2[Nline2] = cr2;
 		lsr2[Nline2] = sr2;
 		lsd2[Nline2] = sd2;
 		lw2[Nline2] = w2;
+		lzd2[Nline2] = zd2;
 		Nline2++;
 		
     }
-	printf("%i %i %f %f %f %f \n",Nline,Nline2,lcd2[10],lcd2[300],lcd[0],lcd[Nline2-1]);
+	printf("%i %i %f %f %f %f %f %f\n",Nline,Nline2,lcd2[10],lcd2[300],lzd2[5],lzd2[500],lcd[0],lcd[Nline2-1]);
 	//double be;
-    /*for(int bn=0;bn<nangbin+1;bn++) {
-        printf("%d %0.8f \n",bn,binedges[bn]);
-    }*/
-    printf("%0.8f \n",binedges[106]);
-    double a;
-    double maxa = 0;
+    int be;
+    double r;
+	double rsq;
+	double a;
 	double wt2;
+	double mu;
+	double r1;
+	double r2;
+	double rrad;
 	double gtot = 0;
 	int bnt;
-    double bth;
+	int brrad;
+	printf("%f\n",maxr);
+	double maxrsq = maxr*maxr;
+	double minrsq = minr*minr;
+    double rp;
+	printf("%f %f\n",maxr,maxrsq);
 	while (k<Nline)  {
-	//while (k<2){
-        j = 0;
+	//while (k<1){
+		j = 0;
 		while (j<Nline2)  {
-        //while (j<1)  {
-//printf("%i %i %f %f %f %f \n",k,j,lcd2[j],lcr2[j],lcd[k],lcr[k]);
-            //while (j < 100) {
-            //printf("%0.8f %d\n",binedges[106],k);
-            wt2 = lw[k]*lw2[j];
-
-            gtot += wt2;
-
-            a = lcd[k]*lcd2[j]*(lcr[k]*lcr2[j] + lsr[k]*lsr2[j]) + lsd[k]*lsd2[j];
-            /*if (lcd[k] == lcd2[j]){
-                printf("%i %i %f %f %f %f %f %f %f %f %f %f %f %f %f\n",k,j,lcd2[j],lcr2[j],lcd[k],lcr[k],lw[k],lw2[j],lsr[k],lsr2[j],lsd[k],lsd2[j],wt2,gtot,a);
-                //lcd2[j] *= 1.000001;
-            }*/
-            //bth = binedges[0];
-            int ba = -1;
-            //while (a > bth) {
-            while (a > binedges[ba+1] && ba < nbin) {
-                //bth = binedges[ba+2];
-                ba++;
-            }
-
-            bnt = ba;
-            /*if (a > 0.99999962){
-                printf("%d %0.8f %d %0.8f %0.8f %0.8f\n",bnt,bth,ba,binedges[ba+1],binedges[106],a);
-            }*/
-
-            //printf("%d\n",bnt);
-            //printf("%lf \n",binedges[106]);
-            if (bnt > -1){
-                binl[bnt] += wt2;
-                //printf("%lf %d\n",binedges[106],bnt);
-            }
+		//while (j < 100) {
+			wt2 = lw[k]*lw2[j];
+			gtot += wt2;			
+			a = lcd[k]*lcd2[j]*(lcr[k]*lcr2[j] + lsr[k]*lsr2[j]) + lsd[k]*lsd2[j];
+			rsq = lzd[k]*lzd[k]+lzd2[j]*lzd2[j]-2.*lzd[k]*lzd2[j]*a;
+			/*;*/
+			if (rsq < maxrsq && rsq > minrsq) {
+				r = sqrt(rsq);
+				r1 = lzd2[j];
+				r2 = lzd[k];
+				rrad = fabs(r1-r2);
+                //if (rrad < 200) {
+				mu = rrad/r;
+                rp = r*sqrt(1.-mu*mu);
+				be = (rp-minr);
+				brrad = (rrad-minr);
+				bnt = be*nrbin+brrad;
+                //printf("%d\n",bnt);
+				binl[bnt] += wt2;
 				//if (r < 20 and mu < .1) {
 				//printf("%f %f %f %f %f \n",r,rrad,mu,r1,r2);
 				//		}
-									
+                //}
+			}
+			//gtot += wt2/dde;
 			j++;
 			N+=1;
 			
@@ -174,20 +160,19 @@ main(int argc, char *argv[]) {
 		k++;
 	}
 	double tf = time(NULL)-ti;
-	//printf("%0.8f\n",maxa);
-    printf("took %g\n",tf);
+	printf("took %g\n",tf);
     //printf("got through loop\n");
 	//printf("%f\n",gtot);
 	char foname[200];
 	if (s1==s2) {
 		
 	printf("%s %s",s1,s2);
-	strcat(s1,"2ptth.dat");
+	strcat(s1,"2ptdmurp.dat");
 	
 	}
 	else {
 		strcat(s1,s2);
-		strcat(s1,"2ptth.dat");
+		strcat(s1,"2ptdmurp.dat");
 	}
 
 	//sprintf(foname,s1);
