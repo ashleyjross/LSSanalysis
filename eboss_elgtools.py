@@ -12,7 +12,7 @@ from astropy.table import Table
 dirsci = '/mnt/lustre/ashleyr/eboss/' #where AJR puts eboss catalogs, change this to wherever you have put catalogs
 dirsys = 'maps/' #change to local directory where ngalvsys from wiki was put, note star map and depth map included
 dirfits = '/Users/ashleyross/fitsfiles/' #change to where your catalog files are
-ebossdir = '/Users/ashleyross/eboss/' #where AJR puts correlation functions, writes out results
+ebossdir = '/Users/ashleyross/Dropbox/eboss/' #where AJR puts correlation functions, writes out results
 dirscio = '/mnt/lustre/ashleyr/eboss/mocks/'
 
 def P2(mu):
@@ -79,14 +79,14 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
 		b,ms = findlinmb('ELG',samp,v,'star',zmin,zmax,dir='')
 		h = healpix()
-		print b,ms
+		print( b,ms)
 	#print wm.split('_')[1]	
 	iv = False
 	if len(wm.split('_')) > 1:
 		if wm.split('_')[1] == 'ivar':
 			b,ms = findlinmb(samp,v,'',wm,zmin,zmax,dir='')
 			iv = True
-			print b,ms
+			print( b,ms)
 			
 	ffkp = np.loadtxt('nbarELG'+samp+v+'.dat').transpose()
 	d2 = False
@@ -173,8 +173,8 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 				fo.write(str(f2[i]['ra'])+' '+str(f2[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 
-	print n	
-	print mins,maxs,wm	
+	print( n)	
+	print( mins,maxs,wm)	
 	fo.close()
 	return True		
 
@@ -190,12 +190,12 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 		d2 = True
 		f2 = fitsio.read(dir+'eboss22'+'.'+v+'.latest.rands'+app)
 		ns = (len(f)+len(f2))/1000000
-		print len(f)+len(f2),ns
+		print( len(f)+len(f2),ns)
 		
 	else:
 		f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest.rands'+app)
 		ns = len(f)/1000000
-		print len(f),ns
+		print( len(f),ns)
 
 	fo = open(dir+'rebosselg'+'_'+samp+v+'_'+str(N)+wz+fkp+wm+'4xi.dat','w')
 	n = 0
@@ -242,8 +242,8 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 				n += 1.
 				nw += w
 
-	print n,nw #just helps to know things worked properly
-	print n/10000.*ns #area in sq degrees
+	print( n,nw) #just helps to know things worked properly)
+	print( n/10000.*ns) #area in sq degrees)
 	fo.close()
 	return True
 
@@ -305,9 +305,9 @@ def mkodens(reg,zmin,zmax,v='4',res=256,tol=.2,app='.fits'):
 		if rl[i] > tol:
 			ng += gl[i]
 			np += rl[i]
-	print ng,np,sum(gl),sum(rl)
+	print( ng,np,sum(gl),sum(rl))
 	ave = ng/np
-	print ave,avet
+	print( ave,avet)
 	fo = open('galelg'+reg+v+str(zmin)+str(zmax)+str(res)+'odenspczw.dat','w')
 	ft = open('galelg'+reg+v+str(zmin)+str(zmax)+str(res)+'rdodens.dat','w')
 	no = 0		
@@ -322,7 +322,7 @@ def mkodens(reg,zmin,zmax,v='4',res=256,tol=.2,app='.fits'):
 			#od = gl[i]
 			fo.write(str(sra)+' '+str(cra)+' '+str(sdec)+' '+str(cdec)+' '+str(od)+' '+str(rl[i])+'\n')
 			ft.write(str(th)+' '+str(phi)+' '+str(od)+' '+str(rl[i])+'\n')
-	print no
+	print( no)
 	#ft.close()
 	fo.close()
 	return True
@@ -380,9 +380,9 @@ def mkodens_BOSS(samp,reg,zmin,zmax,res=256,tol=.2,app='.fits'):
 		if rl[i] > tol:
 			ng += gl[i]
 			np += rl[i]
-	print ng,np,sum(gl),sum(rl)
+	print( ng,np,sum(gl),sum(rl))
 	ave = ng/np
-	print ave,avet
+	print( ave,avet)
 	fo = open('gal'+samp+reg+str(zmin)+str(zmax)+str(res)+'odenspczw.dat','w')
 	ft = open('gal'+samp+reg+str(zmin)+str(zmax)+str(res)+'rdodens.dat','w')
 	no = 0		
@@ -397,7 +397,7 @@ def mkodens_BOSS(samp,reg,zmin,zmax,res=256,tol=.2,app='.fits'):
 			#od = gl[i]
 			fo.write(str(sra)+' '+str(cra)+' '+str(sdec)+' '+str(cdec)+' '+str(od)+' '+str(rl[i])+'\n')
 			ft.write(str(th)+' '+str(phi)+' '+str(od)+' '+str(rl[i])+'\n')
-	print no
+	print( no)
 	#ft.close()
 	fo.close()
 	return True
@@ -667,7 +667,7 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area = (sumr)/10000.
-	print 'effective area is '+str(area)
+	print( 'effective area is '+str(area))
 	no = 0
 	fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
@@ -708,8 +708,8 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 				if f2[i]['isdupl']:
 					ndup += 1.	
 			
-	print ndup
-	print sumw/sumt
+	print (ndup)
+	print (sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -747,7 +747,7 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 		nbl.append(zl[i]/vl[i]/f)
 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 	fo.close()
-	print sum,zm/wtot,nw,nnw
+	print (sum,zm/wtot,nw,nnw)
 	plt.plot(zpl,nbl)
 	plt.show()
 	plt.plot(zpl,nbwl)
@@ -789,7 +789,7 @@ def plotnzplate(chunk,plate,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,com
 				if f[i]['isdupl']:
 					ndup += 1.	
 					
-	print ndup,sum,sumt,nlow,nlow/sumt
+	print (ndup,sum,sumt,nlow,nlow/sumt)
 
 def platevsfraclow(chunk='23',platemin=9546,platemax=9631,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7,snrm=-1,snrx=1000):
 	from Cosmo import distance
@@ -829,7 +829,7 @@ def platevsfraclow(chunk='23',platemin=9546,platemax=9631,ver='v5_10_7',sp=0.01,
 			if f[i]['isdupl']:
 				ndup += 1.	
 					
-	print ndup,sum,sumt,nlow,nlow/sumt
+	print (ndup,sum,sumt,nlow,nlow/sumt)
 
 	pl = []
 	for i in range(platemin,platemax+1):
@@ -985,7 +985,7 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area = (sumr)/10000.
-	print 'effective area is '+str(area)
+	print ('effective area is '+str(area))
 	no = 0
 	fo = open(ebossdir+'nbarELG'+chunk+ver+'nocut.dat','w')
 	nb = int(zmax/sp)
@@ -1026,8 +1026,8 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 				if f2[i]['isdupl']:
 					ndup += 1.	
 			
-	print ndup
-	print sumw/sumt
+	print( ndup)
+	print (sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -1065,7 +1065,7 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 		nbl.append(zl[i]/vl[i]/f)
 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 	fo.close()
-	print sum,zm/wtot,nw,nnw
+	print( sum,zm/wtot,nw,nnw)
 	plt.plot(zpl,nbl)
 	plt.show()
 	plt.plot(zpl,nbwl)
@@ -1132,8 +1132,8 @@ def ELG_SSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,comp
 			if f[i]['CLASS'] == 'STAR':
 				nstar += 1.
 			
-	print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
-	print ngoodgal/ngal,nSSR/ntot,ngoodtot/ntot,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ntot),nqz/nq,nq/ntot,ngz/ngoodtot,nqzz/nqz,nqfz/nqf,nbgz/nbg
+	print( ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar)
+	print( ngoodgal/ngal,nSSR/ntot,ngoodtot/ntot,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ntot),nqz/nq,nq/ntot,ngz/ngoodtot,nqzz/nqz,nqfz/nqf,nbgz/nbg)
 	return True
 
 def ELG_SSRvsSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,compls=.7):
@@ -1187,8 +1187,8 @@ def ELG_SSRvsSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8
 			if f[i]['CLASS'] == 'STAR':
 				nstar += 1.
 			
-	print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
-	print ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz)
+	print( ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar)
+	print( ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz))
 	pl = np.array(pl)
 	pltot = np.array(pltot)
 	plt.plot(plsnr,pl/pltot,'ko')
@@ -1236,7 +1236,7 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area1 = (sumr1)/10000.
 	area2 = (sumr2)/10000.
-	print 'effective areas are '+str(area1) +' and '+str(area2)
+	print( 'effective areas are '+str(area1) +' and '+str(area2))
 	no = 0
 	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
@@ -1293,7 +1293,7 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 					else:
 						zl2[zind] += wfczss	
 			
-	print sumw/sumt
+	print( sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -1382,7 +1382,7 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area1 = (sumr1)/10000.
 	area2 = (sumr2)/10000.
-	print 'effective areas are '+str(area1) +' and '+str(area2)
+	print( 'effective areas are '+str(area1) +' and '+str(area2))
 	no = 0
 	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
@@ -1426,7 +1426,7 @@ def mkNbarELG_splitdepthr(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.
 					else:
 						zl2[zind] += wfczss	
 			
-	print sumw/sumt
+	print( sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -1541,7 +1541,7 @@ def mkNbarELG_splitplate(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,
 					else:
 						zl2[zind] += wfczss	
 			
-	print sumw/sumt
+	print( sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -1641,7 +1641,7 @@ def nzELG_splitfailures(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,c
 					else:
 						zl2[zind] += wfczss	
 			
-	print sumw/sumt
+	print( sumw/sumt)
 	#areaf = sumt/sumw
 	#area = area*areaf
 	#print 'effective area is '+str(area)
@@ -1755,7 +1755,7 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 						ssr2 += f2[i]['sector_SSR']
 						n2 += 1.
 			
-	print sumw/sumt
+	print( sumw/sumt)
 	fac = (ssr1/n1)/(ssr2/n2)
 	#areaf = sumt/sumw
 	#area = area*areaf
@@ -1793,7 +1793,7 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 	zl1 = np.array(zl1)
 	zl2 = np.array(zl2)
 	diffl = zl1/sum(zl1)*fac-zl2/sum(zl2)
-	print fac
+	print( fac)
 	plt.plot(zpl,zl1/sum(zl1),zpl,zl2/sum(zl2),zpl,diffl/sum(diffl))
 	plt.xlabel('redshift')
 	plt.ylabel('Normalized redshift histogram')
@@ -1804,6 +1804,12 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
 	dir = '/mnt/lustre/ashleyr/eboss/EZmockELGv4/'
 	af = fitsio.read(dir+'2PCF_ELGv4_'+reg+'_merge.fits')
+	muw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	
 	#ddnorm = af['ddnorm'][0][num]/2.
 	#drnorm = af['drnorm'][0][num]/2.
 	ddnorm = 1.
@@ -1813,8 +1819,16 @@ def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
 	dd = af['dd'].transpose()[num]*ddnorm
 	dr = af['dr'].transpose()[num]*drnorm
 	rr = np.loadtxt(dir+'2PCF_EZmock_eBOSS_ELG_'+reg+'_v4_z0.6z1.1.rr').transpose()[-2]*rrnorm
+	#if subt:
+	wrp = np.loadtxt(dir+'xi/wrpELG'+reg+'EZmock'+str(num)+muw+'1st0.dat').transpose()
 	nb = 200/bs
 	xil = np.zeros(nb)
+	xil2 = np.zeros(nb)
+	xil4 = np.zeros(nb)
+	wl = np.zeros(nb)
+	wl2 = np.zeros(nb)
+	wl4 = np.zeros(nb)
+
 	nmub = 120
 	dmu = 1./float(nmub)
 	mubm = 0
@@ -1825,6 +1839,8 @@ def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
 		mubx = mumax*nmub
 	for i in range(0,200,bs):
 		xib = 0
+		xib2 = 0
+		xib4 = 0
 		ddt = 0
 		drt = 0
 		rrt = 0
@@ -1832,7 +1848,7 @@ def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
 			ddb = 0
 			drb = 0
 			rrb = 0
-		
+			mu = m/float(nmub) + 0.5/float(nmub)
 			for b in range(0,bs):
 				bin = nmub*(i+b)+m
 				ddb += dd[bin]
@@ -1843,19 +1859,39 @@ def calcxi_mockELGEZ(num,reg='SGC',bs=8,mom=0,mumin=0,mumax=1,start=0):
 				#rrt += rr[bin]
 					
 			xi = (ddb-drb+rrb)/rrb
-			xib += xi*dmu		
+			#if subt:
+			mum = m/float(nmub)
+			mux = mum+dmu
+			rmin = i
+			rmax = rmin+bs
+			rpmin = rmin*sqrt(1.-mux**2.)
+			rpmax = rmax*sqrt(1.-mum**2.)
+			xip = 0
+			wr = ((wrp[0] >rpmin) & (wrp[0] < rpmax))
+			if len(wrp[1][wr] > 0):
+				xip = np.mean(wrp[1][wr])
+			else:
+				print(rpmin,rpmax)	
+			w = xip*dmu
+			w2 = xip*dmu*P2(mu)*5.
+			w4 = xip*dmu*P4(mu)*9.
+			xib += xi*dmu
+			xib2 += xi*dmu*P2(mu)*5.
+			xib4 += xi*dmu*P4(mu)*9.		
 		xil[i/bs] = xib
+		xil2[i/bs] = xib2
+		xil4[i/bs] = xib4
+		wl[i/bs] = w
+		wl2[i/bs] = w2
+		wl4[i/bs] = w4
 		#print(ddt,drt,rrt)
 	#print xil
-	muw = ''
-	if mumin != 0:
-		muw += 'mumin'+str(mumin)
-	if mumax != 1:
-		muw += 'mumax'+str(mumax)
-	fo = open(dir+'xi/xi'+str(mom)+'ELG'+reg+'EZmock'+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	#if subt:
+	#	muw += 'subt'	
+	fo = open(dir+'xi/xi024ELG'+reg+'EZmock'+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs
-		fo.write(str(r)+' '+str(xil[i])+'\n')
+		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+' '+str(w)+' '+str(w2)+' '+str(w4)+'\n')
 	fo.close()
 	return True
 
@@ -1897,11 +1933,12 @@ def calcwrp_mockELGEZ(num,reg='SGC',bs=1,mom=0,mumin=0,mumax=1,start=0):
 				#drt += dr[bin]
 				#rrt += rr[bin]
 			rp = (i+.5)*sqrt(1.-(m/float(nmub)+.5/float(nmub))**2.)
-			brp = rp/200
+			brp = int(rp)
 			ddl[brp] += ddb
 			drl[brp] += drb
 			rrl[brp] += rrb 		
 	#print xil
+	#print(ddl,drl,rrl)
 	muw = ''
 	if mumin != 0:
 		muw += 'mumin'+str(mumin)
@@ -1916,7 +1953,7 @@ def calcwrp_mockELGEZ(num,reg='SGC',bs=1,mom=0,mumin=0,mumax=1,start=0):
 	return True
 
 
-def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1):
+def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1,angfac=0):
 	dir = '/mnt/lustre/ashleyr/eboss/EZmockELGv4/xi/'
 	muw = ''
 	if mumin != 0:
@@ -1933,34 +1970,37 @@ def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1):
 	for i in range(0,N):
 		
 		try:
-			xiave += np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+			
+			xii = np.loadtxt(dir+'xi024ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xiave += xii[mom/2+1]-angfac*xii[mom/2+4]
 		except:
 			calcxi_mockELGEZ(i,reg=reg,bs=bs,mom=mom,mumin=mumin,mumax=mumax,start=start)
-			xiave += np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+			xii = np.loadtxt(dir+'xi024ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xiave += xii[mom/2+1]-angfac*xii[mom/2+4]
 
 		Ntot += 1.
 		#except:
 		#	print i
-		print i
-	print Ntot		
+		print( i)
+	print( Ntot)		
 	xiave = xiave/float(Ntot)
 	for i in range(0,N):
-		xii = np.loadtxt(dir+'xi'+str(mom)+'ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
+		xii = np.loadtxt(dir+'xi024ELG'+reg+'EZmock'+str(i)+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		for j in range(0,nbin):
-			xij = xii[j]
+			xij = xii[mom/2+1][j]-angfac*xii[mom/2+4][j]
 			for k in range(0,nbin):
-				xik = xii[k]
+				xik = xii[mom/2+1][k]-angfac*xii[mom/2+4][k]
 				cov[j][k] += (xij-xiave[j])*(xik-xiave[k])
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave'+str(mom)+reg+'ELG_EZ'+muw+bsst+'.dat','w')
+	fo = open('xiave'+str(mom)+reg+'ELG_EZ'+muw+'angfac'+str(angfac)+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin):
 		fo.write(str(bs/2.+bs*i)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov'+str(mom)+reg+'ELG_EZ'+muw+bsst+'.dat','w')
+	fo = open('cov'+str(mom)+reg+'ELG_EZ'+muw+'angfac'+str(angfac)+bsst+'.dat','w')
 	
 	for i in range(0,nbin):
 		for j in range(0,nbin):
@@ -2009,7 +2049,7 @@ def putallBAOmocks(N=1000,sig=1,sigtest=.04,reg='NScomb',samp='ELGEZ',bs=8,start
 	errg = 0
 	wf = version+rec+damp+mb+muw+bsst
 	nchi = 0
-	fo = open('BAOfits'+samp+wf+'.dat','w')
+	fo = open('BAOfits'+samp+reg+wf+'.dat','w')
 	for i in range(0,N):
 		fl = ''
 # 		if i < 1000:
@@ -2079,7 +2119,7 @@ def mkcov_mockELG_EZ_old(reg,bs=8,mom=0,N=1000,rec='_recon',v='v4'):
 		Ntot += 1.
 		#except:
 		#	print i
-	print Ntot		
+	print( Ntot)		
 	xiave = xiave/float(Ntot)
 	for i in range(1,1+N):
 		zer = ''
@@ -2217,8 +2257,8 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 					bsr += w
 
 				nr += w
-	print min(f[sys]),max(f[sys])
-	print nr
+	print( min(f[sys]),max(f[sys]))
+	print( nr)
 	ffkp = np.loadtxt(ebossdir+'nbarELG22v5_10_7.dat').transpose()
 	if sampl == '21p22':
 		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
@@ -2317,16 +2357,16 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 			
 	if bs > 0:
 		avebs = avebs/bs
-	print avebs,sysmin		
-	print 'total number, weighted number'
-	print no,nt
-	print 'mean redshift'
-	print zm/nt
+	print( avebs,sysmin	)	
+	print( 'total number, weighted number')
+	print( no,nt)
+	print ('mean redshift')
+	print (zm/nt)
 
-	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	print ('total number of randoms/objects '+str(nr)+'/'+str(nt))
+	print ('number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs))			
 	ave = nt/nr
-	print 'average number of objects per random is '+ str(ave)
+	print ('average number of objects per random is '+ str(ave))
 	fs = open(ebossdir+'n'+'geboss'+sampl+'_'+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'v'+sys+'.dat','w')
 	xl = []
 	yl = []
@@ -2345,7 +2385,7 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 		el.append(nse)
 	fs.close()
 	chin = sum((np.array(yl)-1.)**2./np.array(el)**2.)
-	print chin
+	print(chin)
 	xl = np.array(xl)
 	yl = np.array(yl)
 	el = np.array(el)
@@ -2375,7 +2415,7 @@ def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=256,band=-1,compl=.
 		sysmin = sysm
 	if sysx < sysmax:
 		sysmax = sysx
-	print sysmin,sysmax	
+	print (sysmin,sysmax)	
 	d2 = False
 	stl = []
 	wstl = []
@@ -2428,7 +2468,7 @@ def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=256,band=-1,compl=.
 					bsr += w
 
 				nr += w
-	print nr
+	print (nr)
 	ffkp = np.loadtxt(ebossdir+'nbarELG22v5_10_7.dat').transpose()
 	if sampl == '21p22':
 		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
@@ -2498,16 +2538,16 @@ def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=256,band=-1,compl=.
 			
 	if bs > 0:
 		avebs = avebs/bs
-	print avebs,sysmin		
-	print 'total number, weighted number'
-	print no,nt
-	print 'mean redshift'
-	print zm/nt
-
-	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	#print avebs,sysmin		
+	#print 'total number, weighted number'
+# 	print no,nt
+# 	print 'mean redshift'
+# 	print zm/nt
+# 
+# 	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
+# 	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nt/nr
-	print 'average number of objects per random is '+ str(ave)
+#	print 'average number of objects per random is '+ str(ave)
 	fs = open(ebossdir+'n'+'geboss'+sampl+'_'+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'v'+sys+'.dat','w')
 	xl = []
 	yl = []
@@ -2526,7 +2566,7 @@ def ngvsys_ELGhp(sampl,ver,sys,sysmin,sysmax,zmin,zmax,nside=256,band=-1,compl=.
 		el.append(nse)
 	fs.close()
 	chin = sum((np.array(yl)-1.)**2./np.array(el)**2.)
-	print chin
+#	print chin
 	xl = np.array(xl)
 	yl = np.array(yl)
 	el = np.array(el)
@@ -2647,7 +2687,7 @@ def mkwrp(reg,dr=1.,rmin=1.,rmax=300.,zeff=.85):
 		w = calcwxi('/Users/ashleyross/eBOSS/nznormELG'+reg,th,cosm='BOSS')
 		fo.write(str(rp)+' '+str(w)+'\n')
 		rp += dr
-		print rp
+		print (rp)
 	fo.close()
 	return True
  
@@ -2712,9 +2752,9 @@ def mkw024_data(reg='SGC',dmu=0.01,bs=8,rmax=250,zeff=0.85):
 	from Cosmo import distance
 	dz = distance(.31,.69)
 	dm = dz.dc(zeff)*pi/180.
-	d = np.loadtxt('/Users/ashleyross/eBOSS/xirp0gebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
+	d = np.loadtxt('/Users/ashleyross/Dropbox/eBOSS/xirp0gebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
 	#d = np.loadtxt('/Users/ashleyross/eBOSS/wthgebossELG_'+reg+'4_mz0.6xz1.1fkp.dat').transpose()
-	fo = open('/Users/ashleyross/eBOSS/wrp024ELG'+reg+'_data'+str(bs)+'st0.dat','w')
+	fo = open('/Users/ashleyross/Dropbox/eBOSS/wrp024ELG'+reg+'_data'+str(bs)+'st0.dat','w')
 	rpl = d[0]#*dm
 	nb = int(rmax/bs)
 	for i in range(0,nb):
@@ -2745,20 +2785,20 @@ def mkw024_data(reg='SGC',dmu=0.01,bs=8,rmax=250,zeff=0.85):
 			mu += dmu
 		r = i*bs+bs/2.
 		fo.write(str(r)+' '+str(xi0)+' '+str(xi2)+' '+str(xi4)+'\n')
-		print r,mutot
+		print (r,mutot)
 		
 	fo.close()	
 	return True
 
 def mkwmubin_data(reg='SGC',dmu=0.01,bs=8,rmax=250,mumin=0,mumax=1):
-	d = np.loadtxt('/Users/ashleyross/eBOSS/xirp0gebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
+	d = np.loadtxt('/Users/ashleyross/Dropbox/eBOSS/xirp0gebossELG_'+reg+'4_mz0.6xz1.1fkp1st0.dat').transpose()
 	gf = ''
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
 	if mumax != 1.:
 		gf += 'mux'+str(mumax)
 
-	fo = open('/Users/ashleyross/eBOSS/wrp0'+gf+'ELG'+reg+'_data'+str(bs)+'st0.dat','w')
+	fo = open('/Users/ashleyross/Dropbox/eBOSS/wrp0'+gf+'ELG'+reg+'_data'+str(bs)+'st0.dat','w')
 	rpl = d[0]
 	nb = int(rmax/bs)
 	for i in range(0,nb):
@@ -2785,7 +2825,7 @@ def mkwmubin_data(reg='SGC',dmu=0.01,bs=8,rmax=250,mumin=0,mumax=1):
 			mu += dmu
 		r = i*bs+bs/2.
 		fo.write(str(r)+' '+str(xi0/mutot)+'\n')
-		print r,mutot
+		print (r,mutot)
 		
 	fo.close()	
 	return True
@@ -4137,12 +4177,12 @@ def plotvssys_simp(xl,yl,el,sys):
 	plt.clf()
 	plt.minorticks_on()
 	chin = sum((yl-1.)**2./el**2.)
-	print chin
+	print (chin)
 	lf = linfit(xl,yl,el)
 	inl = np.array([1.,0])
 	b,m = fmin(lf.chilin,inl)
 	chilin = sum((yl-(m*xl+b))**2./el**2.)
-	print chilin
+	print (chilin)
 	plt.errorbar(xl,yl,el,fmt='ko')
 	ol = np.ones((len(el)))
 	plt.plot(xl,ol,'k:')
@@ -4449,7 +4489,8 @@ def plotxi_shuffsubcom(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,w
 	rl = d1[0]
 	xil = d1[1]
 	wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
-	xils = xil-angfac*wp[mom/2+1]
+	ind = int(mom/2+1)
+	xils = xil-angfac*wp[ind]
 	pwr = 1.
 	if mom == 0:
 		pwr = 2.
@@ -4492,6 +4533,74 @@ def plotxi_shuffsubcom(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,w
 	return True
 	
 	#plt.show()
+
+def plotxi_submockcom(mom=0,reg='SGC',bs='8st0',mini=3,maxi=25,v='4',rec='',zmin=.6,zmax=1.1,wm='',angfac=1.,bf=1.):
+	from matplotlib import pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+
+	d1 = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+v+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp'+wm+bs+'.dat').transpose()
+	ds = np.loadtxt(ebossdir+'xiave'+str(mom)+reg+'ELG_EZangfac'+str(angfac)+str(bs)+'.dat').transpose()
+	dsh = np.loadtxt(ebossdir+'xi'+str(mom)+'gebossELG_'+reg+'4_1'+rec+'_mz'+str(zmin)+'xz'+str(zmax)+'fkp.shuffled'+bs+'.dat').transpose()
+	mom = int(mom)
+	#nb = len(ds[1])	
+	rl = d1[0][mini:maxi]
+	xil = d1[1]#[mini:maxi]
+	wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
+	ind = int(mom/2+1)
+	xils = xil-angfac*wp[ind]#[mini:maxi]
+	xils = xils[mini:maxi]
+	pwr = 1.
+	if mom == 0:
+		pwr = 2.
+	#cov = np.loadtxt(ebossdir+'cov'+str(mom)+reg+'ELG_EZangfac'+str(angfac)+str(bs)+'.dat')[mini:maxi,mini:maxi]
+	cov = np.loadtxt(ebossdir+'cov'+str(mom)+reg+'ELG_EZ'+str(bs)+'.dat')[mini:maxi,mini:maxi]#/2.
+	diff = bf*ds[1][mini:maxi]-xils
+	diffsh = bf*dsh[1][mini:maxi]-ds[1][mini:maxi]
+	facn = 1.
+	facs = 1.
+
+	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)*facs
+	chish = np.dot(np.dot(diffsh,np.linalg.pinv(cov)),diffsh)*facs
+	print(chi,chish)
+	plt.plot(rl,rl**pwr*xils,'r-')
+	#plt.plot(rl,rl**pwr*ds[1][mini:maxi],'b-')
+	plt.errorbar(rl,rl**pwr*ds[1][mini:maxi],rl**pwr*ds[2][mini:maxi],fmt='b-')
+	plt.plot(rl,rl**pwr*dsh[1][mini:maxi],'r--')
+	plt.xlim(0,200)
+	#plt.ylim(-75,75)
+	xl = [130,136]
+	tx =  138
+	if mom == 0:
+		xl = [12,18]
+		tx =20
+	ymin = plt.axis()[-2]
+	ymax = plt.axis()[-1]
+
+	yl = [.2*(ymax-ymin)+ymin,.2*(ymax-ymin)+ymin]
+	#plt.plot(xl,yl,'r--')
+	#plt.text(tx,.19*(ymax-ymin)+ymin,'Standard')
+	
+	yl = [.15*(ymax-ymin)+ymin,.15*(ymax-ymin)+ymin]
+	plt.plot(xl,yl,'b-')
+	plt.text(tx,.14*(ymax-ymin)+ymin,'mocks-'+str(angfac)+r'$\xi(r_{\perp})$')
+	
+	yl = [.1*(ymax-ymin)+ymin,.1*(ymax-ymin)+ymin]
+	plt.plot(xl,yl,'r-')	
+	plt.text(tx,.09*(ymax-ymin)+ymin,r'data -'+str(angfac)+r'$\xi(r_{\perp})$')
+	plt.title(reg)
+	plt.xlabel(r'$s$ $(h^{-1}$Mpc$)$')
+	if pwr == 2:
+		plt.ylabel(r'$s^2\xi_0$')
+	if pwr == 1:
+		if mom == 2:
+			plt.ylabel(r'$s\xi_2$')
+		if mom == 4:
+			plt.ylabel(r'$s\xi_4$')	
+	#plt.show()
+	plt.savefig(ebossdir+'xi'+str(mom)+reg+'mocksub'+str(angfac)+'com.png')
+	plt.clf()
+	return True
+
 
 def plotxi_shuffsubcom_mubin(mom=0,reg='SGC',bs='8st0',v='4',rec='',zmin=.6,zmax=1.1,wm='',angfac=.5,mumin=0,mumax=1):
 	from matplotlib import pyplot as plt
@@ -4914,7 +5023,7 @@ def plotxiELGNScompEZ(mom='0',bs='5st0',v='4',mini=4,maxi=40,wm='fkp',mumin=0,mu
 	diff = ds[1][mini:maxi]-dn[1][mini:maxi]
 	cov = covn+covs
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chis,chin,chi
+	print( chis,chin,chi)
 	plt.plot(aven[0][mini:maxi],aven[0][mini:maxi]**2.*aven[1][mini:maxi]*norm**2.,'r--')
 	plt.plot(aves[0][mini:maxi],aves[0][mini:maxi]**2.*aves[1][mini:maxi]*norm**2.,'b--')
 	plt.errorbar(ds[0][mini:maxi]-.5,ds[0][mini:maxi]**2.*ds[1][mini:maxi],ds[0][mini:maxi]**2.*aves[2][mini:maxi]*norm**2.,fmt='bs')
@@ -4971,7 +5080,7 @@ def xiELGNSdiffEZ(mom='0',bs='8st0',v='4',mini=3,maxi=25,wm='fkp',mumin=0,mumax=
 	facs = 1.
 
 	chins = np.dot(np.dot(diffns,np.linalg.pinv(covs+covn)),diffns)*facs
-	print chins,maxi-mini,ds[0][mini],ds[0][maxi]
+	print (chins,maxi-mini,ds[0][mini],ds[0][maxi])
 	return True
 
 
@@ -5010,7 +5119,7 @@ def plotxiELGNScompQPM(mom='0',bs='8st0',v='3',mini=3,maxi=25,wm='fkp',mumin=0,m
 	diff = ds[1][mini:maxi]-dn[1][mini:maxi]
 	cov = covn+covs
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chis,chin,chi
+	print (chis,chin,chi)
 	plt.plot(aven[0][mini:maxi],aven[0][mini:maxi]**2.*aven[1][mini:maxi]*norm**2.,'r--')
 	plt.plot(aves[0][mini:maxi],aves[0][mini:maxi]**2.*aves[1][mini:maxi]*norm**2.,'b--')
 	plt.errorbar(ds[0][mini:maxi]-.5,ds[0][mini:maxi]**2.*ds[1][mini:maxi],ds[0][mini:maxi]**2.*aves[2][mini:maxi]*norm**2.,fmt='bs')
@@ -5091,7 +5200,7 @@ def plotxiELGNSbaofit(bs='5st0',v='4',a='',rec='',wm='fkp',mini=10,maxi=30,mom='
 	covi = np.linalg.pinv(cov[mini:maxi,mini:maxi])
 	diff = (ddt_iso-dtt_iso)
 	chi2 = np.dot(diff,(np.dot(diff,covi)))
-	print chi2
+	print (chi2)
 	plt.text(120,1.00,r'$\chi^2$/dof = '+str(round(chi2,1))+'/'+str(maxi-mini-5),color='k',size=16)
 	#plt.title(r'BAO best-fit for v1.6 eboss QSOs, 0.9 < z < 2.2')
 	pp.savefig()
@@ -5111,7 +5220,7 @@ def plotELGNSbaolike(v='3',p='3',Bp='0.4',rec='',bs=''):
 	db = np.loadtxt(ebossdir+'BAOxichilNScombELG'+v+rec+Bp+bs+'.dat').transpose()
 	a = db[0]
 	ax = sigreg_c12l(db[1])
-	print ax
+	print (ax)
 	alph = (ax[2]+ax[1])/2.
 	err = (ax[2]-ax[1])/2.
 	dnb = np.loadtxt(ebossdir+'BAOxichilNScombELG'+v+rec+Bp+'nobao'+bs+'.dat').transpose()[1]

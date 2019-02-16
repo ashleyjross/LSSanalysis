@@ -1727,10 +1727,10 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		#print i
 		for j in range(0,njack):
 			if jack != i and jack != j:
-				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmu'+rpw+'.dat').readlines()
+				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
 				DDnormt += float(fdp[0])
-				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmu'+rpw+'.dat').readlines()
-				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmu'+rpw+'.dat').readlines()
+				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmu.dat').readlines()
 				DRnormt += float(fdnp[0])
 				RRnormt += float(fr[0])
 				for k in range(1,len(fdp)):
@@ -1747,8 +1747,8 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 			#print i
 			for j in range(0,njack):
 				if jack != i and jack != j:
-					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmu'+rpw+'.dat').readlines()
-					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptdmu'+rpw+'.dat').readlines()
+					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
 					DRnormt += float(fdnp[0])
 					RRnormt += float(fr[0])
 					for k in range(1,len(fdp)):						
@@ -1763,7 +1763,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 				#print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
-						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmu'+rpw+'.dat').readlines()
+						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
 						RRnorecnormt += float(fr[0])
 						for k in range(1,len(fdp)):						
 							rp = float(fr[k])
@@ -1774,7 +1774,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 				#print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
-						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmu'+rpw+'.dat').readlines()
+						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmu.dat').readlines()
 						RRnorecnormt += float(fr[0])
 						for k in range(1,len(fdp)):						
 							rp = float(fr[k])
@@ -1859,13 +1859,13 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 				for k in range(0,bs):
 					bin = nmubin*(i+k)+j
 					rbin = i/bs
-					#r = .5+i
-					#mu = j/float(nmubin)+0.5/float(nmubin)
-					#rp = sqrt(1.-mu)*r
-					#rbin = int(rp/bs)
-					xiDDl[i] += DDnl[bin]
-					xiDRl[i] += DRnl[bin]
-					xiRRl[i] += RRnl[bin]
+					r = .5+i+k
+					mu = j/float(nmubin)+0.5/float(nmubin)
+					rp = sqrt(1.-mu**2.)*r
+					rbin = int(rp/bs)
+					xiDDl[rbin] += DDnl[bin]
+					xiDRl[rbin] += DRnl[bin]
+					xiRRl[rbin] += RRnl[bin]
 		for i in range(0,nbin):
 			xil[i] = (xiDDl[i]/DDnormt-2*xiDRl[i]/DRnormt+xiRRl[i]/RRnormt)*RRnormt/xiRRl[i] 	
 	return xil
