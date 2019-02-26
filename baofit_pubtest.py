@@ -15,7 +15,7 @@ class baofit_iso:
 		nxib = len(xid)
 		rsw = 0
 		Bnode = 50.
-		print 'total available xi(s) bins '+str(nxib)
+		print( 'total available xi(s) bins '+str(nxib))
 		for i in range(0,nxib):
 			r = rl[i]
 			if r > rmin and r < rmax:				
@@ -28,7 +28,7 @@ class baofit_iso:
 				self.rl.append(rbc)
 				self.xim.append(xid[i])
 		self.nbin = len(self.rl)
-		print 'using '+ str(self.nbin)+' xi(s) bins'
+		print ('using '+ str(self.nbin)+' xi(s) bins')
 		#mt = zeros((self.nbin,self.nbin)) #this will be the trimmed covariance matrix
 		#for i in range(mini,mini+self.nbin):
 		#	for j in range(mini,mini+self.nbin):
@@ -48,7 +48,7 @@ class baofit_iso:
 		indu = indd + 1
 		fac = (r-self.ximodmin)/sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print ('BAD FAC in wmod')
 			return 'ERROR, BAD FAC in wmod'
 		if indu >= len(self.modl)-1:
 			#return -5.47608128044e-05,5.7422824622e-06
@@ -62,7 +62,7 @@ class baofit_iso:
 		indu = indd + 1
 		fac = (r-self.ximodmin)/sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print ('BAD FAC in wmod')
 			return 'ERROR, BAD FAC in wmod'
 		if indu >= len(self.modsmoothl)-1:
 			#return -5.47608128044e-05,5.7422824622e-06
@@ -171,10 +171,10 @@ class baofit_isoN:
 		for j in range(0,N):
 			for i in range(0,len(xid[0])):
 				self.xim.append(xid[j][i])
-		print self.xim,len(self.xim)		
+		print (self.xim,len(self.xim)		)
 		
 		self.nbin = len(self.rl)
-		print 'using '+ str(self.nbin)+' xi(s) bins'
+		print ('using '+ str(self.nbin)+' xi(s) bins')
 		#mt = zeros((self.nbin,self.nbin)) #this will be the trimmed covariance matrix
 		#for i in range(mini,mini+self.nbin):
 		#	for j in range(mini,mini+self.nbin):
@@ -184,7 +184,7 @@ class baofit_isoN:
 		self.ximodmin = 10. #minimum of template
 		self.modl = modl
 		self.N = N
-		print self.wmod(100.)
+		print (self.wmod(100.))
 						
 	def wmod(self,r):
 		sp = self.sp
@@ -192,7 +192,7 @@ class baofit_isoN:
 		indu = indd + 1
 		fac = (r-self.ximodmin)/sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print ('BAD FAC in wmod')
 			return 'ERROR, BAD FAC in wmod'
 		if indu >= len(self.modl[0])-1:
 			return -5.47608128044e-05,5.7422824622e-06
@@ -354,7 +354,7 @@ class baofitPk:
 				self.kl.append(kl[i])
 				self.Pm.append(pkl[i])
 		self.nbin = len(self.kl)
-		print 'using '+ str(self.nbin)+' P(k) bins'
+		print ('using '+ str(self.nbin)+' P(k) bins')
 		mt = cov[mini:mini+self.nbin,mini:mini+self.nbin]
 		self.invt = linalg.pinv(mt)
 		#setup p wiggle
@@ -394,7 +394,7 @@ class baofitPk:
 		indu = indd+1
 		fac = (k-(indd*self.ks+self.ks))/self.ks
 		if fac > 1:
-			print 'factor greater than 1'
+			print('factor greater than 1')
 			return 'ERROR'
 		#return ((1.-fac)*self.Pkcl[indd][0]+fac*self.Pkcl[indu][0])/((1.-fac)*self.Pkcl[indd][1]+fac*self.Pkcl[indu][1])	
 		return ((1.-fac)*self.pwigl[indd]+fac*self.pwigl[indu])
@@ -822,7 +822,7 @@ class baofitPk:
 			#print chi
 			if chi < chim:
 				chim = chi
-				print i,chim
+				print (i,chim)
 				bestA0 = A0
 				bestB = B
 				bestA1 = A1
@@ -881,7 +881,7 @@ class baofitPk:
 					A2 = A2n
 				else:
 					nfA2 += 1.
-		print bestB,bestA0,bestA1,bestA2,chim
+		print (bestB,bestA0,bestA1,bestA2,chim)
 		fo = open('smoothfit.dat','w')
 		fo.write(str(bestB)+' '+str(bestA0)+' '+str(bestA1)+' '+str(bestA2)+' '+str(chim)+'\n')
 		fo.close()
@@ -901,7 +901,7 @@ class baofitPk:
 			chi = self.chi_temp2(B,A0,A1,A2)
 			if chi < chim:
 				chim = chi
-				print i,chim,B,A0,A1,A2
+				print (i,chim,B,A0,A1,A2)
 				bestA0 = A0
 				bestB = B
 				bestA1 = A1
@@ -953,7 +953,7 @@ def doPk_isolike_noconv(pkd,kl,cov,snl=6.,kmin=0.02,kmax=.3,npar=3,sp=1.,spa=.00
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
-	print np
+	print (np)
 	
 	b = baofitPk(pkd,kl,cov,min=kmin,max=kmax)
 	b.snl = snl
@@ -961,7 +961,7 @@ def doPk_isolike_noconv(pkd,kl,cov,snl=6.,kmin=0.02,kmax=.3,npar=3,sp=1.,spa=.00
 	#b.np = npar
 	#b.H = np.zeros((npar,b.nbin))
 	chi2fac = (Nmock-b.nbin-2.)/(Nmock-1.)
-	print b.nbin,chi2fac
+	print (b.nbin,chi2fac)
 	#for i in range(0,b.nbin):
 	#	for j in range(0,npar):
 	#		b.H[j][i] = 1./b.rl[i]**j
@@ -991,7 +991,7 @@ def doPk_isolike_noconv(pkd,kl,cov,snl=6.,kmin=0.02,kmax=.3,npar=3,sp=1.,spa=.00
 		chi = b.chi_temp_noconv((B,A0,A1,A2,A3,A4))*chi2fac
 		
 		if v == 'y':
-			print b.alph,chi,B#[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
+			print (b.alph,chi,B)#[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
 		alphl.append(b.alph)
 		chil.append(chi)
 		if chi < chim:
@@ -1015,13 +1015,13 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
-	print np
+	print (np)
 	b = baofit_iso(xid,covd,modl,modsmoothl,rl,rmin=rmin,rmax=rmax,sp=sp,cov2=cov2)
 	b.Bp = Bp
 	b.np = npar
 	b.H = np.zeros((npar,b.nbin))
 	chi2fac = (Nmock-b.nbin-2.)/(Nmock-1.)
-	print b.nbin,chi2fac
+	print (b.nbin,chi2fac)
 	for i in range(0,b.nbin):
 		for j in range(0,npar):
 			b.H[j][i] = 1./b.rl[i]**j
@@ -1058,10 +1058,10 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 			chiBmin = chiB
 			BB = B
 		B += .01	
-	print 'best-fit bias factor is '+str(BB)+' '+str(chiBmin)
+	print ('best-fit bias factor is '+str(BB)+' '+str(chiBmin))
 	#print BB,Bmax,Bmax-.01
 	if BB >= Bmax-.011:
-		print 'WARNING, best-fit bias is at max tested value'
+		print( 'WARNING, best-fit bias is at max tested value')
 	#else:
 	#	print BB,Bmax,Bmax-.01	
 	b.BB = BB		
@@ -1083,7 +1083,7 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 		#chi = b.chi_templ_alphfXX((B,A0,A1,A2))*chi2fac
 		
 		if v == 'y':
-			print b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
+			print (b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0]) #single values getting output as arrays, silly, but works so not worrying about it
 		alphl.append(b.alph)
 		chil.append(chi)
 		if chi < chim:
@@ -1110,7 +1110,7 @@ def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmax
 	b = baofit_isoN(N,xid,covd,modl,rl,sp=sp)
 	b.Bp = Bp
 	b.H = np.zeros((3*N,N*b.nbin))
-	print b.nbin
+	print (b.nbin)
 	for j in range(0,N):
 		for i in range(0,N*b.nbin):
 			if i > j*b.nbin and i < (j+1)*b.nbin:
@@ -1152,7 +1152,7 @@ def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmax
 			chiBmin = chiB
 			BB = B
 		B += .01	
-	print 'best-fit bias factor is '+str(BB)+' '+str(chiBmin)
+	print( 'best-fit bias factor is '+str(BB)+' '+str(chiBmin))
 	b.BB = BB		
 	#b.BB = 1. #switch to this to make bias prior centered on input rather than fit value
 	B = [BB,BB]
@@ -1167,7 +1167,7 @@ def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmax
 		#chi = b.chi_templ_alphfXX((B,A0,A1,A2))*chi2fac
 		chi = b.chi_templ_alphfXX((B))*chi2fac
 		if v == 'y':
-			print b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
+			print (b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0]) #single values getting output as arrays, silly, but works so not worrying about it
 		alphl.append(b.alph)
 		chil.append(chi)
 		if chi < chim:
@@ -1177,7 +1177,7 @@ def doxi_isolikeN(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rmax
 			A0m = b.A0
 			A1m = b.A1
 			A2m = b.A2
-	print alphm,chim,Bm,A0m,A1m,A2m
+	print (alphm,chim,Bm,A0m,A1m,A2m)
 	fo = open('BAOisobestfit'+wo+'.dat','w')
 	b.alph = alphm	
 	b.chi_templ_alphfXX((Bm),wo='y',fw=wo)
@@ -1225,7 +1225,7 @@ def doxi_isolikeNna(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rm
 			chiBmin = chiB
 			BB = B
 		B += .01	
-	print 'best-fit bias factor is '+str(BB)+' '+str(chiBmin)
+	print ('best-fit bias factor is '+str(BB)+' '+str(chiBmin))
 	b.BB = BB		
 	#b.BB = 1. #switch to this to make bias prior centered on input rather than fit value
 	B = [BB,BB,0,0,0,0,0,0]
@@ -1240,7 +1240,7 @@ def doxi_isolikeNna(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rm
 		#chi = b.chi_templ_alphfXX((B,A0,A1,A2))*chi2fac
 		chi = b.chi_templ_alphfXXna((B))*chi2fac
 		if v == 'y':
-			print b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0] #single values getting output as arrays, silly, but works so not worrying about it
+			print (b.alph,chi,B[0],b.A0[0],b.A1[0],b.A2[0]) #single values getting output as arrays, silly, but works so not worrying about it
 		alphl.append(b.alph)
 		chil.append(chi)
 		if chi < chim:
@@ -1250,7 +1250,7 @@ def doxi_isolikeNna(N,xid,covd,modl,rl,rmin=50,rmax=150,sp=1.,Bp=.4,rminb=50.,rm
 			A0m = b.A0
 			A1m = b.A1
 			A2m = b.A2
-	print alphm,chim,Bm
+	print (alphm,chim,Bm)
 	#fo = open('BAOisobestfit'+wo+'.dat','w')
 	b.alph = alphm	
 	#b.chi_templ_alphfXX((Bm),wo='y',fw=wo)

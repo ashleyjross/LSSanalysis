@@ -3,7 +3,7 @@ dirpcadw = '/mnt/lustre/ashleyr/pcadw/'
 dirpc = '/mnt/lustre/ashleyr/paircounts/'
 dirsys = 'maps/' #change to local directory where ngalvsys from wiki was put, note star map and depth map included
 dirfits = '/Users/ashleyross/fitsfiles/' #change to where your catalog files are
-ebossdir = '/Users/ashleyross/eboss/' #where AJR puts correlation functions, writes out results
+ebossdir = '/Users/ashleyross/Dropbox/eboss/' #where AJR puts correlation functions, writes out results
 dirscio = '/mnt/lustre/ashleyr/eboss/mocks/'
 
 import fitsio #needed to read data
@@ -183,11 +183,11 @@ def mkran1mil(sample,NS,version,cm='',N=0,c='sci',app='.ran.fits',compmin=0):
 	for i in range(minc,maxc):
 		#comp = f[i]['COMP']
 		#if comp > compmin:
-		fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+'\n') #rest of the information comes from matching to galaxy catalog, this gives set of randoms matching angular footprint
+		fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+'\n') #rest of the information comes from matching to galaxy catalog, this gives set of randoms matching angular foot#print
 		#else:
 		#	no += 1
 		#fo.write(str(float(f[i]['RA']))+' '+str(float(f[i]['DEC']))+'\n') #to be used if opened and read from fitsio.FITS
-	print no
+	#print( no)
 	fo.close()
 	return True
 
@@ -364,7 +364,7 @@ def mkQSO4xi_allweights(NS,version,sample='QSO',cm='',zmin=.6,zmax=1.,c='sci',ap
 			wfczss = wfkp*(f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_STAR']*f[i]['WEIGHT_SEEING']
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(wfkp)+' '+str(wfcp)+' '+str(wfzf)+' '+str(wfcpzf)+' '+str(wfczst)+' '+str(wfczsee)+' '+str(wfczss)+'\n')
 	fo.close()
-	print no
+	#print( no)
 	return True
 
 def mkran4xi_allweights(file,NS,N,zmin=.43,zmax=.7,c='sci'):
@@ -406,14 +406,14 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 		wsys = np.loadtxt('allstars17.519.9Healpixall256.dat')
 		b,ms = findlinmb('ELG',samp,v,'star',zmin,zmax,dir='')
 		h = healpix()
-		print b,ms
-	#print wm.split('_')[1]	
+		#print( b,ms)
+	##print wm.split('_')[1]	
 	iv = False
 	if len(wm.split('_')) > 1:
 		if wm.split('_')[1] == 'ivar':
 			b,ms = findlinmb(samp,v,'',wm,zmin,zmax,dir='')
 			iv = True
-			print b,ms
+			#print( b,ms)
 			
 	ffkp = np.loadtxt('nbarELG'+samp+v+'.dat').transpose()
 	d2 = False
@@ -444,7 +444,7 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 			th,phi = radec2thphi(ra,dec)
 			if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
 				pix2 = int(h.ang2pix_nest(256,th,phi))
-				#print pix2
+				##print pix2
 				ns = wsys[pix2]
 				ws = 1./(b+ms*ns)
 				if ws > maxs:
@@ -484,7 +484,7 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 				th,phi = radec2thphi(ra,dec)
 				if wm == 'wstar' or wm == 'cpstar' or wm == 'wext':
 					pix2 = int(h.ang2pix_nest(256,th,phi))
-					#print pix2
+					##print pix2
 					ns = wsys[pix2]
 					ws = 1./(b+ms*ns)
 					if ws > maxs:
@@ -507,8 +507,8 @@ def mkgalELG4xi(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',c='sci',app='.fits',compl
 				fo.write(str(f2[i]['ra'])+' '+str(f2[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 
-	print n	
-	print mins,maxs,wm	
+	#print( n)	
+	#print (mins,maxs,wm)	
 	fo.close()
 	return True		
 
@@ -524,12 +524,12 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 		d2 = True
 		f2 = fitsio.read(dir+'eboss22'+'.'+v+'.latest.rands'+app)
 		ns = (len(f)+len(f2))/1000000
-		print len(f)+len(f2),ns
+		#print( len(f)+len(f2),ns)
 		
 	else:
 		f = fitsio.read(dir+'eboss'+samp+'.'+v+'.latest.rands'+app)
 		ns = len(f)/1000000
-		print len(f),ns
+		#print (len(f),ns)
 
 	fo = open(dir+'rebosselg'+'_'+samp+v+'_'+str(N)+wz+fkp+wm+'4xi.dat','w')
 	n = 0
@@ -576,8 +576,8 @@ def mkranELG4xi(samp='21',v='v5_10_7',zmin=.7,zmax=1.1,comp = 'sci',N=0,app='.fi
 				n += 1.
 				nw += w
 
-	print n,nw #just helps to know things worked properly
-	print nw/10000.*ns #area in sq degrees
+	#print( n,nw) #just helps to know things worked properly
+	#print (nw/10000.*ns) #area in sq degrees
 	fo.close()
 	return True
 
@@ -683,7 +683,7 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',psfx=99,cp=''
 				if w*0 != 0:
 					w = 1.
 					nnan += 1.
-					#print 'nan removed'
+					##print 'nan removed'
 					
 				if fkp == 'fkp':
 					fkpw = f[i]['WEIGHT_FKP']
@@ -692,7 +692,7 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',psfx=99,cp=''
 				fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
-	print n,nw,nnan	
+	#print( n,nw,nnan)	
 	fo.close()
 	return True		
 
@@ -704,7 +704,7 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',shuff='',fkp='fk
 
 	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+shuff+'.ran.fits')
 	#ns = len(f)/1000000
-	#print len(f),ns
+	##print len(f),ns
 	rx = ''
 	if ramax:
 		rx += 'rax'+str(ramax)
@@ -784,8 +784,8 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',shuff='',fkp='fk
 				fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
-	print n,nw,nnan #just helps to know things worked properly
-	print nw/10000.*ns 
+	#print( n,nw,nnan) #just helps to know things worked properly
+	#print( nw/10000.*ns) 
 	fo.close()
 	return True
 
@@ -798,7 +798,7 @@ def mkran4xi_shuff(samp,NS,ns,v='test',zmin=.6,zmax=1.1,nran=5e5,N=0,c='sci',fkp
 
 	f = fitsio.read(dir+'eBOSS_'+samp+'_clustering_'+NS+'_v'+v+rec+'.dat.fits')
 	#ns = len(f)/1000000
-	#print len(f),ns
+	##print len(f),ns
 	rx = ''
 	if ramax:
 		rx += 'rax'+str(ramax)
@@ -871,8 +871,8 @@ def mkran4xi_shuff(samp,NS,ns,v='test',zmin=.6,zmax=1.1,nran=5e5,N=0,c='sci',fkp
 				fo.write(str(ra)+' '+str(dec)+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
-	print n,nw,nnan #just helps to know things worked properly
-	#print nw/10000.*ns 
+	#print n,nw,nnan #just helps to know things worked properly
+	##print nw/10000.*ns 
 	fo.close()
 	return True
 
@@ -899,7 +899,7 @@ def mkranELG4xifit(samp='chunk23',zmin=.7,zmax=1.,comp = 'sci',N=0):
 		if z > zmin and z < zmax:
 			fo.write(str(f[i]['ra'])+' '+str(f[i]['dec'])+' '+str(z)+' '+str(w)+'\n')
 			n += 1.
-	print n #just helps to know things worked properly
+	#print n #just helps to know things worked properly
 	fo.close()
 	return True
 
@@ -928,7 +928,7 @@ def plotfootQSO(NS,cmap=cm.coolwarm,v='v5_10_7'):
 	if NS == 'S':	
 		m = graphmask.Skymap(cenaz=0,cenel=13,projection='laea',width=100,height=50)
 	lon, lat = m(f['RA'],f['DEC'])
-	print min(lon),max(lon),min(lat),max(lat)
+	#print min(lon),max(lon),min(lat),max(lat)
 	#cmap = cm.jet
 	#cmap = cm.viridis
 	#cmap = cm.coolwarm
@@ -962,7 +962,7 @@ def plotfootQSO(NS,cmap=cm.coolwarm,v='v5_10_7'):
 		axins=inset_axes(plt.gca(),width="40%",height="3%",loc=1)
 		plt.colorbar(map,cax=axins,orientation='horizontal',ticks=[.5, .6, .7, .8, .9, 1.])
 	#plt.drawmeridians(arange(0,360,20),linewidth=.2,fontsize=20)
-	plt.savefig('footprint'+NS+v+'.png')
+	plt.savefig('foot#print'+NS+v+'.png')
 	#plt.show()
 	#pp.savefig()
 	#pp.close()
@@ -1022,7 +1022,7 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',ms='ms'
 	if wm == 'wgdepthextext':
 		b,m = findlinmb(sample,NS,version,'IMAGE_DEPTH_EXT1',.8,2.2,dir='')
 		be,me = findlinmb(sample,NS,version,'EB_MINUS_V-1',.8,2.2,wm='wgdepthext',dir='')
-		print b,m,be,me
+		#print b,m,be,me
 	if wm == 'wdepthgmag':
 		#ml = [0.09558874587471361, 0.18952081376668517, 0.30767488133801107, 0.72263365380178768, 1.3575184365813411]
 		ml,bl = fitallQSOvdepthNS(NS,version,sys='depth',wm='nosys')
@@ -1304,7 +1304,7 @@ def mkgal4xi(sample,NS,version,cm='',zmin=.6,zmax=1.,c='sci',app='.fits',ms='ms'
 				w = (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)*f[i]['WEIGHT_FKP']	
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 	fo.close()
-	print no
+	#print no
 	return True
 
 def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',ms='ms',gmax=30,zpl=False,gri22='',znudge=False,wmin=False,depthc=False,depthextc=False,extc=False,decmax=False):
@@ -1314,7 +1314,7 @@ def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',ms='
 		dir = dirsci 
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gw = ''
-	print depthextc
+	#print depthextc
 	if gmax != 30:
 		gw = 'gx'+str(gmax)
 	if depthc:
@@ -1396,7 +1396,7 @@ def mkran4xi(sample,NS,version,cm='',N=0,wm='',zmin=.6,zmax=.1,comp = 'sci',ms='
 			fo.write(str(fr[0][i])+' '+str(fr[1][i])+' '+str(gf[2][indz])+' '+str(gf[3][indz])+'\n')
 			#redshifts, and galaxy weight at that redshift, are randomly sampled and added to random file
 			n += 1.
-	print n #just helps to know things worked properly
+	#print n #just helps to know things worked properly
 	fo.close()
 	return True
 
@@ -1416,7 +1416,7 @@ def mkran4xifit(sample,NS,version,N=0,wm='',zmin=.6,zmax=.1,comp = 'sci'):
 		if z > zmin and z < zmax:
 			fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(f[i]['Z'])+' '+str(f[i]['WEIGHT_FKP'])+'\n')
 			n += 1.
-	print n #just helps to know things worked properly
+	#print n #just helps to know things worked properly
 	fo.close()
 	return True
 
@@ -1534,7 +1534,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 
 	rf = 'reboss'+cm+sample+'_'+NS+version+rec+'_'
 	for rann in range(0,nran):	
-		print rann
+		#print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		if ranshuff == 'shuff':
 			mkran4xi_shuff(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
@@ -1560,7 +1560,7 @@ def createalladfilesfb_elg(zmin=.6,zmax=1.1,samp='21',v='v5_10_7',sran=0,nran=1,
 
 	rf = 'rebosselg'+'_'+samp+v+'_'
 	for rann in range(sran,sran+nran):	
-		print rann
+		#print rann
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		mkranELG4xi(samp,v=v,N=rann,zmin=zmin,zmax=zmax,wm=wm,fkp=fkp,zm=zm)
 		rfi = rf+str(rann)+wz
@@ -1594,16 +1594,16 @@ def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,n
 	RRnorml = 0
 	RRnormt = 0
 	pl = []
-	print file,zmin,zmax,NS,v
+	#print file,zmin,zmax,NS,v
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	rf0 = 'r'+mdr+'_'+NS+v+'_'
 	gfr = 'g'+md+file+NS+v+wz
 	for i in range(0,nmubin):
 		mu = i/float(nmubin)+.5/float(nmubin)
 		mub = int(mu*nmubin)
-		#print mu
+		##print mu
 		pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
-	#print len(pl)
+	##print len(pl)
 	fdp = open(gfr+gfr+'2ptdmu.dat').readlines()
 	DDnormt += float(fdp[0])
 	for k in range(1,len(fdp)):
@@ -1631,7 +1631,7 @@ def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,n
 					
 	xil = zeros((nbin),'f')
 	#for i in range(0,nbin):
-	#print DDnormt,DRnormt,RRnormt
+	##print DDnormt,DRnormt,RRnormt
 	r = start+bs/2.
 	for i in range(start,rmax,bs):
 		xi = 0
@@ -1659,7 +1659,7 @@ def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,n
 			drt += dr
 			if rr != 0:		
 				xi += pl[j][mom]/float(nmubin)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
-		#print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+		##print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
 		#if rr0 > 0:
 		#	xi = (dd/DDnormt-2.*dr/DRnormt+rr/RRnormt)*RRnormt/rr0
 		#else:
@@ -1668,7 +1668,7 @@ def ppxilcalc_LSD_bin(file,mom,NS='ngc',v='v1.6',bs=8,start=0,rmax=250,nranf=1,n
 			xil[i/bs] = xi
 		if pp == True:
 			#r = start+bs/2.+i*bs
-			print r,sqrt(1./ddt)*r	
+			print (r,sqrt(1./ddt)*r	)
 		r += bs	
 	return xil
 
@@ -1716,15 +1716,15 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	for i in range(0,nmubin):
 		mu = i/float(nmubin)+.5/float(nmubin)
 		mub = int(mu*nmubin)
-		#print mu
+		##print mu
 		if mu > mumin and mu < mumax:
 			pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
 			nmut += 1.
 		else:
 			pl.append((0,0,0,0,0,0))	
-	#print len(pl)
+	##print len(pl)
 	for i in range(0,njack):
-		#print i
+		##print i
 		for j in range(0,njack):
 			if jack != i and jack != j:
 				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
@@ -1741,10 +1741,10 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 					DRnl[k-1] += dr
 					RRnl[k-1] += rp
 					
-	print DDnormt,DRnormt,RRnormt				
+	#print DDnormt,DRnormt,RRnormt				
 	for nr in range(1,nranf):
 		for i in range(0,njack):
-			#print i
+			##print i
 			for j in range(0,njack):
 				if jack != i and jack != j:
 					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
@@ -1760,7 +1760,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	if rec == '_rec':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
@@ -1771,7 +1771,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 	if shuff == 'shuff':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmu.dat').readlines()
@@ -1780,7 +1780,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 							rp = float(fr[k])
 							RRnorecnl[k-1] += rp
 		
-	#print RRnl
+	##print RRnl
 	
 	if wf:
 		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
@@ -1849,7 +1849,7 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 				xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
 			if i/bs < nbin:
 				xil[i/bs] = xi
-			print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+			#print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
 	else:
 		xiDDl = zeros((nbin),'f')
 		xiDRl = zeros((nbin),'f')
@@ -1908,7 +1908,7 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 		#fDR = open('DRcounts'+file+'.dat','w')
 		#fR = open('RRcounts'+file+'.dat','w')
 	for i in range(0,njack):
-		#print i
+		##print i
 		for j in range(0,njack):
 			if jack != i and jack != j:
 				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmurp.dat').readlines()
@@ -1925,10 +1925,10 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 					DRnl[k-1] += dr
 					RRnl[k-1] += rp
 					
-	print DDnormt,DRnormt,RRnormt				
+	#print DDnormt,DRnormt,RRnormt				
 	for nr in range(1,nranf):
 		for i in range(0,njack):
-			#print i
+			##print i
 			for j in range(0,njack):
 				if jack != i and jack != j:
 					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmurp.dat').readlines()
@@ -1944,7 +1944,7 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 	if rec == '_rec':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmurp.dat').readlines()
@@ -1955,7 +1955,7 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 	if shuff == 'shuff':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmurp.dat').readlines()
@@ -1964,7 +1964,7 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 							rp = float(fr[k])
 							RRnorecnl[k-1] += rp
 		
-	#print RRnl
+	##print RRnl
 	
 	xil = zeros((rmax,rmax),'f')
 	for i in range(0,rmax):
@@ -1973,7 +1973,7 @@ def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',star
 			if RRnl[bin] > 0:
 				xil[i][j] = (DDnl[bin]/DDnormt-2*DRnl[bin]/DRnormt+RRnl[bin]/RRnormt)*RRnormt/RRnl[bin]
 			#else:
-			#	print(i,j)
+			#	#print(i,j)
 	if jack == -1:
 		fo = open('xirperprmu'+gf+'.dat','w')
 		for i in range(0,rmax):
@@ -2024,7 +2024,7 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 		#fDR = open('DRcounts'+file+'.dat','w')
 		#fR = open('RRcounts'+file+'.dat','w')
 	for i in range(0,njack):
-		#print i
+		##print i
 		for j in range(0,njack):
 			if jack != i and jack != j:
 				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptth.dat').readlines()
@@ -2041,10 +2041,10 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 					DRnl[k-1] += dr
 					RRnl[k-1] += rp
 					
-	print DDnormt,DRnormt,RRnormt				
+	#print DDnormt,DRnormt,RRnormt				
 	for nr in range(1,nranf):
 		for i in range(0,njack):
-			#print i
+			##print i
 			for j in range(0,njack):
 				if jack != i and jack != j:
 					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptth.dat').readlines()
@@ -2060,7 +2060,7 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 	if rec == '_rec':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptth.dat').readlines()
@@ -2071,7 +2071,7 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 	if shuff == 'shuff':
 		for nr in range(0,nranf):
 			for i in range(0,njack):
-				#print i
+				##print i
 				for j in range(0,njack):
 					if jack != i and jack != j:
 						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptth.dat').readlines()
@@ -2080,7 +2080,7 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 							rp = float(fr[k])
 							RRnorecnl[k-1] += rp
 		
-	#print RRnl
+	##print RRnl
 	
 	xil = zeros((nbin),'f')
 	for i in range(0,nbin):
@@ -2091,7 +2091,7 @@ def ppwthcalc_LSDfjack(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,
 			print(i)
 	if jack == -1:
 		fo = open('wth'+gf+'.dat','w')
-		print('wth'+gf+'.dat')
+		#print('wth'+gf+'.dat')
 		for i in range(0,nbin):
 			theta = thmax-bins/2.-i*bins
 			fo.write(str(theta)+' '+str(xil[i])+'\n ')
@@ -2133,7 +2133,7 @@ def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,muma
 	for i in range(0,nmubin):
 		mu = i/float(nmubin)+.5/float(nmubin)
 		mub = int(mu*nmubin)
-		#print mu
+		##print mu
 		if mu > mumin and mu < mumax:
 			pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
 			nmut += 1.
@@ -2153,7 +2153,7 @@ def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,muma
 		DRnl[k-1] += dr
 		RRnl[k-1] += rp
 					
-	print DDnormt,DRnormt,RRnormt				
+	#print DDnormt,DRnormt,RRnormt				
 	if wf:
 		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
 		fD.write('#r_center mu_center DD DR RR\n')
@@ -2218,7 +2218,7 @@ def ppxilcalc_simp_bs(file,mom=0,dir='',wm='',bs=5,start=0,rmax=250,mumin=0,muma
 			xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
 		if i/bs < nbin:
 			xil[i/bs] = xi
-		print ddt/DDnormt,drt/DRnormt,rrt/RRnormt	
+		#print ddt/DDnormt,drt/DRnormt,rrt/RRnormt	
 	return xil
 
 
@@ -2228,13 +2228,13 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,rp='',wm='',bs=5,start=0,
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm+shuff
 	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,rpw=rp,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf,rec=rec,shuff=shuff)
-	print ans
+	#print ans
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
 	if mumax != 1.:
 		gf += 'mux'+str(mumax)
 	fo = open('xi'+rp+str(2*mom)+gf+wmu+str(bs)+'st'+str(start)+'.dat','w')
-	print gf
+	#print gf
 	for i in range(0,rmax/bs):
 		r = float(bs)/2.+float(bs)*i+float(start)
 		if mom != 'rp':
@@ -2284,7 +2284,7 @@ def mkODmap(sample='lrg',NS='N',version='v1.0_IRt',res=256,zmin=.6,zmax=1.):
 			#multiply by your own weight here
 			gl[p] += w
 	ave = sum(gl)/sum(ml)
-	print ave
+	#print ave
 	fo = open('geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'odenspczw.dat','w') #this is the file for the code
 	ft = open('geboss'+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'rdodens.dat','w') #this is with theta,phi coordinates, in case you want to plot it
 	no = 0		
@@ -2329,7 +2329,7 @@ def mkOD_4ACF(sample='lrg',NS='N',version='v1.8_IRt',cm='cmass-',res=256,zmin=.6
 			#multiply by your own weight here
 			gl[p] += w
 	ave = sum(gl)/sum(ml)
-	print ave
+	#print ave
 	fo = open(ebossdir+'geboss'+cm+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'odenspczw.dat','w') #this is the file for the code
 	ft = open(ebossdir+'geboss'+cm+sample+'_'+NS+version+'_mz'+str(zmin)+'xz'+str(zmax)+str(res)+'rdodens.dat','w') #this is with theta,phi coordinates, in case you want to plot it
 	no = 0		
@@ -2457,7 +2457,7 @@ def mksysmapran(res):
 			d[p][8+j] += f[i]['IMAGE_DEPTH'][j]
 		for j in range(0,5):
 			d[p][13+j] += f[i]['PSF_FWHM'][j]
-	print 'filled data table'
+	#print 'filled data table'
 	fo = open(ebossdir+'healmap_eBOSS_nested_'+str(res)+'.dat','w')
 	fo.write('# pix SKYFLUX_u SKYFLUX_g SKYFLUX_r SKYFLUX_i SKYFLUX_z AIRMASS EB_MINUS_V IMAGE_DEPTH_u IMAGE_DEPTH_g IMAGE_DEPTH_r IMAGE_DEPTH_i IMAGE_DEPTH_z PSF_FWHM_u PSF_FWHM_g PSF_FWHM_r PSF_FWHM_i PSF_FWHM_z\n')
 	for i in range(0,nrow):
@@ -2495,7 +2495,7 @@ def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
 			if hd[i] == sys:
 				col = i-1 #because of space between # and first text in file
 				break
-		print col
+		#print col
 		fsys = np.zeros((npo))
 		for i in range(0,len(filesys[0])):
 			p = filesys[0][i]
@@ -2557,7 +2557,7 @@ def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
 	#ml = []
 	
 
-	print min(fsys),max(fsys)
+	#print min(fsys),max(fsys)
 	h = healpix()
 	pixlg = []
 	pixlr = []
@@ -2586,8 +2586,8 @@ def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
 		no += 1.
 		nt += 1.*f[i][-1]
 	
-	print 'total number, weighted number'
-	print no,nt
+	#print 'total number, weighted number'
+	#print no,nt
 	binnbs = []
 	binns = []
 	nsysbin = 10 #10 bins are being used
@@ -2618,11 +2618,11 @@ def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
 			n0 += pixlr[i] #count numbers inside bad pixels in sys map
 			ng0 += pixlg[i]
 					
-	print 'total number of randoms/objects '+str(nt)+'/'+str(nbt)
-	print 'number of randoms/objects where sys = 0 '+str(n0)+'/'+str(ng0)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	#print 'total number of randoms/objects '+str(nt)+'/'+str(nbt)
+	#print 'number of randoms/objects where sys = 0 '+str(n0)+'/'+str(ng0)
+	#print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nbt/nt
-	print 'average number of objects per random is '+ str(ave)
+	#print 'average number of objects per random is '+ str(ave)
 	xl = []
 	yl = []
 	el = []
@@ -2639,7 +2639,7 @@ def ngvsys_4xi(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',fkp='fkp'):
 		yl.append(ns)
 		el.append(nse)
 		chinull += ((ns-1.)/nse)**2.
-	print chinull
+	#print chinull
 	return xl,yl,el
 		
 		
@@ -2717,7 +2717,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 			if hd[i] == sys:
 				col = i-1 #because of space between # and first text in file
 				break
-		print col
+		#print col
 		fsys = np.zeros((npo))
 		for i in range(0,len(filesys[0])):
 			p = filesys[0][i]
@@ -2779,7 +2779,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 	#ml = []
 	
 
-	print min(fsys),max(fsys)
+	#print min(fsys),max(fsys)
 	h = healpix()
 	pixlg = []
 	pixlr = []
@@ -2827,7 +2827,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 				pixlr[p] += 1.
 				nr += 1.
 
-	print nr
+	#print nr
 	if sampl != 'ELG':
 		f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	else:
@@ -2945,7 +2945,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 						b = slpl[2] - 21.25*slp
 						m = gm*slp+b
 						if m > slpl[3]:
-							print m,hm,b,slp
+							print (m,hm,b,slp)
 					if gm >= 21.75:
 						slp = (slpl[4]-slpl[3])/.5
 						b = slpl[3] - 21.75*slp
@@ -3051,7 +3051,7 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 						b = slpl[2] - 21.25*slp
 						m = gm*slp+b
 						if m > slpl[3]:
-							print m,hm,b,slp
+							print( m,hm,b,slp)
 					if gm >= 21.75:
 						slp = (slpl[4]-slpl[3])/.5
 						b = slpl[3] - 21.75*slp
@@ -3126,10 +3126,10 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 				zm += w*z
 				nt += w
 
-	print 'total number, weighted number'
-	print no,nt
-	print 'mean redshift'
-	print zm/nt
+	#print 'total number, weighted number'
+	#print no,nt
+	#print 'mean redshift'
+	#print zm/nt
 	binnbs = []
 	binns = []
 	nsysbin = 10 #10 bins are being used
@@ -3160,11 +3160,11 @@ def ngvsys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',umag=False,gmag=Fa
 			n0 += pixlr[i] #count numbers inside bad pixels in sys map
 			ng0 += pixlg[i]
 					
-	print 'total number of randoms/objects '+str(nt)+'/'+str(nbt)
-	print 'number of randoms/objects where sys = 0 '+str(n0)+'/'+str(ng0)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	#print 'total number of randoms/objects '+str(nt)+'/'+str(nbt)
+	#print 'number of randoms/objects where sys = 0 '+str(n0)+'/'+str(ng0)
+	#print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nbt/nt
-	print 'average number of objects per random is '+ str(ave)
+	#print 'average number of objects per random is '+ str(ave)
 	if umg != False:
 		wm += 'umg'+str(umg[0])+str(umg[1])
 	if gri != False:
@@ -3221,8 +3221,8 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 	if wm == 'wgdepthextext':
 		b,m = findlinmb(sampl,NS,ver,'IMAGE_DEPTH_EXT1',.8,2.2)
 		be,me = findlinmb(sampl,NS,ver,'EB_MINUS_V-1',.8,2.2,wm='wgdepthext')
-		print b,m
-		print be,me
+		#print b,m
+		#print be,me
 	if wm == 'wgidepthext':
 		b,m = findlinmb(sampl,NS,ver,'IMAGE_DEPTH_EXT1',zmin,zmax)
 		bi,mi = findlinmb(sampl,NS,ver,'IMAGE_DEPTH_EXT3',zmin,zmax,wm='wgdepthext')
@@ -3259,7 +3259,7 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 			bsr += 1.
 
 		nr += 1.
-	print nr
+	#print nr
 
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
@@ -3363,7 +3363,7 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -3469,7 +3469,7 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -3519,15 +3519,15 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 
 			zm += w*z
 			nt += w
-	print 'total number, weighted number'
-	print no,nt
-	print 'mean redshift'
-	print zm/nt
+	#print 'total number, weighted number'
+	#print no,nt
+	#print 'mean redshift'
+	#print zm/nt
 
-	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	#print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
+	#print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nt/nr
-	print 'average number of objects per random is '+ str(ave)
+	#print 'average number of objects per random is '+ str(ave)
 	if umg != False:
 		wm += 'umg'+str(umg[0])+str(umg[1])
 	if gri != False:
@@ -3559,7 +3559,7 @@ def ngvsys_ran(sampl,NS,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,wm='',umag=False
 		el.append(nse)
 	fs.close()
 	chin = sum((np.array(yl)-1.)**2./np.array(el)**2.)
-	print chin
+	#print chin
 	xl = np.array(xl)
 	yl = np.array(yl)
 	el = np.array(el)
@@ -3648,7 +3648,7 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 
 				nr += w
 
-	print nr
+	#print nr
 	ffkp = np.loadtxt(ebossdir+'nbarELG22v5_10_7.dat').transpose()
 	if sampl == '21p22':
 		f = fitsio.read(dirfits+'eboss21'+'.'+ver+'.latest.fits')
@@ -3661,7 +3661,7 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 	zm = 0
 	nt = 0
 	avebs = 0
-	print min(f[sys]),max(f[sys])
+	#print min(f[sys]),max(f[sys])
 	for i in range (0,len(f)):
 		z = f[i]['Z']
 		c = 1
@@ -3736,16 +3736,16 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 			
 	if bs > 0:
 		avebs = avebs/bs
-	print avebs,sysmin		
-	print 'total number, weighted number'
-	print no,nt
-	print 'mean redshift'
-	print zm/nt
+	#print avebs,sysmin		
+	#print 'total number, weighted number'
+	#print no,nt
+	#print 'mean redshift'
+	#print zm/nt
 
-	print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
-	print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
+	#print 'total number of randoms/objects '+str(nr)+'/'+str(nt)
+	#print 'number of randoms/objects outside tested range '+str(bsr)+'/'+str(bs)			
 	ave = nt/nr
-	print 'average number of objects per random is '+ str(ave)
+	#print 'average number of objects per random is '+ str(ave)
 	fs = open(ebossdir+'n'+'geboss'+sampl+'_'+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+'v'+sys+'.dat','w')
 	xl = []
 	yl = []
@@ -3764,7 +3764,7 @@ def ngvsys_ELG(sampl,ver,sys,sysmin,sysmax,zmin,zmax,band=-1,compl=.5,wm='',umag
 		el.append(nse)
 	fs.close()
 	chin = sum((np.array(yl)-1.)**2./np.array(el)**2.)
-	print chin
+	#print chin
 	xl = np.array(xl)
 	yl = np.array(yl)
 	el = np.array(el)
@@ -3782,7 +3782,7 @@ def doallnsys4qsoplot():
 	for i in range(0,4):	
 		for ns in nsl:
 			for wm in wml:
-				print sysl[i],ns,wm
+				#print sysl[i],ns,wm
 				ngvsys_ran('QSO',ns,'v1.9f',sysl[i],sysrl[i][0],sysrl[i][1],.8,2.2,band=bandl[i],wm=wm)
 	#for ns in nsl:
 	#	for wm in wml:
@@ -3813,7 +3813,7 @@ def findlinmb(sampl,NS,ver,sys,zmin,zmax,wm='nosys',res='512',dir=ebossdir):
 	lf = linfit(d[0],d[1],d[2])
 	inl = np.array([1.,0])
 	b0,m0 = fmin(lf.chilin,inl)
-	print lf.chilin((b0,m0))
+	#print lf.chilin((b0,m0))
 	return b0,m0
 
 class linfit:
@@ -3889,21 +3889,21 @@ def covcalcxi0(r1,r2,version,sample,amp,zmin,zmax,dr=10.,sp=1.,nzbs=20,a='',v='y
 	if r1 == r2: #pure shot-noise piece has been separated out since this depends on the r bin size
 		
 	#	sumxi += 1./npp
-	#	print r1,sqrt(1./npp)*r1
- 		npp = 0
- 		for i in range(0,len(nl),nzbs):
- 			vt = 0
- 			nave = 0
- 			for j in range(0,nzbs):
- 				vt += vl[i+j]
- 				nave += nl[i+j]*vl[i+j]
- 			nave = nave/vt
- 			#npp += 2.*pi*r1**2.*dr*vl[i]*nl[i]**2.
- 			#npp += 2.*pi*r1**2.*dr*vt*nave**2.
- 			#npp += 1./3.*pi*((r1+dr/2.)**3.-(r1-dr/2.)**3.)*vt*nave**2.
+	#	#print r1,sqrt(1./npp)*r1
+		npp = 0
+		for i in range(0,len(nl),nzbs):
+			vt = 0
+			nave = 0
+			for j in range(0,nzbs):
+				vt += vl[i+j]
+				nave += nl[i+j]*vl[i+j]
+			nave = nave/vt
+			#npp += 2.*pi*r1**2.*dr*vl[i]*nl[i]**2.
+			#npp += 2.*pi*r1**2.*dr*vt*nave**2.
+			#npp += 1./3.*pi*((r1+dr/2.)**3.-(r1-dr/2.)**3.)*vt*nave**2.
 			npp  += nave**2.*vt*2.*pi*r1**2.*dr
 		sumxi += 1./npp
-		print r1, r1*sqrt(sumxi), r1*sqrt(1./npp)
+		#print r1, r1*sqrt(sumxi), r1*sqrt(1./npp)
 	return sumxi
 
 def covcalcxi0boss(r1,r2,amp,zmin,zmax,dr=10.,sp=1.,a='',v='y',gam=-1.7,file='Challenge_matterpower',dir='/Users/ashleyross/DR12/',mun=0,beta=0.4,sfog=3.0,amc=0.0,sigt=6.,sigr=10.,mult=1.,sigs=15.):
@@ -3960,7 +3960,7 @@ def mkcovxiNS(sample,version,amp,zmin,zmax,bs=10.,nzbs=20):
 	r0 = bs/2.
 	r1 = r0
 	while r1 < 200:
-		print r1
+		#print r1
 		r2 = r0
 		while r2 < 200:
 			if sample == 'BOSS':
@@ -4003,8 +4003,8 @@ def mkcov_mockELG_QPM(reg,mom=0,N=499,rec='rec_'):
 				
 			Ntot += 1.
 		except:
-			print i
-	print Ntot		
+			print( i)
+	#print Ntot		
 	xiave = xiave/float(Ntot)
 	for i in range(1,1+N):
 		zer = ''
@@ -4024,7 +4024,7 @@ def mkcov_mockELG_QPM(reg,mom=0,N=499,rec='rec_'):
 					xik = xii[k]
 					cov[j][k] += (xij-xiave[j])*(xik-xiave[k])
 		except:
-			print i
+			print( i)
 	cov = cov/float(Ntot)					
 	fo = open('/Users/ashleyross/eBOSS/'+'xiave'+rec+str(mom)+reg+'ELG_MV8st0.dat','w')
 	errl = []
@@ -4081,8 +4081,8 @@ def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,rec='_recon'):
 		xiave += np.loadtxt(dir+'2PCF_EZmock'+rec+'_eboss_ELG_v1.1_'+reg+'_z0.6z1.1_'+zer+str(i)+'.dat').transpose()[1+mom/2]*fac
 		Ntot += 1.
 		#except:
-		#	print i
-	print Ntot		
+		#	#print i
+	#print Ntot		
 	xiave = xiave/float(Ntot)
 	for i in range(1,1+N):
 		zer = ''
@@ -4100,7 +4100,7 @@ def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,rec='_recon'):
 				xik = xii[k]
 				cov[j][k] += (xij-xiave[j])*(xik-xiave[k])
 #		except:
-#			print i
+#			#print i
 	cov = cov/float(Ntot)					
 	fo = open('xiave'+rec+str(mom)+reg+'ELG_EZ'+str(bs)+'st0.dat','w')
 	errl = []
@@ -4122,7 +4122,7 @@ def mkcov_mockELG_EZ(reg,bs=8,mom=0,N=1000,rec='_recon'):
 			rec = '_rec'
 
 		d = np.loadtxt('/Users/ashleyross/eBOSS/xi'+str(mom)+'gebossELG_'+reg+'3'+rec+'_mz0.6xz1.1fkp'+str(bs)+'st0.dat').transpose()
-		print(len(d[0]),len(errl),len(d[1]))
+		#print(len(d[0]),len(errl),len(d[1]))
 		plt.errorbar(d[0][:nbin],d[0][:nbin]**2.*d[1][:nbin],d[0][:nbin]**2.*errl,fmt='ko')
 		plt.plot(d[0][:nbin],d[0][:nbin]**2.*xiave,'r-')
 		plt.show()
@@ -4164,7 +4164,7 @@ def mkpkcovELG(mom,Nstart=1,Nmock=500,NS='ngc',md='ez_mocks',rec=''):
 			avel += pki
 			ng += 1.
 		except:
-			print i	
+			print (i)	
 	avel = avel/ng
 	for i in range(Nstart,Nstart+Nmock):
 		try:
@@ -4241,7 +4241,7 @@ def doallBAOqsomocks(sig=1,covmd='mock',bs=10):
 # 	siga = 0
 # 	chia = 0
 # 	n = 0
-# 	print len(d)
+# 	#print len(d)
 # 	for i in range(0,len(d)):
 # 		a = d[i]
 # 		if sig == 1:
@@ -4445,7 +4445,7 @@ def putallBAOqsomocks_combPk(N=1000,sig=1,sigtest=.04,mock='EZmock_QSO',covmd='E
 			if sigonep/sigonex > .47/.41 or sigonex/sigonep > .47/.41:
 				nsb += 1.
 			
-		#print i,nb			
+		##print i,nb			
 		if s1b[0] > .8 and s1b[1] < 1.2:
 
 			ma += a[0]
@@ -4466,7 +4466,7 @@ def putallBAOqsomocks_combPk(N=1000,sig=1,sigtest=.04,mock='EZmock_QSO',covmd='E
 	chia = chia/n
 	ag = ag/ng
 	sg = sqrt(sg/ng-ag**2.)
-	print nbb,mab/nbb
+	#print nbb,mab/nbb
 	mxa = mxa/nxp
 	mpa = mpa/nxp
 	sxa = sqrt(sxa/nxp-mxa*mxa)
@@ -4474,7 +4474,7 @@ def putallBAOqsomocks_combPk(N=1000,sig=1,sigtest=.04,mock='EZmock_QSO',covmd='E
 	sxp = sxp/nxp-mxa*mpa
 	corr = sxp/(sxa*spa)
 	fo.close()
-	print nsb
+	#print nsb
 	return ma,sa,siga,chia,n,ng,ag,sg,errg/ng,nbb,mab/nbb,sqrt(sab/nbb-(mab/nbb)**2.),sigab/nbb,nxp,corr,sxa,spa
 
 
@@ -4508,7 +4508,7 @@ def putallBAOqsomocks_combbs(N=1000,sig=1,sigtest=.04,mock='EZmock_QSO',covmd='E
 			bsst = str(bs)+'st'+str(st)
 			chil += (np.loadtxt(dirsci+'BAOfits/BAOxichil'+mock+fl+version+covmd+mb+str(Bp)+bsst+'.dat').transpose()[1]-min(np.loadtxt(dirsci+'BAOfits/BAOxichil'+mock+fl+version+covmd+mb+str(Bp)+bsst+'.dat').transpose()[1]))
 		chil = chil/float(len(start))
-		print float(len(start))
+		#print float(len(start))
 		flo = open(dirsci+'BAOfits/BAOxichil'+mock+fl+version+covmd+mb+str(Bp)+'8stcomb.dat','w')
 		for j in range(0,len(chil)):
 			flo.write(str(mina+da/2.+da*j)+' '+str(chil[j])+'\n')
@@ -4673,7 +4673,7 @@ def putallBAOqsomocks_Pk(N=1000,sig=1,sigtest=.04,mock='ez_mocks',logk=''):
 		else:
 			bal.append(a[0])
 			snlb += dp[-1][mini]
-	print np.histogram(bal)	
+	#print np.histogram(bal)	
 	ma = ma/n
 	sa = sqrt(sa/n-ma**2.)
 	mad = mad/nd
@@ -4719,8 +4719,8 @@ def putallBAOqsomocks_Pkcomb(N=1000,sig=1,sigtest=.04,mock='ez_mocks',mock2='ez_
 		sig1 = (a1[2]-a1[1])/2.
 		nc = 0
 		if sig1 < .1:
-			#print a1[-1]
-			#print len(chic),len(a1[-1])
+			##print a1[-1]
+			##print len(chic),len(a1[-1])
 			chic += a1[-1]
 			nc += 1.
 		a2 = sigreg_c12d(dp2)
@@ -4780,7 +4780,7 @@ def putallBAOqsomocks_Pkcomb(N=1000,sig=1,sigtest=.04,mock='ez_mocks',mock2='ez_
 		#else:
 			#bal.append(a[0])
 			#snlb += dp[-1][mini]
-	#print np.histogram(bal)	
+	##print np.histogram(bal)	
 	fo.close()
 	ma = ma/n
 	sa = sqrt(sa/n-ma**2.)
@@ -4863,7 +4863,7 @@ def putallBAOqsomocks_PkcombGZ(N=1000,sig=1,sigtest=.04,mock='ez_mocks',mock2='e
 		#else:
 			#bal.append(a[0])
 			#snlb += dp[-1][mini]
-	#print np.histogram(bal)	
+	##print np.histogram(bal)	
 	ma = ma/n
 	sa = sqrt(sa/n-ma**2.)
 	mad = mad/nd
@@ -5035,7 +5035,7 @@ def corr2BAO(f1,f2,sig=3):
 	caz = (caz/nz-maxz*mapz)/(saxz*sapz)
 	mac = mac/nz
 	sac = sqrt(sac/nz-mac*mac)
-	print maxz,mapz,saxz,sapz,caz,nz,maxz-mapz,mac,sac
+	#print maxz,mapz,saxz,sapz,caz,nz,maxz-mapz,mac,sac
 	return True
 
 def comb4BAO(f1,f2,f3,f4,sig=3):
@@ -5078,7 +5078,7 @@ def comb4BAO(f1,f2,f3,f4,sig=3):
 	sapz = sqrt(sapz/nz-mapz*mapz)
 	mac = mac/nz
 	sac = sqrt(sac/nz-mac*mac)
-	print maxz,mapz,saxz,sapz,nz,maxz-mapz,mac,sac
+	#print maxz,mapz,saxz,sapz,nz,maxz-mapz,mac,sac
 	return True
 
 
@@ -5203,7 +5203,7 @@ def xibao(sample,zmin,zmax,version='test',wm='fkp',zerr='',bs=8,start=0,npar=3,r
 		wt = dn[1]	
 	dd = wt
 	rl = dn[0]
-	#print rl
+	##print rl
 	if mb == 'nobao':
 		#mod = np.loadtxt('/Users/ashleyross/DR12/xi0smChallenge_matterpower0.43.06.010.015.00.dat').transpose()[1]
 		#mod = np.loadtxt('BAOtemplates/xi0sm'+template+'0.4'+damp+'15.00.dat').transpose()[1]
@@ -5221,7 +5221,7 @@ def xibao(sample,zmin,zmax,version='test',wm='fkp',zerr='',bs=8,start=0,npar=3,r
 
 	csample = sample
 	#facc = .716/(.537+.716)
-	#print facc
+	##print facc
 	if sample == 'aveQPM_QSO' or sample == 'QPM_QSO' or sample == 'QSOaveEZ':
 		if covmd == 'an':
 			csample = 'QSO'
@@ -5248,7 +5248,7 @@ def xibao(sample,zmin,zmax,version='test',wm='fkp',zerr='',bs=8,start=0,npar=3,r
 	if version == '4':
 		fn = .89/1.82
 		fs = .594/0.966	
-	print fn,fs	
+	#print fn,fs	
 	if covmd == 'EZmock':
 		cov = np.loadtxt(ebossdir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
 		cov2 = np.loadtxt(ebossdir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
@@ -5267,13 +5267,13 @@ def xibao(sample,zmin,zmax,version='test',wm='fkp',zerr='',bs=8,start=0,npar=3,r
 	
 	chil = doxi_isolike(dd,cov,mod,modsmooth,rl,npar=npar,rmin=rmin,rmax=rmax,v=v,wo=sample+version+covmd+mb+str(npar),Bp=Bp,cov2=cov2,Nmock=Nmock)
 	fo = open(outdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+damp+bsst+'.dat','w')
-	print outdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+damp+bsst+'.dat'
+	#print outdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+damp+bsst+'.dat'
 	for i in range(0,len(chil)):
 		a = .8+.001*i+.0005
 		fo.write(str(a)+' '+str(chil[i])+'\n')
 	fo.close()
 	a = sigreg_c12(outdir+'BAOxichil'+sample+mockn+version+covmd+mb+str(npar)+str(Bp)+damp+bsst)
-	print a
+	#print a
 	return a[0],(a[2]+a[1])/2.,(a[2]-a[1])/2.
 
 def doall_ELGQPM():
@@ -5300,12 +5300,12 @@ def doall_ELGQPM():
 				std += a[0]*a[0]
 				errave += a[1]
 		except:
-			print i
+			print(i)
 	fo.close()
-	print N,Nd,ave/Nd,std/Nd-(ave/Nd)**2.,errave/Nd		
+	#print N,Nd,ave/Nd,std/Nd-(ave/Nd)**2.,errave/Nd		
 	return True
 
-def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='_rec',covv='v4',mumin=0,mumax=1):
+def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,covmd='EZmock',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='_rec',covv='v4',mumin=0,mumax=1):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -5336,18 +5336,27 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		dn = np.loadtxt(ebossdir+'xiave0EZPZNGC'+bsst+'.dat').transpose()
 		ds = np.loadtxt(ebossdir+'xiave0EZPZSGC'+bsst+'.dat').transpose()
 	if sample == 'ELG':
-		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+rec+'_'+wz+wm+bsst+'.dat').transpose()
-		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+rec+'_'+wz+wm+bsst+'.dat').transpose()
+		recf =''
+		if rec == 'rec':
+			recf = '_rec'
+		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
 	if sample == 'ELGQPM':
 		dn = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_NGC_'+mockn+'.mul').transpose()
 		ds = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_SGC_'+mockn+'.mul').transpose()
 
 	if sample == 'ELGEZ':
-		dn = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGNGCEZmock'+mockn+muw+bsst+'.dat').transpose()
-		ds = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGSGCEZmock'+mockn+muw+bsst+'.dat').transpose()
+		dn = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGNGCEZmock'+rec+mockn+muw+bsst+'.dat').transpose()
+		ds = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi0ELGSGCEZmock'+rec+mockn+muw+bsst+'.dat').transpose()
 		indir = ''
 		outdir = dirsci+'EZmockELGv4/BAOfits/'
 
+	if sample == 'ELGEZave':
+		dn = np.loadtxt(ebossdir+'xiave0NGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xiave0SGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+		#if rec == 'rec':
+		#	dn = np.loadtxt(ebossdir+'xiave_recon0NGCELG_EZ'+bsst+'.dat').transpose()
+		#	ds = np.loadtxt(ebossdir+'xiave_recon0SGCELG_EZ'+bsst+'.dat').transpose()
 
 	if sample == 'lrg':
 		wt = (ds[1]*1.8+1.3*dn[1])/3.1
@@ -5371,20 +5380,20 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		dn = np.loadtxt(ebossdir+'dr12v5pre_bin'+zbin+'.xi').transpose()
 		wt = dn[1]	
 	rl = dn[0]
-	#print rl
+	##print rl
 
 	if sample == 'QPM_QSO':
 		mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.43.02.55.015.00.dat').transpose()[1]
 	if sample == 'QSO':
 		mod = np.loadtxt('BAOtemplates/xi0iso'+template+damp+'.dat').transpose()[1]
 		modsmooth = np.loadtxt('BAOtemplates/xi0smiso'+template+damp+'.dat').transpose()[1]
-	if sample == 'ELG' or sample == 'ELGQPM' or sample == 'ELGEZ':
-		if rec == '':
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower'+damp+'15.00.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower'+damp+'15.00.dat').transpose()[1]
-		if rec == '_rec':	
-			mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
-			modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower0.593.02.04.015.01.0.dat').transpose()[1]
+	if sample == 'ELG' or sample == 'ELGQPM' or sample == 'ELGEZ' or sample == 'ELGEZave':
+		#if rec == '':
+		mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower'+damp+'.dat').transpose()[1]
+		modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower'+damp+'.dat').transpose()[1]
+		#if rec == '_rec':	
+		#	mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower'+damp+'15.01.0.dat').transpose()[1]
+		#	modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower'+damp+'15.01.0.dat').transpose()[1]
 
 
 	if mb == 'nobao':
@@ -5423,15 +5432,15 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 
 		#covN = np.loadtxt(ebossdir+'covEZPZ0NGC5st0.dat')
 		#covS = np.loadtxt(ebossdir+'covEZPZ0SGC5st0.dat')
-	if covmd == 'ELG' and rec == '_rec':
-		#covN = np.loadtxt(ebossdir+'cov_rec0NGCELG_MV'+bsst+'.dat')#*fn
-		#covS = np.loadtxt(ebossdir+'cov_rec0SGCELG_MV'+bsst+'.dat')#*fs
-		covN = np.loadtxt(indir+'cov_recon0NGCELG_EZ'+bsst+'.dat')#*fn
-		covS = np.loadtxt(ebossdir+'cov_recon0SGCELG_EZ'+bsst+'.dat')#*fs
+# 	if covmd == 'ELG' and rec == '_rec':
+# 		#covN = np.loadtxt(ebossdir+'cov_rec0NGCELG_MV'+bsst+'.dat')#*fn
+# 		#covS = np.loadtxt(ebossdir+'cov_rec0SGCELG_MV'+bsst+'.dat')#*fs
+# 		covN = np.loadtxt(indir+'cov_recon0NGCELG_EZ'+bsst+'.dat')#*fn
+# 		covS = np.loadtxt(ebossdir+'cov_recon0SGCELG_EZ'+bsst+'.dat')#*fs
 
-	if covmd == 'ELG' and rec == '':
-		covN = np.loadtxt(indir+'cov0NGCELG_EZ'+covv+bsst+'.dat')#*fn
-		covS = np.loadtxt(indir+'cov0SGCELG_EZ'+covv+bsst+'.dat')#*fs
+	if covmd == 'ELG':# and rec == '':
+		covN = np.loadtxt(indir+'cov0NGCELG_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
+		covS = np.loadtxt(indir+'cov0SGCELG_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
 					
 	
 	chiln = doxi_isolike(dn[1],covN,mod,modsmooth,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+'NGC'+version+rec+mb,Bp=Bp,Nmock=Nmock)
@@ -5443,8 +5452,8 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		fo.write(str(a)+' '+str(chiln[i])+'\n')
 	fo.close()
 	an = sigreg_c12(outdir+'BAOxichilNGC'+wf)
-	print an
-	print (an[1]+an[2])/2.,(an[2]-an[1])/2.
+	#print an
+	print((an[1]+an[2])/2.,(an[2]-an[1])/2.,min(chiln))
 	chils = doxi_isolike(ds[1],covS,mod,modsmooth,rl,rmin=rmin,rmax=rmax,v=v,wo=sample+'SGC'+version+rec+mb,Bp=Bp,Nmock=Nmock)
 	fo = open(outdir+'BAOxichilSGC'+wf+'.dat','w')
 	for i in range(0,len(chils)):
@@ -5452,8 +5461,8 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		fo.write(str(a)+' '+str(chils[i])+'\n')
 	fo.close()
 	als = sigreg_c12(outdir+'BAOxichilSGC'+wf)
-	print als
-	print (als[1]+als[2])/2.,(als[2]-als[1])/2.
+	#print als
+	print((als[1]+als[2])/2.,(als[2]-als[1])/2.,min(chils))
 	chilt = np.array(chiln)+np.array(chils)
 	fo = open(outdir+'BAOxichilNScomb'+wf+'.dat','w')
 	for i in range(0,len(chilt)):
@@ -5462,7 +5471,7 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	fo.close()
 	a = sigreg_c12(outdir+'BAOxichilNScomb'+wf)
 	
-	print a
+	#print a
 	return (a[1]+a[2])/2.,(a[2]-a[1])/2.,a[-1]
 
 def PkbaoNS(kmin=.02,kmax=.23,sample='QSOEZmockave',covmd='EZmock',recon='',snl=6.0,Nmock=1000,template='Challenge_matterpower'):
@@ -5485,7 +5494,7 @@ def PkbaoNS(kmin=.02,kmax=.23,sample='QSOEZmockave',covmd='EZmock',recon='',snl=
 		covS = np.loadtxt(ebossdir+'covPk0ELG_QPM_wfocalsgc'+recon+'.dat')
 		
 	kl = dn[0]
-	print(kl)
+	#print(kl)
 	chiln = doPk_isolike_noconv(dn[2],dn[0],covN,snl=snl,kmin=kmin,kmax=kmax,Nmock=Nmock)
 	fo = open(ebossdir+'BAOPknoconvchilNGC'+sample+recon+str(kmax)+'.dat','w')
 	for i in range(0,len(chiln)):
@@ -5493,8 +5502,8 @@ def PkbaoNS(kmin=.02,kmax=.23,sample='QSOEZmockave',covmd='EZmock',recon='',snl=
 		fo.write(str(a)+' '+str(chiln[i])+'\n')
 	fo.close()
 	an = sigreg_c12(ebossdir+'BAOPknoconvchilNGC'+sample+recon+str(kmax))
-	print an
-	print (an[1]+an[2])/2.,(an[2]-an[1])/2.
+	#print an
+	#print (an[1]+an[2])/2.,(an[2]-an[1])/2.
 	chils = doPk_isolike_noconv(ds[2],ds[0],covS,snl=snl,kmin=kmin,kmax=kmax,Nmock=Nmock)
 	fo = open(ebossdir+'BAOPknoconvchilSGC'+sample+recon+str(kmax)+'.dat','w')
 	for i in range(0,len(chils)):
@@ -5502,8 +5511,8 @@ def PkbaoNS(kmin=.02,kmax=.23,sample='QSOEZmockave',covmd='EZmock',recon='',snl=
 		fo.write(str(a)+' '+str(chils[i])+'\n')
 	fo.close()
 	als = sigreg_c12(ebossdir+'BAOPknoconvchilSGC'+sample+recon+str(kmax))
-	print als
-	print (als[1]+als[2])/2.,(als[2]-als[1])/2.
+	#print als
+	#print (als[1]+als[2])/2.,(als[2]-als[1])/2.
 	chilt = np.array(chiln)+np.array(chils)
 	fo = open(ebossdir+'BAOPknoconvchilNScomb'+sample+recon+str(kmax)+'.dat','w')
 	for i in range(0,len(chilt)):
@@ -5512,7 +5521,7 @@ def PkbaoNS(kmin=.02,kmax=.23,sample='QSOEZmockave',covmd='EZmock',recon='',snl=
 	fo.close()
 	a = sigreg_c12(ebossdir+'BAOPknoconvchilNScomb'+sample+recon+str(kmax))
 	
-	print a
+	#print a
 	return (a[1]+a[2])/2.,(a[2]-a[1])/2.
 
 
@@ -5527,7 +5536,7 @@ def mksubfile_mocks(ind):
 # 	if ind < 10:
 # 		fl += '0'
 	fl += str(ind)
-	#print fl
+	##print fl
 	fo.write('#!/bin/bash\n')
 	fo.write('#$ -V -cwd\n')
 	fo.write('. /etc/profile.d/modules.sh \n')
@@ -5590,7 +5599,7 @@ def sigreg_c12xip(chilistx,dp,fac=1.,mina=.8,maxa=1.2,da=.001):
 		if a > mina+da/2. and a < maxa-da*3/2.:
 			#inda = int((a-(mina+da/2.))/da)
 			#if inda == 399:
-			#	print a
+			#	#print a
 			#indau = inda+1
 			#fac = a-mina+da/2.+inda*da
 			#chix = chilistx[inda]*(1.-fac)+chilistx[indau]*(fac)
@@ -5668,14 +5677,14 @@ def sigreg_c12_2p(dp,dp2,fac=1.):
 		if a > mina+da/2. and a < maxa-da*3/2.:
 			#inda = int((a-(mina+da/2.))/da)
 			#if inda == 399:
-			#	print a
+			#	#print a
 			#indau = inda+1
 			#fac = a-mina+da/2.+inda*da
-			#print da,maxa,mina,inda,indau,a,fac
+			##print da,maxa,mina,inda,indau,a,fac
 			#try:
 			#	chix = dp2[1][inda]*(1.-fac)+dp2[1][indau]*(fac)
 			#except:
-			#	print da,maxa,mina,inda,indau,a,fac,len(dp2[1]),dp2[0][-1]-dp2[0][-2]
+			#	#print da,maxa,mina,inda,indau,a,fac,len(dp2[1]),dp2[0][-1]-dp2[0][-2]
 			chix = np.interp(a,dp2[0],dp2[1])
 			chiv = (dp[1][i]+chix)/2.
 			chil.append((chiv,a))
@@ -5752,14 +5761,14 @@ def sigreg_c12_4p(dp,dp2,dp3,dp4,fac=1.,amin=.8,amax=1.2,da=.001):
 		a = amin+da/2.+i*da
 			#inda = int((a-(mina+da/2.))/da)
 			#if inda == 399:
-			#	print a
+			#	#print a
 			#indau = inda+1
 			#fac = a-mina+da/2.+inda*da
-			#print da,maxa,mina,inda,indau,a,fac
+			##print da,maxa,mina,inda,indau,a,fac
 			#try:
 			#	chix = dp2[1][inda]*(1.-fac)+dp2[1][indau]*(fac)
 			#except:
-			#	print da,maxa,mina,inda,indau,a,fac,len(dp2[1]),dp2[0][-1]-dp2[0][-2]
+			#	#print da,maxa,mina,inda,indau,a,fac,len(dp2[1]),dp2[0][-1]-dp2[0][-2]
 		chix = np.interp(a,dp2[0],dp2[1])
 		chix1 = np.interp(a,dp[0],dp[1])
 		chix3 = np.interp(a,dp3[0],dp3[1])
@@ -6132,7 +6141,7 @@ def testzweights(p=1.):
 		wr = sum(np.array(l)*np.array(wl))/sum(wl)
 		url.append(u)
 		wrl.append(wr)
-	print len(url),len(wrl),np.mean(url),np.mean(wrl)	
+	#print len(url),len(wrl),np.mean(url),np.mean(wrl)	
 	vu = np.mean(np.array(url)**2.)-np.mean(url)**2.
 	vw = np.mean(np.array(wrl)**2.)-np.mean(wrl)**2.
 	#return vu,vw
@@ -6160,7 +6169,7 @@ def testmuweights():
 		wr = sum(np.array(l)*np.array(wl))/sum(wl)
 		url.append(u)
 		wrl.append(wr)
-	print len(url),len(wrl),np.mean(url),np.mean(wrl)	
+	#print len(url),len(wrl),np.mean(url),np.mean(wrl)	
 	vu = np.mean(np.array(url)**2.)-np.mean(url)**2.
 	vw = np.mean(np.array(wrl)**2.)-np.mean(wrl)**2.
 	#return vu,vw
@@ -6179,7 +6188,7 @@ def QSObaovsz(n=1.6e-05,dz=.1,zmin=.9,zmax=2.2,area=2000.):
 		z = zmin+dz/2.+dz*i
 		b = 0.53+0.29*(1.+z)**2.
 		errz = baoerr(z-dz/2.,z+dz/2.,dz,.001,area,n,b)
-		print z,errz
+		#print z,errz
 		ol.append(1./errz**2.)
 		zl.append(z)
 		vol = (d.dc(z+dz/2.)**3.-d.dc(z-dz/2.)**3.) #volume of shell is proportional to this
@@ -6187,7 +6196,7 @@ def QSObaovsz(n=1.6e-05,dz=.1,zmin=.9,zmax=2.2,area=2000.):
 		nl.append(numbin)
 	ivt = sum(ol)
 	errt = sqrt(1./ivt)
-	#print ol
+	##print ol
 	ol = np.array(ol)
 	nl = np.array(nl)
 	from matplotlib import pyplot as plt
@@ -6227,13 +6236,13 @@ def mkNbarz(NS,area,sample='QSO',version='v1.8',sp=0.02,zmin=0.1,zmax=2.9):
 				sumt += 1.
 				sumw += f[i]['WEIGHT_SYSTOT']
 			
-	print sumw/sumt
+	#print sumw/sumt
 	f = sumw/sumt
 	for i in range(0,nb):
 		z = sp/2.+sp*i
 		fo.write(str(z)+' '+str(zl[i]/vl[i]/f)+' '+str(zl[i]/f)+' '+str(vl[i])+'\n')
 	fo.close()
-	print sum
+	#print sum
 	return True
 
 def plotNbarELG(ver='v5_10_7',nocut='nocut'):
@@ -6283,7 +6292,7 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area = (sumr)/10000.
-	print 'effective area is '+str(area)
+	#print 'effective area is '+str(area)
 	no = 0
 	fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
@@ -6324,11 +6333,11 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 				if f2[i]['isdupl']:
 					ndup += 1.	
 			
-	print ndup
-	print sumw/sumt
+	#print ndup
+	#print sumw/sumt
 	#areaf = sumt/sumw
 	#area = area*areaf
-	#print 'effective area is '+str(area)
+	##print 'effective area is '+str(area)
 	vl = []
 	veffl = []
 	nl = []
@@ -6363,7 +6372,7 @@ def mkNbarELG(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,co
 		nbl.append(zl[i]/vl[i]/f)
 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 	fo.close()
-	print sum,zm/wtot,nw,nnw
+	#print sum,zm/wtot,nw,nnw
 	plt.plot(zpl,nbl)
 	plt.show()
 	plt.plot(zpl,nbwl)
@@ -6399,7 +6408,7 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area = (sumr)/10000.
-	print 'effective area is '+str(area)
+	#print 'effective area is '+str(area)
 	no = 0
 	fo = open(ebossdir+'nbarELG'+chunk+ver+'nocut.dat','w')
 	nb = int(zmax/sp)
@@ -6440,11 +6449,11 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 				if f2[i]['isdupl']:
 					ndup += 1.	
 			
-	print ndup
-	print sumw/sumt
+	#print ndup
+	#print sumw/sumt
 	#areaf = sumt/sumw
 	#area = area*areaf
-	#print 'effective area is '+str(area)
+	##print 'effective area is '+str(area)
 	vl = []
 	veffl = []
 	nl = []
@@ -6479,7 +6488,7 @@ def mkNbarELG_nocut(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl
 		nbl.append(zl[i]/vl[i]/f)
 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 	fo.close()
-	print sum,zm/wtot,nw,nnw
+	#print sum,zm/wtot,nw,nnw
 	plt.plot(zpl,nbl)
 	plt.show()
 	plt.plot(zpl,nbwl)
@@ -6539,8 +6548,8 @@ def ELG_SSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=.8,comp
 				if f2[i]['CLASS'] == 'STAR':
 					nstar += 1.
 			
-	print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
-	print ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz)
+	#print ngal,nq,nstar,ngoodgal,nqz,ntot,ngal+nq+nstar
+	#print ngoodgal/ngal,nSSR/ngoodgal,ngoodgal/ntot,ngoodgal/(ngal+nq),(ngoodgal+nqz)/(ngal+nq-nqz)
 	return True
 
 
@@ -6584,7 +6593,7 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 		f = fitsio.read(dirfits+'eboss'+chunk+'.'+ver+'.latest.fits')
 	area1 = (sumr1)/10000.
 	area2 = (sumr2)/10000.
-	print 'effective areas are '+str(area1) +' and '+str(area2)
+	#print 'effective areas are '+str(area1) +' and '+str(area2)
 	no = 0
 	#fo = open(ebossdir+'nbarELG'+chunk+ver+'.dat','w')
 	nb = int(zmax/sp)
@@ -6628,10 +6637,10 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 					else:
 						zl2[zind] += wfczss	
 			
-	print sumw/sumt
+	#print sumw/sumt
 	#areaf = sumt/sumw
 	#area = area*areaf
-	#print 'effective area is '+str(area)
+	##print 'effective area is '+str(area)
 	vl = []
 	veffl = []
 	nl = []
@@ -6672,7 +6681,7 @@ def mkNbarELG_splitSSR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,co
 # 		nbl.append(zl[i]/vl[i]/f)
 # 		nbwl.append(zl[i]/vl[i]/f*1./(1.+zl[i]/vl[i]/f*P0))
 # 	fo.close()
-# 	print sum,zm/wtot,nw,nnw
+# 	#print sum,zm/wtot,nw,nnw
 	plt.plot(zpl,nl,zpl,nl2)
 	plt.show()
 	return True
@@ -6717,7 +6726,7 @@ def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 			nzln[zind] += 1.#*ff[i]['WEIGHT_FKP']
 			sumzw += z#*ff[i]['WEIGHT_FKP']
 			sumw += 1.#*ff[i]['WEIGHT_FKP']
-	print sumzw/sumw
+	#print sumzw/sumw
 	sumzws = 0
 	sumws = 0
 
@@ -6730,7 +6739,7 @@ def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 			nzls[zind] += w
 			sumzws += z*w
 			sumws += w
-	print sumzws/sumws
+	#print sumzws/sumws
 # 	for i in range(0,len(fd[0])):
 # 		z = fd[2][i]
 # 		if z > zmin and z < zmax:
@@ -6739,7 +6748,7 @@ def nzQSOgal(sample='QSO',version='v1.5',zmin=.9,zmax=2.2,zb=.05):
 	nzls = np.array(nzls)/sum(nzls)/zb		
 	#nzld = np.array(nzld)/sum(nzld)
 	nzln = np.array(nzln)/sum(nzln)/zb
-	#print nzld
+	##print nzld
 	nzl = np.arange(0,zmax,zb)
 	plt.plot(nzl,nzln,'r-',nzl,nzls,'b-')
 	plt.xlim(zmin,zmax)
@@ -6770,7 +6779,7 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 			nzlf[zind] += 1.#*ff[i]['WEIGHT_FKP']
 			sumzw += z#*ff[i]['WEIGHT_FKP']
 			sumw += 1.#*ff[i]['WEIGHT_FKP']
-	print sumzw/sumw
+	#print sumzw/sumw
 	sumzwd = 0
 	sumwd = 0
 
@@ -6782,7 +6791,7 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 			nzldd[zind] += w
 			sumzwd += z*w
 			sumwd += w
-	print sumzwd/sumwd
+	#print sumzwd/sumwd
 # 	for i in range(0,len(fd[0])):
 # 		z = fd[2][i]
 # 		if z > zmin and z < zmax:
@@ -6791,7 +6800,7 @@ def compnz(sample='QSO',NS='N',version='v1.2',zmin=.9,zmax=2.2,zb=.05):
 	nzlf = np.array(nzlf)/sum(nzlf)		
 	#nzld = np.array(nzld)/sum(nzld)
 	nzldd = np.array(nzldd)/sum(nzldd)
-	#print nzld
+	##print nzld
 	nzl = np.arange(0,zmax,zb)
 	plt.plot(nzl,nzlf/nzldd,'r-')#,nzl,nzld/nzldd,'b-')
 	plt.xlim(zmin,zmax)
@@ -6841,7 +6850,7 @@ def compnzfib(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 				s = 1
 			if s == 0:
 				nzldd[zindf] += w
-	print n
+	#print n
 	for i in range(0,len(fs)):
 		z = fs[i]['Z']
 		if z > zmin and z < zmax:
@@ -6879,7 +6888,7 @@ def compnzfib(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 	#nzld = np.array(nzld)/sum(nzld)
 	nzldd = np.array(nzldd)/sum(nzldd)
 		
-	#print nzld
+	##print nzld
 	nzl = np.arange(zb/2.,zmax,zb)
 	c = np.ones((len(nzl)))
 	c = c*.98
@@ -6918,7 +6927,7 @@ def compnzknown(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 				nzlf[zind] += w
 			if fid > 0:
 				nzld[zind] += w
-	print n
+	#print n
 	for i in range(0,len(fs)):
 		z = fs[i]['Z']
 		if z > zmin and z < zmax:
@@ -6936,7 +6945,7 @@ def compnzknown(sample='QSO',version='v1.3',zmin=.9,zmax=2.2,zb=.05,rz=.1):
 	nzld = np.array(nzld)/sum(nzld)
 	nzldd = np.array(nzldd)/sum(nzldd)
 		
-	#print nzld
+	##print nzld
 	nzl = np.arange(zb/2.,zmax,zb)
 	c = np.ones((len(nzl)))
 	c = c*.98
@@ -6961,12 +6970,12 @@ def compextfib2(sample='lrg',NS='N',version='v1.0_IRt'):
 		el.append(fdf[i]['EXTINCTION'][4])
 	mgl = np.array(mgl)
 	el = np.array(el)
-	print sum(mgl)/float(len(mgl))
-	print (sum(mgl)-sum(el))/float(len(mgl))
-	print max(mgl)
-	print max(mgl-el)
-	print max(el)
-	print sum(el)/float(len(mgl))
+	#print sum(mgl)/float(len(mgl))
+	#print (sum(mgl)-sum(el))/float(len(mgl))
+	#print max(mgl)
+	#print max(mgl-el)
+	#print max(el)
+	#print sum(el)/float(len(mgl))
 	from matplotlib import pyplot as plt
 	plt.hist((mgl-el),range=(21,max(mgl-el)))
 	plt.show()
@@ -7041,7 +7050,7 @@ def countzfcp(sample,NS,version,zmin=.6,zmax=1.,c='',app='.fits',wm=''):
 			nt += (f[i]['WEIGHT_NOZ']+f[i]['WEIGHT_CP']-1.)
 			nzf += (f[i]['WEIGHT_NOZ']-1.)
 			ncp += (f[i]['WEIGHT_CP']-1.)
-	print nt,nzf/nt,ncp/nt
+	#print nt,nzf/nt,ncp/nt
 	return True
 
 def compdecreg(sample='QSO',version='v1.6',NS='S',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2,wm='',gri22=''):
@@ -7128,7 +7137,7 @@ def compdecreg(sample='QSO',version='v1.6',NS='S',dir='/Users/ashleyross/fitsfil
 	umgvl = sqrt(umgvl/ngtl-umgl*umgl)
 	umgh = umgh/ngth
 	umgvh = sqrt(umgvh/ngth-umgh*umgh)
-	print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
+	#print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
 	return True
 
 def compQSONS(sample='QSO',version='v1.6',dir='/Users/ashleyross/fitsfiles/',zmin=.8,zmax=2.2,wm='',gri22=''):
@@ -7243,8 +7252,8 @@ def compQSONS(sample='QSO',version='v1.6',dir='/Users/ashleyross/fitsfiles/',zmi
 	umgh = umgh/ngth
 	umgvh = sqrt(umgvh/ngth-umgh*umgh)
 
-	print ngl,nrtl,ngh,nrth
-	print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
+	#print ngl,nrtl,ngh,nrth
+	#print umgl,umgh,umgvl,umgvh,ngl/nrtl,ngh/nrth,ngtl/nrl,ngth/nrh,ncph/ngth,ncpl/ngtl,nzfh/ngth,nzfl/ngtl,nwsh/ngth,nwsl/ngtl,nzvih/ngth,nzvil/ngtl
 	return True
 
 
@@ -7277,9 +7286,9 @@ def visinspectQSOcomp():
 					ind = int((zd-dmin)/sp)
 					zdl[ind] += 1.					
 					nb += 1.
-	print nb
-	print nt
-	print nvi,sqrt(std/nvi)
+	#print nb
+	#print nt
+	#print nvi,sqrt(std/nvi)
 	zl = np.arange(dmin+sp/2.,dmax+sp/2.,.01)
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -7356,7 +7365,7 @@ def plotregetalam(sample='QSO',version='v1.6',NS='S',md='ran',ramin=-90,ramax=90
 			eta,lam = radec2le(ra,dec)
 			ral.append(eta)
 			decl.append(lam)
-	print max(ral),max(decl)	
+	#print max(ral),max(decl)	
 	plt.plot(ral,decl,'k,')
 	plt.xlim(ramin,ramax)
 	plt.ylim(decmin,decmax)
@@ -7426,7 +7435,7 @@ def plotzhistplvi(zmin=.8,zmax=2.2,nb=100,mn=-.2,mx=.2,sig=.001,dir='/Users/ashl
 		lzl.append(1./lzi)
 		norm += 1./lzi
 		stdc += xl[i]**2./lzi
-	print nout,nt,ntno,sqrt(std/nt),sqrt(stdno/(ntno)),sqrt(stdc/norm)
+	#print nout,nt,ntno,sqrt(std/nt),sqrt(stdno/(ntno)),sqrt(stdc/norm)
 	plt.plot(xl,hst/(sum(hst)*sp),'k-')
 	#plt.plot(xl,mlab.normpdf(xl, 0, sqrt(stdno/(ntno))),'r-')
 	plt.plot(xl,lzl,'r-')
@@ -7618,7 +7627,7 @@ def plotxiQSONScompEZ(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumin=0
 	diff = ds[1][mini:maxi]-dn[1][mini:maxi]
 	cov = covn+covs
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chis,chin,chi
+	#print chis,chin,chi
 	plt.plot(aven[0][mini:maxi],aven[0][mini:maxi]**2.*aven[1][mini:maxi]*norm**2.,'r--')
 	plt.plot(aves[0][mini:maxi],aves[0][mini:maxi]**2.*aves[1][mini:maxi]*norm**2.,'b--')
 	plt.errorbar(ds[0][mini:maxi]-.5,ds[0][mini:maxi]**2.*ds[1][mini:maxi],ds[0][mini:maxi]**2.*aves[2][mini:maxi]*norm**2.,fmt='bs')
@@ -7670,7 +7679,7 @@ def plotpkQSONScompEZ(mom='0',mini=2,maxi=30):
 	diff = ds[2][mini:maxi]-dn[2][mini:maxi]
 	cov = covn+covs
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chis,chin,chi
+	#print chis,chin,chi
 	plt.plot(aven[0][mini:maxi],aven[0][mini:maxi]*(aven[1][mini:maxi]+250),'r--')
 	plt.plot(aves[0][mini:maxi],aves[0][mini:maxi]*(aves[1][mini:maxi]+250),'b--')
 	plt.errorbar(ds[0][mini:maxi]-.0015,ds[0][mini:maxi]*ds[2][mini:maxi],ds[0][mini:maxi]*aves[2][mini:maxi],fmt='bs')
@@ -7725,7 +7734,7 @@ def plotxiQSOcompEZ(mom='0',NS='ngc',bs='8st0',v='v1.62',mini=3,maxi=25,wm='',mu
 	facs = 1.
 
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chi
+	#print chi
 	plt.plot(ave[0][mini:maxi],ave[0][mini:maxi]**2.*ave[1][mini:maxi]*norm**2.,'k--')
 	plt.errorbar(d[0][mini:maxi],d[0][mini:maxi]**2.*d[1][mini:maxi],d[0][mini:maxi]**2.*ave[2][mini:maxi]*norm**2.,fmt='ko')
 	
@@ -7789,7 +7798,7 @@ def plotxiQSONScompQPM(mom='0',bs='8st0',v='v1.62',mini=1,maxi=25,wm='',mumin=0,
 	chis = np.dot(np.dot(diffs,np.linalg.pinv(covs)),diffs)*facs
 	diffn = aven[1][mini:maxi]*norm**2.-dn[1][mini:maxi]
 	chin = np.dot(np.dot(diffn,np.linalg.pinv(covn)),diffn)*facn
-	print chis,chin
+	#print chis,chin
 	plt.plot(aven[0][mini:maxi],aven[0][mini:maxi]**2.*aven[1][mini:maxi]*norm**2.,'r--')
 	plt.plot(aves[0][mini:maxi],aves[0][mini:maxi]**2.*aves[1][mini:maxi]*norm**2.,'b--')
 	plt.errorbar(ds[0][mini:maxi]-.5,ds[0][mini:maxi]**2.*ds[1][mini:maxi],ds[0][mini:maxi]**2.*aves[2][mini:maxi]*norm**2.,fmt='bs')
@@ -7881,7 +7890,7 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumi
 	#chinwq = np.dot(np.dot(diffnwq,covtqi),diffnwq)
 	#chidnw = np.dot(np.dot(diffd,covti),diffd)
 	#chidnwq = np.dot(np.dot(diffd,covtqi),diffd)
-	print chi,chiq#,chinw,chinwq,chidnw,chidnwq
+	#print chi,chiq#,chinw,chinwq,chidnw,chidnwq
 	plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]**2.*dt[1][mini:maxi],'k-',linewidth=2)
 	#plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]**2.*dtnw[1][mini:maxi],'--',color='.5',linewidth=1)
 	plt.errorbar(avet[0][mini:maxi]-.5,avet[0][mini:maxi]**2.*avet[1][mini:maxi],avet[0][mini:maxi]**2.*avet[2][mini:maxi]*norm**2.,fmt='g:')
@@ -7889,7 +7898,7 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumi
 	plt.errorbar(avet[0][mini:maxi]+.5,aveqt[0][mini:maxi]**2.*aveqt[1][mini:maxi],aveqt[0][mini:maxi]**2.*aveqt[2][mini:maxi]*norm**2.,fmt=':',color='gold')
 	plt.plot(avet[0][mini:maxi]+.5,aveqt[0][mini:maxi]**2.*aveqt[1][mini:maxi],'^',color='gold',markeredgecolor='k')
 	plt.xlim(dt[0][mini-1],dt[0][maxi])
-	print dt[0][mini]
+	#print dt[0][mini]
 	if mom == '0':
 		plt.ylim(-60,80)
 	else:
@@ -7914,7 +7923,7 @@ def plotxiQSONScompEZQPM(mom='0',bs='8st0',v='test',mini=1,maxi=25,wm='fkp',mumi
 	#plt.title(r'Correlation function of v0.7 quasars, 0.9 < z < 2.2')
 	pp.savefig()
 	pp.close()
-	print ebossdir
+	#print ebossdir
 	return True
 
 def plotPkQSONScompEZQPM(mom='0',mini=2,maxi=30,wm=''):
@@ -7946,14 +7955,14 @@ def plotPkQSONScompEZQPM(mom='0',mini=2,maxi=30,wm=''):
 	chinwq = np.dot(np.dot(diffnwq,covtqi),diffnwq)
 	chidnw = np.dot(np.dot(diffd,covti),diffd)
 	chidnwq = np.dot(np.dot(diffd,covtqi),diffd)
-	print chi,chiq,chinw,chinwq,chidnw,chidnwq
+	#print chi,chiq,chinw,chinwq,chidnw,chidnwq
 	plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]*dt[2][mini:maxi],'k-',linewidth=2)
 	plt.plot(dt[0][mini:maxi],dt[0][mini:maxi]*dtnw[2][mini:maxi],'--',color='.5',linewidth=1)
 	plt.errorbar(avet[0][mini:maxi]-.0015,avet[0][mini:maxi]*(avet[1][mini:maxi]+250),avet[0][mini:maxi]*avet[2][mini:maxi]*norm**2.,fmt='g:o')
 	plt.errorbar(avet[0][mini:maxi]+.0015,aveqt[0][mini:maxi]*(aveqt[1][mini:maxi]-450),aveqt[0][mini:maxi]*aveqt[2][mini:maxi]*norm**2.,fmt=':^',color='gold')
 	
 	plt.xlim(dt[0][mini]-.002,dt[0][maxi]+.002)
-	print dt[0][mini]
+	#print dt[0][mini]
 	#if mom == '0':
 	#	plt.ylim(-60,80)
 	#else:
@@ -7976,7 +7985,7 @@ def plotPkQSONScompEZQPM(mom='0',mini=2,maxi=30,wm=''):
 	#plt.title(r'Correlation function of v0.7 quasars, 0.9 < z < 2.2')
 	pp.savefig()
 	pp.close()
-	print ebossdir
+	#print ebossdir
 	return True
 
 
@@ -8001,7 +8010,7 @@ def plotxiQSONScompEZone(NS,mom='0',bs='8st0',v='v1.6',samp='QSOsys',zmin=.8,min
 	cov = np.loadtxt(ebossdir+'covEZPZ'+mom+NS+'GC'+muw+bs+'.dat')[mini:maxi,mini:maxi]*norm**4.
 	diff = ave[1][mini:maxi]*norm**2.-d[1][mini:maxi]
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chi
+	#print chi
 	plt.plot(ave[0][mini:maxi],ave[0][mini:maxi]**2.*ave[1][mini:maxi]*norm**2.,'k--')
 	plt.errorbar(d[0][mini:maxi]-.5,d[0][mini:maxi]**2.*d[1][mini:maxi],d[0][mini:maxi]**2.*ave[2][mini:maxi]*norm**2.,fmt='ko')
 	plt.xlim(d[0][mini]-2.,d[0][maxi]+2.)
@@ -8136,7 +8145,7 @@ def plotxiQSONScompEZonecuts(NS,mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gr
 	diffnc = ave[1][mini:maxi]*norm**2.-dnc[1][mini:maxi]
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)*fac
 	chinc = np.dot(np.dot(diffnc,np.linalg.pinv(cov)),diffnc)
-	print chi,chinc
+	#print chi,chinc
 	plt.plot(ave[0][mini:maxi],ave[0][mini:maxi]**2.*ave[1][mini:maxi]*norm**2.,'k--')
 	plt.errorbar(d[0][mini:maxi],d[0][mini:maxi]**2.*d[1][mini:maxi],d[0][mini:maxi]**2.*ave[2][mini:maxi]*norm**2.,fmt='ko')
 	plt.plot(d[0][mini:maxi],d[0][mini:maxi]**2.*dnc[1][mini:maxi],'rd')
@@ -8199,7 +8208,7 @@ def plotxiQSONScomp(mom='0',bs='8st0',v='v1.6',mini=3,maxi=25,wm='gri22depthi22e
 	cov = np.loadtxt(ebossdir+'covEZPZ'+mom+'NGC'+muw+bs+'.dat')[mini:maxi,mini:maxi]/facn+np.loadtxt(ebossdir+'covEZPZ'+mom+'SGC'+muw+bs+'.dat')[mini:maxi,mini:maxi]/facs
 	diff = ds[1][mini:maxi]-dn[1][mini:maxi]
 	chi = np.dot(np.dot(diff,np.linalg.pinv(cov)),diff)
-	print chi
+	#print chi
 	#plt.plot(ave[0][mini:maxi],ave[0][mini:maxi]**2.*ave[1][mini:maxi]*norm**2.,'k--')
 	plt.errorbar(ds[0][mini:maxi]-.5,ds[0][mini:maxi]**2.*ds[1][mini:maxi],ds[0][mini:maxi]**2.*aves[2][mini:maxi]*norm**2.,fmt='bo')
 	plt.errorbar(dn[0][mini:maxi]+.5,dn[0][mini:maxi]**2.*dn[1][mini:maxi],dn[0][mini:maxi]**2.*aven[2][mini:maxi]*norm**2.,fmt='rd')
@@ -8710,12 +8719,12 @@ def plotvssys(sampl,NS,ver,sys,sysmin,sysmax,res,zmin,zmax,wm='',xlab=''):
 	plt.minorticks_on()
 	d = np.loadtxt(ebossdir+'n'+'geboss'+sampl+'_'+NS+ver+'_mz'+str(zmin)+'xz'+str(zmax)+wm+str(res)+'v'+sys+'.dat').transpose()
 	chin = sum((d[1]-1.)**2./d[2]**2.)
-	print chin
+	#print chin
 	lf = linfit(d[0],d[1],d[2])
 	inl = np.array([1.,0])
 	b,m = fmin(lf.chilin,inl)
 	chilin = sum((d[1]-(m*d[0]+b))**2./d[2]**2.)
-	print chilin
+	#print chilin
 	plt.errorbar(d[0],d[1],d[2],fmt='ko')
 	ol = np.ones((len(d[0])))
 	plt.plot(d[0],ol,'k:')
@@ -8742,12 +8751,12 @@ def plotvssys_simp(xl,yl,el,sys):
 	plt.clf()
 	plt.minorticks_on()
 	chin = sum((yl-1.)**2./el**2.)
-	print chin
+	#print chin
 	lf = linfit(xl,yl,el)
 	inl = np.array([1.,0])
 	b,m = fmin(lf.chilin,inl)
 	chilin = sum((yl-(m*xl+b))**2./el**2.)
-	print chilin
+	#print chilin
 	plt.errorbar(xl,yl,el,fmt='ko')
 	ol = np.ones((len(el)))
 	plt.plot(xl,ol,'k:')
@@ -8772,7 +8781,7 @@ def sysplotsQSO6pan():
 	import matplotlib.pyplot as plt
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	from pylab import *
+	#from pylab import *
 	from numpy import loadtxt as load
 	import numpy as np
 	pp = PdfPages(ebossdir+'nQSOdr14vsys.pdf')
@@ -8785,15 +8794,15 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(lskt)):
 		chi += (lskt[i]-1.)**2./lske[i]**2.
-	print chi	
- 	cskn = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2vSKY_FLUX3.dat').transpose()
- 	csks = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2vSKY_FLUX3.dat').transpose()
- 	cskt = (cskn[-2]/cskn[-1]**2.+csks[-2]/csks[-1]**2.)/(1./cskn[-1]**2.+1./csks[-1]**2.)
- 	cske = (1./(1./cskn[-1]**2.+1./csks[-1]**2.))**.5
- 	chi = 0
- 	for i in range(0,len(cskt)):
+	#print chi	
+	cskn = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2vSKY_FLUX3.dat').transpose()
+	csks = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2vSKY_FLUX3.dat').transpose()
+	cskt = (cskn[-2]/cskn[-1]**2.+csks[-2]/csks[-1]**2.)/(1./cskn[-1]**2.+1./csks[-1]**2.)
+	cske = (1./(1./cskn[-1]**2.+1./csks[-1]**2.))**.5
+	chi = 0
+	for i in range(0,len(cskt)):
  		chi += (cskt[i]-1.)**2./cske[i]**2.
- 	print chi	
+ 	#print chi	
 
 	leen = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2nosysvEB_MINUS_V-1.dat').transpose()
 	les = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2nosysvEB_MINUS_V-1.dat').transpose()
@@ -8804,9 +8813,9 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(let)):
 		chi += (let[i]-1.)**2./lee[i]**2.
-		#print chi
+		##print chi
 
-	print chi
+	#print chi
 		
 	cet = (cen[1]/cen[2]**2.+ces[1]/ces[2]**2.)/(1./cen[2]**2.+1./ces[2]**2.)
 	cee = (1./(1./cen[2]**2.+1./ces[2]**2.))**.5
@@ -8814,8 +8823,8 @@ def sysplotsQSO6pan():
 	#chim = 0
 	for i in range(0,len(cet)):
 		chi += (cet[i]-1.)**2./cee[i]**2.
-		#print chi
-	print chi
+		##print chi
+	#print chi
 
 	lan = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2nosysvAIRMASS-1.dat').transpose()
 	las = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2nosysvAIRMASS-1.dat').transpose()
@@ -8827,13 +8836,13 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(lat)):
 		chi += (lat[i]-1.)**2./lae[i]**2.
-	print chi	
+	#print chi	
 	cat = (can[1]/can[2]**2.+cas[1]/cas[2]**2.)/(1./can[2]**2.+1./cas[2]**2.)
 	cae = (1./(1./can[2]**2.+1./cas[2]**2.))**.5
- 	chi = 0
+	chi = 0
 	for i in range(0,len(cat)):
 		chi += (cat[i]-1.)**2./cae[i]**2.
-	print chi	
+	#print chi	
 
 	lsen = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2nosysvPSF_FWHM3.dat').transpose()
 	lses = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2nosysvPSF_FWHM3.dat').transpose()
@@ -8845,13 +8854,13 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(lset)):
 		chi += (lset[i]-1.)**2./lsee[i]**2.
-	print chi	
+	#print chi	
 	cset = (csen[1]/csen[2]**2.+cses[1]/cses[2]**2.)/(1./csen[2]**2.+1./cses[2]**2.)
 	csee = (1./(1./csen[2]**2.+1./cses[2]**2.))**.5
- 	chi = 0
+	chi = 0
 	for i in range(0,len(cat)):
 		chi += (cset[i]-1.)**2./csee[i]**2.
-	print chi	
+	#print chi	
 
 	lstn = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2nosys256vstar.dat').transpose()
 	lsts = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2nosys256vstar.dat').transpose()
@@ -8863,13 +8872,13 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(lstt)):
 		chi += (lstt[i]-1.)**2./lste[i]**2.
-	print chi	
+	#print chi	
 	cstt = (cstn[1]/cstn[2]**2.+csts[1]/csts[2]**2.)/(1./cstn[2]**2.+1./csts[2]**2.)
 	cste = (1./(1./cstn[2]**2.+1./csts[2]**2.))**.5
- 	chi = 0
+	chi = 0
 	for i in range(0,len(cstt)):
 		chi += (cstt[i]-1.)**2./cste[i]**2.
-	print chi	
+	#print chi	
 
 	ldn = load(ebossdir+'ngebossQSO_Nv1.8_mz0.8xz2.2nosysvIMAGE_DEPTH_EXT3.dat').transpose()
 	lds = load(ebossdir+'ngebossQSO_Sv1.8_mz0.8xz2.2nosysvIMAGE_DEPTH_EXT3.dat').transpose()
@@ -8881,13 +8890,13 @@ def sysplotsQSO6pan():
 	chi = 0
 	for i in range(0,len(ldt)):
 		chi += (ldt[i]-1.)**2./lde[i]**2.
-	print chi	
+	#print chi	
 	cdt = (cdn[1]/cdn[2]**2.+cds[1]/cds[2]**2.)/(1./cdn[2]**2.+1./cds[2]**2.)
 	cde = (1./(1./cdn[2]**2.+1./cds[2]**2.))**.5
- 	chi = 0
+	chi = 0
 	for i in range(0,len(cdt)):
 		chi += (cdt[i]-1.)**2./cde[i]**2.
-	print chi	
+	#print chi	
 
 	
 	ols = ones((len(lan[0])))
@@ -8910,10 +8919,10 @@ def sysplotsQSO6pan():
 # 	for tick in ax2.xaxis.get_major_ticks():
 # 		tick.label.set_fontsize(8)
 	ax2.plot(leen[0],ols,'k:')
- 	ax2.plot(leen[0]+.001,let,'--',color='steelblue') 
- 	ax2.errorbar(cen[0]-.001,cet,cee,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
-  	ax2.set_xlabel('E(B-V)',size=14)
- 	ax2.set_xlim(0.001,.152)
+	ax2.plot(leen[0]+.001,let,'--',color='steelblue') 
+	ax2.errorbar(cen[0]-.001,cet,cee,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
+	ax2.set_xlabel('E(B-V)',size=14)
+	ax2.set_xlim(0.001,.152)
 	ax2.set_ylim(.751,1.2)
 	ax2.xaxis.set_ticks(np.arange(0.02,.152,.04))
 	#setp( ax2.get_yticklabels(), visible=False)
@@ -8926,8 +8935,8 @@ def sysplotsQSO6pan():
 	#	tick.label.set_fontsize(8)
 	ax3.set_xlabel('airmass',size=13)
 	ax3.plot(lan[0],ols,'k:')
-  	ax3.plot(lan[0]+.007,lat,'--',color='steelblue')
-  	ax3.errorbar(can[0]-.007,cat,cae,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
+	ax3.plot(lan[0]+.007,lat,'--',color='steelblue')
+	ax3.errorbar(can[0]-.007,cat,cae,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
 	ax3.set_xlim(1.01,2)
 	ax3.set_ylim(.751,1.2)
 	for ylabel_i in ax3.axes.get_yticklabels():
@@ -8939,8 +8948,8 @@ def sysplotsQSO6pan():
 	#	tick.label.set_fontsize(8)
 	ax4.set_xlabel('i-band seeing',size=13)
 	ax4.plot(lsen[0],ols,'k:')
-  	ax4.plot(lsen[0]+.007,lset,'--',color='steelblue')
-  	ax4.errorbar(csen[0]-.007,cset,csee,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
+	ax4.plot(lsen[0]+.007,lset,'--',color='steelblue')
+	ax4.errorbar(csen[0]-.007,cset,csee,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
 	ax4.set_xlim(0.7,1.99)
 	ax4.set_ylim(.751,1.2)
 	ax4.set_ylabel(r'                                          number density / average number density',size=13)
@@ -8950,8 +8959,8 @@ def sysplotsQSO6pan():
 	#	tick.label.set_fontsize(8)
 	ax5.set_xlabel(r'$N_{\rm star}/Nside=256$',size=13)
 	ax5.plot(lstn[0],ols,'k:')
-  	ax5.plot(lstn[0]+.007,lstt,'--',color='steelblue')
-  	ax5.errorbar(cstn[0]-.007,cstt,cste,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
+	ax5.plot(lstn[0]+.007,lstt,'--',color='steelblue')
+	ax5.errorbar(cstn[0]-.007,cstt,cste,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
 	ax5.set_xlim(31,299)
 	ax5.set_ylim(.751,1.2)
 	for ylabel_5 in ax5.axes.get_yticklabels():
@@ -8963,8 +8972,8 @@ def sysplotsQSO6pan():
 	#	tick.label.set_fontsize(8)
 	ax6.set_xlabel(r'$i$-band depth',size=13)
 	ax6.plot(ldn[0],ols,'k:')
-  	ax6.plot(ldn[0]+.007,ldt,'--',color='steelblue')
-  	ax6.errorbar(cdn[0]-.007,cdt,cde,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
+	ax6.plot(ldn[0]+.007,ldt,'--',color='steelblue')
+	ax6.errorbar(cdn[0]-.007,cdt,cde,fmt='s',color='firebrick',markersize=7,elinewidth=2,markeredgecolor='k')
 	ax6.set_xlim(21.81,22.9)
 	ax6.set_ylim(.751,1.2)
 	for ylabel_6 in ax6.axes.get_yticklabels():
@@ -8972,13 +8981,13 @@ def sysplotsQSO6pan():
 	
 	
 	fig.subplots_adjust(wspace=0)
- 	xl = [6]
- 	yl = [1.14]
- 	#ax.plot(xl,yl,'s',color='firebrick')
- 	yl = [1.1]
- 	#ax.plot(xl,yl,'d',color='steelblue')
- 	#ax.text(7,1.13,'CMASS',fontsize=16,color='firebrick')
- 	#ax.text(7,1.09,'LOWZ',fontsize=16,color='steelblue')
+	xl = [6]
+	yl = [1.14]
+	#ax.plot(xl,yl,'s',color='firebrick')
+	yl = [1.1]
+	#ax.plot(xl,yl,'d',color='steelblue')
+	#ax.text(7,1.13,'CMASS',fontsize=16,color='firebrick')
+	#ax.text(7,1.09,'LOWZ',fontsize=16,color='steelblue')
 	cnr = [5,13.5,1.08,1.165]
 	xl = [cnr[0],cnr[1]]
 	yl = [cnr[2],cnr[2]]
@@ -9240,7 +9249,7 @@ def plotQSONSbaolike(v='v1.8EZmock',p='3',title='QSOs',Bp='0.46.0'):
 	db[1] += np.loadtxt(ebossdir+'BAOxichilQSO'+v+p+Bp+'8st6.dat').transpose()[1]
 	db[1] = db[1]/4.
 	ax = sigreg_c12l(db[1])
-	print ax
+	#print ax
 	dnb = np.loadtxt(ebossdir+'BAOxichilQSO'+v+'nobao'+p+Bp+'8st0.dat').transpose()[1]
 	dnb += np.loadtxt(ebossdir+'BAOxichilQSO'+v+'nobao'+p+Bp+'8st2.dat').transpose()[1]
 	dnb += np.loadtxt(ebossdir+'BAOxichilQSO'+v+'nobao'+p+Bp+'8st4.dat').transpose()[1]
@@ -9254,7 +9263,7 @@ def plotQSONSbaolike(v='v1.8EZmock',p='3',title='QSOs',Bp='0.46.0'):
 	plt.plot(dp[0],dp[1]-min(dp[1]),'-',color='burlywood',linewidth=4)
 	al,chilc = chilxip(db[1],dp)
 	a = sigreg_c12xip(db[1],dp)
-	print a
+	#print a
 	plt.plot(al,chilc-min(chilc),'k-',linewidth=4)
 	plt.plot(db[0],ol,'k:',linewidth=1)
 	plt.text(0.825,1.1,r'$1\sigma$')
@@ -9349,7 +9358,7 @@ def plot3Dphotz(b=1.,mumax=.8,pimax=1000.):
 					xi += d[2][i]
 					n += 1.
 				else:
-					#print mu
+					##print mu
 					if n != 0:
 						xil.append(xi/n)
 						rl.append(rpold)
@@ -9359,7 +9368,7 @@ def plot3Dphotz(b=1.,mumax=.8,pimax=1000.):
 	if n != 0:
 		xil.append(xi/n)
 		rl.append(rp)
-	print rl
+	#print rl
 	rl = np.array(rl)
 	xil = np.array(xil)
 	dt = np.loadtxt('/Users/ashleyross/DESY1/xizconvcrpMICE_matterpowermumax'+str(mumax)+'0.406.010.0combzsiglsp1.0.dat').transpose()
@@ -9404,14 +9413,14 @@ def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=1
 		p = int(h.ang2pix_nest(res,th,phi))
 		pixlr[p] += 1.
 		nr += 1.
-	print nr
+	#print nr
 	sumr = 0
 	sump = 0
 	for i in range(0,len(pixlr)):
 		if pixlr[i] > 0:
 			sumr += pixlr[i]
 			sump += 1.
-	print sumr/sump
+	#print sumr/sump
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
 	zm = 0
@@ -9482,7 +9491,7 @@ def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=1
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -9531,7 +9540,7 @@ def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=1
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -9554,7 +9563,7 @@ def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=1
 	for i in range(0,len(pixlg)):
 		if pixlr[i] > .1*sumr/sump:#100.:
 			if pixlg[i] == 0:
-				print i,pixlr[i],ral[i],decl[i]
+				#print i,pixlr[i],ral[i],decl[i]
 				pug.append(-.2)
 				ralug.append(ral[i])
 				declug.append(decl[i])
@@ -9567,9 +9576,9 @@ def plotumgmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax=1
 					nor += pixlr[i]		
 		#else:
 		#	pug.append(-99)
-	print no,nor
+	#print no,nor
 	if nor > 0:
-		print no/nor,sum(pixlg)/sum(pixlr)	
+		print (no/nor,sum(pixlg)/sum(pixlr))	
 	from matplotlib import pyplot as plt
 	import matplotlib.cm as cm
 	map = plt.scatter(ralug,declug,c=pug,s=size,cmap=cm.rainbow,lw=0,edgecolors='none',vmin=smin,vmax=smax)
@@ -9611,14 +9620,14 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 		p = int(ang2pix(res,lam,eta))
 		pixlr[p] += 1.
 		nr += 1.
-	print nr
+	#print nr
 	sumr = 0
 	sump = 0
 	for i in range(0,len(pixlr)):
 		if pixlr[i] > 0:
 			sumr += pixlr[i]
 			sump += 1.
-	print sumr/sump
+	#print sumr/sump
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
 	zm = 0
@@ -9694,7 +9703,7 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -9743,7 +9752,7 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -9762,8 +9771,8 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 				umgl.append(um-gm)
 			else:
 				nugb += 1.
-				print z
-	print nugb				
+				#print z
+	#print nugb				
 	pug = []
 	ralug = []
 	declug = []
@@ -9772,7 +9781,7 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 	for i in range(0,len(pixlg)):
 		if pixlr[i] > .5*sumr/sump:#100.:
 			if pixlg[i] == 0:
-				print i,pixlr[i],ral[i],decl[i]
+				#print i,pixlr[i],ral[i],decl[i]
 				pug.append(-.2)
 				ralug.append(ral[i])
 				declug.append(decl[i])
@@ -9785,9 +9794,9 @@ def plotumgmapspix(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ram
 					nor += pixlr[i]		
 		#else:
 		#	pug.append(-99)
-	print no,nor
+	#print no,nor
 	if nor > 0:
-		print no/nor,sum(pixlg)/sum(pixlr)	
+		print (no/nor,sum(pixlg)/sum(pixlr)	)
 	from matplotlib import pyplot as plt
 	import matplotlib.cm as cm
 	plt.hist(umgl)
@@ -9819,7 +9828,7 @@ def plotplate(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2):
 			decl.append(f[i]['DEC'])
 			nt += 1.
 			z += f[i]['Z']
-	print nt,z/nt
+	#print nt,z/nt
 	plt.plot(ral,decl,'ko')
 	plt.show()
 	return True
@@ -9841,7 +9850,7 @@ def closepair(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2,match=5):
 			decl.append(f[i]['DEC'])
 			nt += 1.
 			z += f[i]['Z']
-	#print nt,z/nt
+	##print nt,z/nt
 	n = 0
 # 	for i in range(0,len(ral)):
 # 		for j in range(i+1,len(ral)):
@@ -9857,7 +9866,7 @@ def closepair(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2,match=5):
 			if ral[i] == ral[j] and decl[i] == decl[j]:
 				n += 1
 
-	#print n
+	##print n
 	return n
 
 def idpair(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2,match=5):
@@ -9871,8 +9880,8 @@ def idpair(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2,match=5):
 			tl.append(f[i]['THING_ID_TARGETING'])
 			nt += 1.
 			z += f[i]['Z']
-			print f[i]['ISECT']
-	print nt		
+			#print f[i]['ISECT']
+	#print nt		
 	n = 0
 	for i in range(0,len(tl)):
 		for j in range(i+1,len(tl)):
@@ -9880,7 +9889,7 @@ def idpair(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2,match=5):
 				n += 1
 			
 
-	#print n
+	##print n
 	return n
 
 def countrandata(isect,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2):
@@ -9896,7 +9905,7 @@ def countrandata(isect,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2):
 	for i in range(0,len(fr)):
 		if fr[i]['ISECT'] ==isect:
 			nr += 1.
-	print nr,nt
+	#print nr,nt
 	return True
 
 			
@@ -9921,7 +9930,7 @@ def plotplatez(plate,sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2):
 			zl.append(f[i]['Z'])
 			nt += 1.
 			z += f[i]['Z']
-	print nt,z/nt
+	#print nt,z/nt
 	plt.plot(ral,zl,'ko',markersize=.2)
 	plt.show()
 	return True
@@ -9944,7 +9953,7 @@ def platestats(sampl='QSO',NS='S',ver='v1.9',zmin=.8,zmax=2.2):
 				z += f[i]['Z']
 		if nt > 0:
 			fo.write(str(plat)+' '+str(nt)+' '+str(z/nt)+' '+str(min(ral))+' '+str(min(decl))+'\n')
-			print plat,nt,z/nt,min(ral),min(decl)
+			#print plat,nt,z/nt,min(ral),min(decl)
 	fo.close()		
 	return True
 
@@ -9981,14 +9990,14 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 		p = int(h.ang2pix_nest(res,th,phi))
 		pixlr[p] += 1.
 		nr += 1.
-	print nr
+	#print nr
 	sumr = 0
 	sump = 0
 	for i in range(0,len(pixlr)):
 		if pixlr[i] > 0:
 			sumr += pixlr[i]
 			sump += 1.
-	print sumr/sump
+	#print sumr/sump
 	f = fitsio.read(dirfits+'eboss_'+ver+'-'+sampl+'-'+NS+'-eboss_'+ver+'.dat.fits') #read galaxy/quasar file
 	no = 0
 	zm = 0
@@ -10059,7 +10068,7 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -10108,7 +10117,7 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 					b = slpl[2] - 21.25*slp
 					m = gm*slp+b
 					if m > slpl[3]:
-						print m,hm,b,slp
+						print (m,hm,b,slp)
 				if gm >= 21.75:
 					slp = (slpl[4]-slpl[3])/.5
 					b = slpl[3] - 21.75*slp
@@ -10131,7 +10140,7 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 	for i in range(0,len(pixlg)):
 		if pixlr[i] > .1*sumr/sump:#100.:
 			if pixlg[i] == 0:
-				print i,pixlr[i],ral[i],decl[i]
+				#print i,pixlr[i],ral[i],decl[i]
 				pz.append(.8)
 				ralug.append(ral[i])
 				declug.append(decl[i])
@@ -10144,9 +10153,9 @@ def plotmeanzmap(sampl='QSO',NS='S',ver='v1.6',zmin=.8,zmax=2.2,ramin=-180,ramax
 					nor += pixlr[i]		
 		#else:
 		#	pug.append(-99)
-	print no,nor
-	if nor > 0:
-		print no/nor,sum(pixlg)/sum(pixlr)	
+	#print no,nor
+	#if nor > 0:
+		#print no/nor,sum(pixlg)/sum(pixlr)	
 	from matplotlib import pyplot as plt
 	import matplotlib.cm as cm
 	map = plt.scatter(ralz,declz,c=pz,s=size,cmap=cm.rainbow,lw=0,edgecolors='none')#,vmin=smin,vmax=smax)
@@ -10205,7 +10214,7 @@ def BAOxipkcomb():
 	mapq = mapq/nq
 	sapz = sqrt(sapz/nz-mapz*mapz)
 	sapq = sqrt(sapq/nq-mapq*mapq)
-	print macz,macq,sacz,sacq,nz,nq,mapz,mapq,sapz,sapq
+	#print macz,macq,sacz,sacq,nz,nq,mapz,mapq,sapz,sapq
 
 
 def BAOxipkplot():
@@ -10240,7 +10249,7 @@ def BAOxipkplot():
 	saxz = sqrt(saxz/nz-maxz*maxz)
 	sapz = sqrt(sapz/nz-mapz*mapz)
 	caz = (caz/nz-maxz*mapz)/(saxz*sapz)
-	print maxz,mapz,saxz,sapz,caz,nz
+	#print maxz,mapz,saxz,sapz,caz,nz
 	for i in range(0,len(dq[1])):
 		if dq[1][i] > 0.85 and dq[1][i] < 1.15 and dq[3][i] > 0.85 and dq[3][i] < 1.15:
 			nq += 1.
@@ -10256,7 +10265,7 @@ def BAOxipkplot():
 	saxq = sqrt(saxq/nq-maxq*maxq)
 	sapq = sqrt(sapq/nq-mapq*mapq)
 	caq = (caq/nq-maxq*mapq)/(saxq*sapq)
-	print maxq,mapq,saxq,sapq,caq,nq
+	#print maxq,mapq,saxq,sapq,caq,nq
 	plt.clf()
 	plt.minorticks_on()
 	pp = PdfPages('/Users/ashleyross/eBOSS/BAOpkxi.pdf')
@@ -10281,7 +10290,7 @@ def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,
 	from matplotlib.backends.backend_pdf import PdfPages
 	import matplotlib.axes as ax
 	import numpy as np
-	from Cosmo import *
+	#from Cosmo import *
 	from numpy import loadtxt as load
 
 	pp = PdfPages('BAOrelPlanck'+wo+'.pdf')
@@ -10309,18 +10318,18 @@ def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,
 	delh = 0.012
 	delm = .017
 	hpd = 0.6665
- 	df = distance(omp,1.-omp,hp,obhh=.022)
- 	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
- 	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
- 	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
- 	print wigf
+	df = distance(omp,1.-omp,hp,obhh=.022)
+	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
+	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
+	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
+ 	#print wigf
  	#ru = du.rs/df.rs
  	#rd = dd.rs/df.rs
  	#re = (ru-rd)/2.
  	#fo = open('planckdvrserr_om.dat','w')
- 	for i in range(0,len(pe[1])):
- 		dvrsf = df.dV(x[i])/df.rs
- 		dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
+	for i in range(0,len(pe[1])):
+		dvrsf = df.dV(x[i])/df.rs
+		dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
 		#fo.write(str(x[i])+' '+str(dd)+'\n')
 		yu[i] = y[i]+pe[1][i]#+dd#sqrt(pe[1][i]**2.)#+re**2.)
 		yd[i] = y[i]-pe[1][i]#dd#sqrt(pe[1][i]**2.)#+re**2.)
@@ -10425,7 +10434,7 @@ def BAOrelPlanck(wo='QSODR14',xmax=2.,BOSS=False,BOSSDR12=True,MGS=True,wz=True,
 		el = d[-1]
 		plt.errorbar(xl,yl,el,fmt='-*',markeredgecolor='purple',markersize=7,elinewidth=1.75,color='purple')
 	plt.xlim ( 0.0, xmax )
-	
+
 	plt.xlabel ('Redshift', fontsize=18)
 	#plt.ylabel (r'$(D_{\rm V}/r_{\rm d})/(D_{\rm V}/r_{\rm d})_{\rm Planck}$', fontsize=18)
 	plt.ylabel (r'Distance/Distance(Planck$\Lambda$CDM)', fontsize=18)
@@ -10454,7 +10463,7 @@ if __name__ == '__main__':
 # 	if mock == 'QPMmock':
 # 		ni = ind-4*(ind/4)
 # 		mf = 4*(ind/4)
-# 		print ni
+# 		#print ni
 # 		if ni == 0:
 # 			si = ni
 # 		if ni == 1:
@@ -10477,7 +10486,7 @@ if __name__ == '__main__':
 # 		if si+mf >= 100 and ni+mf < 100:
 # 			fl = '0'
 # 			mocks = fl+str(si+mf)
-# 		print mockn,mocks
+# 		#print mockn,mocks
 # 	if mock == 'EZmock_QSO':
 # 		mockn = fl+str(ind)
 # 		mocks = str(1000+ind)

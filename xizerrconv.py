@@ -52,7 +52,7 @@ def mkxifile_zerrconv(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',m
 		rzl.append(d.dc(zb)/d0)
 		#rzl.append(1.)
 		wl.append(1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.))
-	print sum(wl)*dz
+	print(sum(wl)*dz)
 	sumw = sum(wl)
 	#print wl
 	#fmuw = loadtxt('/Users/ashleyross/DESY1/FdaHvsmu_z0.61.0_zerr0.03_10e3n2.6_b1.5.dat').transpose()
@@ -101,7 +101,7 @@ def mkxifile_zerrconv(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',m
 					indu = indd + 1
 					fac = (rp-10.)/spf-indd
 					if fac > 1 or fac < 0:
-						print fac,rp,spf,indd
+						print(fac,rp,spf,indd)
 					xi0 = (f0[1][indu]*fac+(1.-fac)*f0[1][indd])*(1.+2/3.*betad+.2*betad**2.)/(1.+2/3.*beta+.2*beta**2.)
 					xi2 = (f2[1][indu]*fac+(1.-fac)*f2[1][indd])*(4/3.*betad+4/7.*betad**2.)/(4/3.*beta+4/7.*beta**2.)
 					xi4 = (f4[1][indu]*fac+(1.-fac)*f4[1][indd])*(betad/beta)**2.					
@@ -146,7 +146,7 @@ def mkxifile_zerrconv(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',m
 		sumxi = sumxi/muwt
 		sumxin = sumxin/muwt		
 		fo.write(str(r)+' '+str(sumxi)+' '+str(sumxin)+'\n')		
-		print r,sumxi,sumxin
+		print(r,sumxi,sumxin)
 		r += sp	 
 	fo.close()
 # 	from matplotlib import pyplot as plt
@@ -178,7 +178,7 @@ def mkxifile_zerrconvc(z=0.8,sigz=0.029,sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',
 		
 		xi,xin = zc.calcxi_zerrconv(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)		
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
-		print r,xi,xin
+		print(r,xi,xin)
 		r += sp	 
 	fo.close()
 	return True
@@ -217,7 +217,7 @@ def mkxifile_zerrconvc_combzerr(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww='',
 			xis += wxil[i]*xi
 			xisn += wxil[i]*xin		
 		fo.write(str(r)+' '+str(xis)+' '+str(xisn)+'\n')		
-		print r,xis,xisn
+		print(r,xis,xisn)
 		r += sp	 
 	fo.close()
 	return True
@@ -248,7 +248,7 @@ def mkxifile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',muww=''
 		xisn = 0
 		xi,xin = zc.calcxi_zerrconv(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
-		print r,xi,xin
+		print(r,xi,xin)
 		r += sp	 
 	fo.close()
 	return True
@@ -279,7 +279,7 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 		szo = 'DESY1dnfmof'
 		sigl = [0.23,0.028,0.029,0.036]
 	try:
-		print szo	
+		print(szo)	
 	except:
 		szo = str(sigl[0])
 	if rrmax != 200:
@@ -296,7 +296,7 @@ def mkxifile_zerrconvcrp_combzsigl(sigl,sp=1.,bias=1.8,rmin=10.,rmax=300.,rsd=''
 		xisn = 0
 		xi,xin = zc.calcxi_zerrconvrp(r,wl,dzl,rzl,mumin=mumin,mumax=mumax,muweight=muwt,dmu=dmu,rrmax=rrmax)
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
-		print r,xi,xin
+		print(r,xi,xin)
 		r += sp	 
 	fo.close()
 	return True
@@ -328,7 +328,7 @@ def mkxifile_zerrconvcrpmax_combzsigl(sp=1.,bias=1.8,rmin=10.,rmax=300,rsd='',mu
 		xisn = 0
 		xi,xin = zc.calcxi_zerrconvrpmax(r,wl,dzl,rzl,mumin=mumin,mumax=mumax)
 		fo.write(str(r)+' '+str(xi)+' '+str(xin)+'\n')		
-		print r,xi,xin
+		print(r,xi,xin)
 		r += sp	 
 	fo.close()
 	return True
@@ -352,7 +352,7 @@ def mkrbaofile_zerrconvc_combzsigl(sp=1.,bias=1.8,rmin=100.,rmax=200,rsd='',muww
 		mu = .005+.01*m
 		rb = zc.findBAOscale(mu,wl,dzl,rzl)
 		fo.write(str(mu)+' '+str(rb)+'\n')		
-		print mu,rb
+		print(mu,rb)
 	fo.close()
 	return True
 
@@ -406,7 +406,7 @@ class zerrconv:
 			dzl.append(self.d.dc(zb)-d0)
 			rzl.append(self.d.dc(zb)/d0)
 			wl.append(1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.))
-		print sum(wl)*dz
+		print(sum(wl)*dz)
 		return wl,dzl,rzl
 
 	def calcwlave(self,z,sigzl,zmintot=.5,zmaxtot=1.1):
@@ -423,7 +423,7 @@ class zerrconv:
 		#zmax = z+zd
 		zmin = zmintot
 		zmax = zmaxtot
-		print zmin,zmax
+		print(zmin,zmax)
 		nz = 4000
 		dz = (zmax-zmin)/float(nz)
 		d0 = self.d.dc(z)
@@ -440,7 +440,7 @@ class zerrconv:
 				w += 1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.)
 			w = w/float(len(sigzl))	
 			wl.append(w)
-		print sum(wl)*dz
+		print(sum(wl)*dz)
 		return wl,dzl,rzl
 
 
@@ -483,7 +483,7 @@ class zerrconv:
 					indu = indd + 1
 					fac = (rp-10.)/spf-indd
 					if fac > 1 or fac < 0:
-						print fac,rp,spf,indd
+						print(fac,rp,spf,indd)
 					xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 					xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 					xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
@@ -587,7 +587,7 @@ class zerrconv:
 						indu = indd + 1
 						fac = (rp-10.)/spf-indd
 						if fac > 1 or fac < 0:
-							print fac,rp,spf,indd
+							print(fac,rp,spf,indd)
 						xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 						xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 						xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
@@ -641,7 +641,7 @@ class zerrconv:
 			return 0,0
 		sumxi = sumxi/muwt
 		sumxin = sumxin/muwt
-		print mumaxt,rrmaxt,m,mu			
+		print(mumaxt,rrmaxt,m,mu)			
 		return sumxi,sumxin
 
 	def calcxi_zerrconvrpmax(self,rperp,wl,dzl,rzl,sp=1.,rsd='',mumin=0,mumax=1):
@@ -689,7 +689,7 @@ class zerrconv:
 					indu = indd + 1
 					fac = (rp-10.)/spf-indd
 					if fac > 1 or fac < 0:
-						print fac,rp,spf,indd
+						print(fac,rp,spf,indd)
 					xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 					xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 					xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
@@ -729,7 +729,7 @@ class zerrconv:
 			sumxin += xin
 		sumxi = sumxi/muwt
 		sumxin = sumxin/muwt
-		print mumaxt,rrmaxt			
+		print(mumaxt,rrmaxt)			
 		return sumxi,sumxin
 
 
@@ -763,7 +763,7 @@ class zerrconv:
 					indu = indd + 1
 					fac = (rp-10.)/spf-indd
 					if fac > 1 or fac < 0:
-						print fac,rp,spf,indd
+						print(fac,rp,spf,indd)
 					xi0 = (self.f0[1][indu]*fac+(1.-fac)*self.f0[1][indd])*(1.+2/3.*self.betad+.2*self.betad**2.)/(1.+2/3.*self.beta+.2*self.beta**2.)
 					xi2 = (self.f2[1][indu]*fac+(1.-fac)*self.f2[1][indd])*(4/3.*self.betad+4/7.*self.betad**2.)/(4/3.*self.beta+4/7.*self.beta**2.)
 					xi4 = (self.f4[1][indu]*fac+(1.-fac)*self.f4[1][indd])*(self.betad/self.beta)**2.					
@@ -853,7 +853,7 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 
 		r += sp
 		if v == 'y':
-			print r
+			print(r)
 	f0.close()
 	f2.close()
 	f4.close()
@@ -889,7 +889,7 @@ def mkxifile_0dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',sig=8.)
 
 		r += sp
 		if v == 'y':
-			print r
+			print(r)
 	f0.close()
 	f0mc.close()
 	if file == 'TSPT_out_z_1.5':
