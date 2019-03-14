@@ -784,7 +784,7 @@ def mkran4xime(samp,NS,ns,v='test',zmin=.6,zmax=1.1,N=0,c='sci',shuff='',fkp='fk
 				fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
-	#print( n,nw,nnan) #just helps to know things worked properly
+	print( n,nw,nnan) #just helps to know things worked properly
 	#print( nw/10000.*ns) 
 	fo.close()
 	return True
@@ -1534,7 +1534,7 @@ def createalladfilesfb(sample,NS,version,cm='',nran=1,rec='',wm='',dr='',brickm=
 
 	rf = 'reboss'+cm+sample+'_'+NS+version+rec+'_'
 	for rann in range(0,nran):	
-		#print rann
+		print( rann)
 		#mkran4xi(sample,NS,version,cm=cm,N=rann,wm=wm,zmin=zmin,zmax=zmax,ms=ms,gmax=gmax,zpl=zpl,gri22=gri22,znudge=znudge,wmin=wmin,depthc=depthc,depthextc=depthextc,extc=extc,decmax=decmax)
 		if ranshuff == 'shuff':
 			mkran4xi_shuff(sample,NS,nran,version,N=rann,wm=wm,zmin=zmin,zmax=zmax,fkp=fkp,cp=cp,rec=rec,dr=dr,brickm=brickm,ramax=ramax)
@@ -1869,6 +1869,220 @@ def ppxilcalc_LSDfjack_bs(sample,NS,version,jack,mom,zmin=.6,zmax=1.,wm='',bs=5,
 		for i in range(0,nbin):
 			xil[i] = (xiDDl[i]/DDnormt-2*xiDRl[i]/DRnormt+xiRRl[i]/RRnormt)*RRnormt/xiRRl[i] 	
 	return xil
+
+def ppxi024calc_LSDfjack_bs(sample,NS,version,jack,zmin=.6,zmax=1.,wm='',bs=5,start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec='',rpw='',shuff=''):
+	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
+	from numpy import zeros
+	from time import time
+	#DDnl = zeros((nbin,njack),'f')
+	rf = 'reboss'+sample+'_'+NS+version+rec+'_'
+	if rec == '_rec' or shuff == 'shuff':
+		rfnorec = 'reboss'+sample+'_'+NS+version+'_'
+		RRnorecnl = []
+		RRnorecnormt = 0
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	wm += shuff
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm#+shuff
+	fl = sample+'_'+NS+version+'_'+wz+wm#+shuff
+	DDnl = []	
+	DDnorml = 0
+	DDnormt = 0
+	DRnl = []
+	DRnorml = 0
+	DRnormt = 0
+	RRnl = []
+	RRnl0 = []
+	nmubin = 100
+	nbin = rmax/bs
+	for i in range(0,rmax*nmubin):
+		DDnl.append(0)
+		DRnl.append(0)
+		RRnl.append(0)
+		RRnl0.append(0)
+		if rec == '_rec' or shuff == 'shuff':
+			RRnorecnl.append(0)
+	RRnorml = 0
+	RRnormt = 0
+	pl = []
+#	pl.append((0,0,0,0))
+	if wf:
+		fD = open(dirsci+'paircounts/Paircounts_un_'+fl+'.dat','w')
+		#fDR = open('DRcounts'+file+'.dat','w')
+		#fR = open('RRcounts'+file+'.dat','w')
+	nmut = 0
+	for i in range(0,nmubin):
+		mu = i/float(nmubin)+.5/float(nmubin)
+		mub = int(mu*nmubin)
+		##print mu
+		if mu > mumin and mu < mumax:
+			pl.append((1.,P2(mu),P4(mu),P6(mu),P8(mu),mub))
+			nmut += 1.
+		else:
+			pl.append((0,0,0,0,0,0))	
+	##print len(pl)
+	for i in range(0,njack):
+		##print i
+		for j in range(0,njack):
+			if jack != i and jack != j:
+				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+				DDnormt += float(fdp[0])
+				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmu.dat').readlines()
+				DRnormt += float(fdnp[0])
+				RRnormt += float(fr[0])
+				for k in range(1,len(fdp)):
+					dp = float(fdp[k])
+					dr = float(fdnp[k])
+					rp = float(fr[k])
+					DDnl[k-1] += dp
+					DRnl[k-1] += dr
+					RRnl[k-1] += rp
+					
+	#print DDnormt,DRnormt,RRnormt				
+	for nr in range(1,nranf):
+		for i in range(0,njack):
+			##print i
+			for j in range(0,njack):
+				if jack != i and jack != j:
+					#print(nr,i,j)
+					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
+					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
+					#try:
+					DRnormt += float(fdnp[0])
+					#except:
+					#	print(nr,i,j)
+					#	return('ERROR, empty file')
+					RRnormt += float(fr[0])
+					for k in range(1,len(fdp)):						
+						dr = float(fdnp[k])
+						rp = float(fr[k])
+						DRnl[k-1] += dr
+						RRnl[k-1] += rp
+
+	if rec == '_rec':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				##print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+wm+str(j)+rfnorec+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+	if shuff == 'shuff':
+		for nr in range(0,nranf):
+			for i in range(0,njack):
+				##print i
+				for j in range(0,njack):
+					if jack != i and jack != j:
+						fr = open(dirpc+rfnorec+str(nr)+wz+'fkp'+str(j)+rfnorec+str(nr)+wz+'fkp'+str(i)+'2ptdmu.dat').readlines()
+						RRnorecnormt += float(fr[0])
+						for k in range(1,len(fdp)):						
+							rp = float(fr[k])
+							RRnorecnl[k-1] += rp
+		
+	##print RRnl
+	
+	if wf:
+		fD.write('#un-normalized paicounts; 100 dmu = 0.01 bins, 250 dr = 1mpc/h bins; every new line increases in r; every 100 lines increases in mu\n')
+		fD.write('#DDnorm DRnorm RRnorm\n')
+		fD.write(str(DDnormt)+' '+str(DRnormt)+' '+str(RRnormt)+'\n')
+		fD.write('#r_center mu_center DD DR RR\n')
+		#fD.write(str(DDnormt)+'\n')
+		#fDR.write(str(DRnormt)+'\n')
+		#fR.write(str(RRnormt)+'\n')
+		for j in range(0,100):
+			for i in range(0,rmax):
+				fD.write(str(.5+i)+' '+str(.01*j+.005)+' '+str(DDnl[j+100*i])+' '+str(DRnl[j+100*i])+' '+str(RRnl[j+100*i])+'\n')
+				#fDR.write(str(DRnl[j+100*i])+' ')
+				#fR.write(str(RRnl[j+100*i])+' ')
+			#fD.write('\n')
+			#fDR.write('\n')
+			#fR.write('\n')
+		fD.close()
+		#fDR.close()
+		#fR.close()
+	xil = zeros((nbin),'f')
+	xil2 = zeros((nbin),'f')
+	xil4 = zeros((nbin),'f')
+	if rpw != 'rp':
+		for i in range(start,rmax,bs):
+			xi = 0
+			xi2 = 0
+			xi4 = 0
+			dd = 0
+			dr = 0
+			rr = 0
+		
+			ddt = 0
+			drt = 0
+			rrt = 0
+			if rec == '_rec' or shuff == 'shuff':
+				rrnorec = 0
+				rrtnorec = 0
+			for j in range(0,nmubin):
+				if wmu != 'counts':
+					dd = 0
+					dr = 0
+					rr = 0
+					if rec == '_rec' or shuff == 'shuff':
+						rrnorec = 0
+				for k in range(0,bs):
+					bin = nmubin*(i+k)+j			
+					if bin < len(RRnl):
+						#if RRnl[bin] == 0:
+						#	pass
+				
+						#else:
+						dd += DDnl[bin]
+						rr += RRnl[bin]
+						dr += DRnl[bin]
+						ddt +=dd
+						rrt += rr
+						drt += dr
+						if rec == '_rec' or shuff == 'shuff':
+							rrnorec += RRnorecnl[bin]
+							rrtnorec += rrnorec
+				
+				#if rr != 0 and wm == 'muw':			
+				if wmu != 'counts':
+					if rec == '_rec' or shuff == 'shuff':
+						xi += pl[j][0]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+						xi2 += pl[j][1]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+						xi4 += pl[j][2]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnorecnormt/rrnorec
+					else:
+						xi += pl[j][0]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+						xi2 += pl[j][1]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+						xi4 += pl[j][2]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+			if wmu == 'counts':
+				xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr		
+			if i/bs < nbin:
+				xil[i/bs] = xi
+				xil2[i/bs] = xi2
+				xil4[i/bs] = xi4
+			#print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+	else:
+		xiDDl = zeros((nbin),'f')
+		xiDRl = zeros((nbin),'f')
+		xiRRl = zeros((nbin),'f')
+		for i in range(0,rmax):
+			for j in range(0,nmubin):
+				for k in range(0,bs):
+					bin = nmubin*(i+k)+j
+					rbin = i/bs
+					r = .5+i+k
+					mu = j/float(nmubin)+0.5/float(nmubin)
+					rp = sqrt(1.-mu**2.)*r
+					rbin = int(rp/bs)
+					xiDDl[rbin] += DDnl[bin]
+					xiDRl[rbin] += DRnl[bin]
+					xiRRl[rbin] += RRnl[bin]
+		for i in range(0,nbin):
+			xil[i] = (xiDDl[i]/DDnormt-2*xiDRl[i]/DRnormt+xiRRl[i]/RRnormt)*RRnormt/xiRRl[i] 	
+	return xil,xil2,xil4
+
+
 
 def ppxilcalc_LSDfjack_rpp(sample,NS,version,jack=-1,zmin=.6,zmax=1.1,wm='',start=0,rmax=250,mumin=0,mumax=1.,nranf=1,njack=20,wf=False,wmu = '',rec='',rpw='',shuff=''):
 	#finds xi, for no jack-knife, set jack = -1, otherwise can be used to calculate jack-knife xi for 0 <= jack < Njack
@@ -2228,13 +2442,13 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,rp='',wm='',bs=5,start=0,
 	wz = 'mz'+str(zmin)+'xz'+str(zmax)
 	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm+shuff
 	ans = ppxilcalc_LSDfjack_bs(sample,NS,version,-1,mom,zmin=zmin,zmax=zmax,rpw=rp,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf,rec=rec,shuff=shuff)
-	#print ans
+	print(ans)
 	if mumin != 0:
 		gf += 'mum'+str(mumin)
 	if mumax != 1.:
 		gf += 'mux'+str(mumax)
 	fo = open('xi'+rp+str(2*mom)+gf+wmu+str(bs)+'st'+str(start)+'.dat','w')
-	#print gf
+	print(gf)
 	for i in range(0,rmax/bs):
 		r = float(bs)/2.+float(bs)*i+float(start)
 		if mom != 'rp':
@@ -2243,6 +2457,26 @@ def ppxilfile_bs(sample,NS,version,mom,zmin=.6,zmax=1.,rp='',wm='',bs=5,start=0,
 			fo.write(str(r)+' '+str(ans[i])+'\n')
 	fo.close()
 	return True
+
+def ppxi024file_bs(sample,NS,version,zmin=.6,zmax=1.,rp='',wm='',bs=5,start=0,rmax=250,nranf=1,njack=20,mumin=0,mumax=1.,wmu='',wf=False,rec='',shuff=''):
+	#write out xi to a file, no jack-knife errors
+	#for quadrupole, set mom = 1, for hexadecapole set mom = 2, ect. (odd moments not supported)
+	wz = 'mz'+str(zmin)+'xz'+str(zmax)
+	gf = 'geboss'+sample+'_'+NS+version+rec+'_'+wz+wm+shuff
+	ans = ppxi024calc_LSDfjack_bs(sample,NS,version,-1,zmin=zmin,zmax=zmax,rpw=rp,wm=wm,mumin=mumin,mumax=mumax,bs=bs,start=start,rmax=rmax,nranf=nranf,wmu=wmu,wf=wf,rec=rec,shuff=shuff)
+	#print ans
+	if mumin != 0:
+		gf += 'mum'+str(mumin)
+	if mumax != 1.:
+		gf += 'mux'+str(mumax)
+	fo = open('xi024'+rp+gf+wmu+str(bs)+'st'+str(start)+'.dat','w')
+	print( gf)
+	for i in range(0,rmax/bs):
+		r = float(bs)/2.+float(bs)*i+float(start)
+		fo.write(str(r)+' '+str(ans[0][i])+' '+str(ans[1][i]*5.)+' '+str(ans[2][i]*9.)+'\n')
+	fo.close()
+	return True
+
 
 def mkmonozerr(zerr='unsmeared'):
 	d = np.loadtxt(ebossdir+'redshift-error-BAO/QPM-mock_cosmoDR12_'+zerr+'.txt').transpose()

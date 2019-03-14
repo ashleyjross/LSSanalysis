@@ -72,7 +72,7 @@ class baofit_iso:
 		
 		
 
-	def chi_templ_alphfXX(self,list,Bnode=50.,wo='n',fw=''):
+	def chi_templ_alphfXX(self,list,Bnode=50.,wo='n',fw='',diro=''):
 		from time import time
 		t = time()
 		B = list[0]
@@ -97,7 +97,7 @@ class baofit_iso:
 		#self.A2 = A2
 		modl = np.zeros((self.nbin))
 		if wo == 'y':
-			fo = open('ximod'+fw+'.dat','w')
+			fo = open(diro+'ximod'+fw+'.dat','w')
 		for i in range(0,self.nbin):
 			r = self.rl[i]
 			#ply = A0+A1/r+A2/r**2.
@@ -1011,7 +1011,7 @@ def doPk_isolike_noconv(pkd,kl,cov,snl=6.,kmin=0.02,kmax=.3,npar=3,sp=1.,spa=.00
 	return chil
 
 
-def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=50.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,Nmock=1000,v='n',wo='',cov2=''):
+def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=50.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,Nmock=1000,v='n',wo='',diro='',cov2=''):
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
@@ -1097,7 +1097,7 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 	#fo = open('BAOisobestfit'+wo+'.dat','w')
 	b.alph = alphm
 	if npar > 0:	
-		b.chi_templ_alphfXX((Bm),wo='y',fw=wo)
+		b.chi_templ_alphfXX((Bm),wo='y',fw=wo,diro=diro)
 	#fo.write(str(alphm)+' '+str(chim)+' '+str(Bm[0])+' '+str(A0m[0])+' '+str(A1m[0])+' '+str(A2m[0])+'\n')
 	#fo.close()
 	return chil
