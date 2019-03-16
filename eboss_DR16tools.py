@@ -2300,8 +2300,8 @@ def mkcov_mock02_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin=
 	fo.close()	
 	fo = open('cov02'+reg+samp+'_EZ'+rec+muw+'angfac'+str(angfac)+bsst+'.dat','w')
 	
-	for i in range(0,nbin):
-		for j in range(0,nbin):
+	for i in range(0,nbin*2):
+		for j in range(0,nbin*2):
 			fo.write(str(cov[i][j])+' ')
 		fo.write('\n')
 	fo.close()
@@ -4488,6 +4488,8 @@ def matchbrick(ebossdir=ebossdir):
 	fo.close()
 	return True
 
+
+
 def sigreg_c12(file,file2='',fac=1.,md='f'):
 	#report the confidence region +/-1 for chi2
 	dir = ''
@@ -4565,7 +4567,7 @@ def sigreg_c12(file,file2='',fac=1.,md='f'):
 	return am,a1d,a1u,a2d,a2u,chim	
 
 
-def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.,rmaxb=50.,md=1.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,covmd='ELG',damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1):
+def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -4579,12 +4581,13 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	indir = ebossdir
 	bsst = str(bs)+'st'+str(start)
 	print(bsst)
-	if sample == 'ELG':
+	#if sample == 'ELG' or sample == 'LRGpCMASS':
+	if md == 'data':
 		recf =''
 		if rec == 'rec':
 			recf = '_rec'
-		dn = np.loadtxt(ebossdir+'xi0geboss'+sample+'_NGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
-		ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_SGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
+		dn = np.loadtxt(ebossdir+'xi'+mom+'geboss'+sample+'_NGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
+		ds = np.loadtxt(ebossdir+'xi'+mom+'geboss'+sample+'_SGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
 	if sample == 'ELGQPM':
 		dn = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_NGC_'+mockn+'.mul').transpose()
 		ds = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_SGC_'+mockn+'.mul').transpose()
@@ -4595,17 +4598,17 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 		indir = ''
 		outdir = dirsci+'EZmockELGv4/BAOfits/'
 
-	if sample == 'ELGEZave':
+	if md == 'mockave':
 		try:
 			indir = ''
 			outdir = ''
-			dn = np.loadtxt(indir+'xiave0NGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
-			ds = np.loadtxt(indir+'xiave0SGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+			dn = np.loadtxt(indir+'xiave0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+			ds = np.loadtxt(indir+'xiave0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
 		except:	
 			outdir = ebossdir
 			indir = ebossdir
-			dn = np.loadtxt(indir+'xiave0NGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
-			ds = np.loadtxt(indir+'xiave0SGCELG_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+			dn = np.loadtxt(indir+'xiave0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
+			ds = np.loadtxt(indir+'xiave0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+bsst+'.dat').transpose()
 		#if rec == 'rec':
 		#	dn = np.loadtxt(ebossdir+'xiave_recon0NGCELG_EZ'+bsst+'.dat').transpose()
 		#	ds = np.loadtxt(ebossdir+'xiave_recon0SGCELG_EZ'+bsst+'.dat').transpose()
@@ -4624,9 +4627,9 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	fn = 1.
 	fs = 1.
 
-	if covmd == 'ELG':# and rec == '':
-		covN = np.loadtxt(indir+'cov0NGCELG_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
-		covS = np.loadtxt(indir+'cov0SGCELG_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
+	#if covmd == 'ELG':# and rec == '':
+	covN = np.loadtxt(indir+'cov0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
+	covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
 					
 	covti = np.linalg.pinv(covN)+np.linalg.pinv(covS)
 	covt = np.linalg.pinv(covti)
@@ -4676,6 +4679,167 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	print(bsst)
 	return True
 
+def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2):
+	from baofit_pub2D import Xism_arat_1C_an
+	maxind = int(200/bs)
+	print(maxind)
+	bs = int(bs)
+	if md == 'data':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		d0N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+	if md == 'mockave':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+
+	cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat')
+	cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat')  
+		
+	if len(cN) != len(d0N)*2:
+		print( 'MISMATCHED data and cov matrix!')
+		print(len(cN),len(d0N))
+	dvN = [] #empty list to become data vector
+	dvbN = [] #empty list to become data vector for setting bias prior
+	dvS = [] #empty list to become data vector
+	dvbS = [] #empty list to become data vector for setting bias prior
+
+	rl = [] #empty list to become list of r values to evaluate model at	
+	rlb  = [] #empty list to become list of r values to evaluate model at for bias prior
+	mini = 0
+	for i in range(0,len(d0N)):
+		r = i*bs+bs/2.+binc
+		if r > min and r < max:
+			dvN.append(d0N[i])
+			dvS.append(d0S[i])
+			rbc = r#.75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.) #correct for pairs should have slightly larger average pair distance than the bin center
+			rl.append(rbc) 
+			if mini == 0:
+				mini = i #minimum index number to be used for covariance matrix index assignment
+			if r < maxb:
+				dvbN.append(d0N[i])
+				dvbS.append(d0S[i])
+				rlb.append(rbc)
+	for i in range(0,len(d2N)):
+		r = i*bs+bs/2.+binc
+		if r > min and r < max:
+			dvN.append(d2N[i])
+			dvS.append(d2S[i])
+			rbc = r#.75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.)
+			rl.append(rbc)
+			if r < maxb:
+				dvbN.append(d2N[i])
+				dvbS.append(d2S[i])
+				rlb.append(rbc)
+
+	dvN = np.array(dvN)
+	dvS = np.array(dvS)
+	print( len(dvN),len(dvS))
+	covmS = np.zeros((len(dvS),len(dvS))) #will become covariance matrix to be used with data vector
+	covmN = np.zeros((len(dvS),len(dvS))) #will become covariance matrix to be used with data vector
+
+	#need to cut it to correct size
+	for i in range(0,len(cN)):
+		if i < len(d0N):
+			ri = i*bs+bs/2.+binc
+			indi = i-mini
+		else:
+			ri = (i-len(d0N))*bs+bs/2.+binc
+			indi = len(dvN)/2+i-mini-len(d0N)	
+		for j in range(0,len(cN)):		
+			if j < len(d0N):
+				rj = j*bs+bs/2.+binc
+				indj = j-mini
+			else:
+				rj = (j-len(d0N))*bs+bs/2.+binc
+				indj = len(dvN)/2+j-mini-len(d0N)
+			if ri > min and ri < max and rj > min and rj < max:
+				#print ri,rj,i,j,indi,indj
+				indi = int(indi)
+				indj = int(indj)
+				covmN[indi][indj] = cN[i][j]
+				covmS[indi][indj] = cS[i][j]
+	invcN = np.linalg.pinv(covmN) #the inverse covariance matrix to pass to the code
+	invcS = np.linalg.pinv(covmS)
+	covmbN = np.zeros((len(dvbN),len(dvbN)))
+	covmbS = np.zeros((len(dvbN),len(dvbN)))
+	for i in range(0,len(dvbN)):
+		if i < len(dvbN)/2:
+			indi = i
+		else:
+			indi = i-len(dvbN)/2+len(covmN)/2
+		for j in range(0,len(dvbN)):
+			if j < len(dvbN)/2:
+				indj = j
+			else:
+				indj = j-len(dvbN)/2+len(covmN)/2
+			indi = int(indi)
+			indj = int(indj)
+			covmbN[i][j] = covmN[indi][indj]
+			covmbS[i][j] = covmS[indi][indj]
+	invcbN = np.linalg.pinv(covmbN)
+	invcbS = np.linalg.pinv(covmbS)
+	if rec == 'rec':
+		mod = 'Challenge_matterpower0.44.02.54.015.01.0.dat' #BAO template used	post-recon
+	if rec == '':
+		mod = 'Challenge_matterpower'+damp+'.dat'		
+	fout = samp+md+str(bs)
+
+	print(len(dvN),len(invcN),len(dvbN),len(invcbN))
+	#ansN = Xism_arat_1C_an(dvN,invcN,rl,mod,dvbN,invcbN,rlb,bs=bs,fout=fout+'NGC')
+	#print(ansN)
+	#sigreg_2dme(
+	#ansS = Xism_arat_1C_an(dvS,invcS,rl,mod,dvbS,invcbS,rlb,bs=bs,fout=fout+'SGC')
+	#print(ansS)
+	s2N = []
+	s2S = []
+	for i in range(0,len(dvN)):
+		s2N.append(covmN[i][i])
+		s2S.append(covmS[i][i])
+	s2N = np.array(s2N)
+	s2S = np.array(s2S)
+	dvt = (dvN/s2N+dvS/s2S)/(1./s2N+1./s2S)
+	invct = invcN+invcS
+	invcbt = invcbN+invcbS
+	dvbt = (dvbN/s2N[:len(dvbN)]+dvbS/s2S[:len(dvbN)])/(1./s2N[:len(dvbN)]+1./s2S[:len(dvbN)])	
+	anst = Xism_arat_1C_an(dvt,invct,rl,mod,dvbt,invcbt,rlb,bs=bs,fout=fout+'NScomb',spat=spat,spar=spar,mina=mina,maxa=maxa)
+	print(anst)
+	#chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchi.dat').transpose()
+	chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchigrid.dat').transpose()
+	chi2f -= np.min(chi2f)
+	ar = np.arange(.803,1.1931,.006)
+	at = np.arange(.8015,1.19751,.003)
+	#X,Y = np.meshgrid(chi2f[0],chi2f[1])
+	#Z = chi2f[2].reshape(len(chi2f[0]),len(chi2f[0]))
+	#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
+	vmax=1
+	extent = (mina, maxa,mina,maxa)
+	im = plt.imshow(chi2f,vmin=0,vmax=vmax,origin='lower',cmap = cm.PRGn,extent=extent,aspect='auto')
+	#v = plt.axis()
+	plt.colorbar(im)
+	levels = np.arange(0,vmax,vmax/10)
+	
+	ct = plt.contour(chi2f, levels, colors='k', origin='lower',extent=extent)
+	#plt.clabel(ct, inline=1, fontsize=12,fmt='%1.0f')
+	#plt.axis(v)
+	#ylim = plt.get(plt.gca(), 'ylim')
+	#plt.setp(plt.gca(), ylim=ylim[::-1])
+	plt.xlabel(r'$\alpha_{||}$')
+	plt.ylabel(r'$\alpha_{\perp}$')
+	plt.show()	
+	if md == 'mockave':
+		#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
+		plt.pcolormesh(ar,at,chi2f-np.min(chi2f),vmax=.1)
+		plt.xlim(.98,1.02)
+		plt.ylim(.98,1.02)
+		plt.show()
+	
+
 def faccalc(nm,nb,nd):
 	A = 2./(nm-nb-1.)/(nm-nb-4.)
 	B = (nm-nb-2.)/(nm-nb-1.)/(nm-nb-4.)
@@ -4702,7 +4866,7 @@ def mksubfile_mocks(ind):
 	#fo.write('. /etc/profile.d/modules.sh \n')
 	#fo.write('module add  apps/gcc/python/2.7.3 \n')
 	#fo.write('/opt/gridware/apps/gcc/python/2.7.3/bin/python baofit.py '+file +' '+str(B)+' CMASS '+reg+' '+col+' '+tp +' '+str(bs)+' '+str(st)+'\n')
-	fo.write('python eboss_elgtools.py '+fl+'\n')
+	fo.write('python eboss_DR16tools.py '+fl+'\n')
 	fo.close()
 	return True
 
@@ -5235,10 +5399,10 @@ def plotxi_shuffmockcom(mom=0,reg='SGC',bs='8st0',mini=3,maxi=25,v='4',rec='',zm
 	return True
 
 
-def plotxi_mockcomth(mom=0,reg='SGC',bs='8st0',mini=3,maxi=25,damp='',v='4',rec='',zmin=.6,zmax=1.1,wm='',angfac=0,bf=1.):
+def plotxi_mockcomth(mom=0,sample='ELG',reg='SGC',bs='8st0',mini=3,maxi=25,damp='',v='4',rec='',angfac=0,bf=1.):
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
-	ds = np.loadtxt(ebossdir+'xiave'+str(mom)+reg+'ELG_EZ'+rec+'angfac'+str(angfac)+str(bs)+'.dat').transpose()
+	ds = np.loadtxt(ebossdir+'xiave'+str(mom)+reg+sample+'_EZ'+rec+'angfac'+str(angfac)+str(bs)+'.dat').transpose()
 	dt = np.loadtxt('/Users/ashleyross/Github/LSSanalysis/BAOtemplates/xi'+str(mom)+'Challenge_matterpower'+damp+'.dat').transpose()
 	
 	#nb = len(ds[1])	
@@ -6193,15 +6357,16 @@ def plotmockGauss(mm=1.,sfac=1.):
 if __name__ == '__main__':
 	#do bao fit on EZ mocks
 	import sys
-	fl = ''
+	#fl = ''
 	ind = int(sys.argv[1])
+	#xi2DBAONS(md='mockave',bs=5,damp='0.353.06.010.015.00')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
 	#make all xi files pre and post reconstruction
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='rec')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='rec')
-	calcxi_mockEZ(ind,reg='SGC',samp='LRG',pcmass=True)
-	calcxi_mockEZ(ind,reg='NGC',samp='LRG',pcmass=True)
+	calcxi_mockEZ(ind,reg='SGC',samp='LRG',pcmass=True,bs=5,rec='rec')
+	calcxi_mockEZ(ind,reg='NGC',samp='LRG',pcmass=True,bs=5,rec='rec')
 #	calcxi_mockELGEZ(ind,reg='SGC',bs=8,start=0,rec='')
 #	calcxi_mockELGEZ(ind,reg='NGC',bs=8,start=0,rec='')
 #	calcxi_mockELGEZ(ind,reg='SGC',bs=8,start=0,rec='shuff')

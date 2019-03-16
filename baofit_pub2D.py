@@ -1,4 +1,4 @@
-Hdir = '/Users/ashleyross/DR12/'
+Hdir = '/Users/ashleyross/Dropbox/eBOSS/'
 import numpy as np
 from numpy import zeros,dot
 from numpy.linalg import pinv
@@ -32,11 +32,12 @@ class baofit3D_ellFull_1cov:
 
 		self.nbin = len(self.rl)
 		
-		print self.nbin
-		print self.xim		
-		print self.rl
+		print(self.nbin)
+		print(self.xim)		
+		print(self.rl)
 		self.invt = ic
 		if self.nbin != len(self.invt):
+			print('vector matrix mismatch!')
 			return 'vector matrix mismatch!'
 
 		self.ximodmin = 10.
@@ -66,11 +67,11 @@ class baofit3D_ellFull_1cov:
 			m4 = 2.1*(float(ln4[1]))
 			self.x4.append(m4)
 			self.x4sm.append(2.1*float(mf4sm[i].split()[1]))
- 		self.at = 1.
- 		self.ar = 1.
- 		self.b0 = 1.
- 		self.b2 = 1.
- 		self.b4 = 1.
+		self.at = 1.
+		self.ar = 1.
+		self.b0 = 1.
+		self.b2 = 1.
+		self.b4 = 1.
 		r = 20.
 		self.H = zeros((6,self.nbin))
 		for i in range(0,self.nbin):
@@ -151,7 +152,7 @@ class baofit3D_ellFull_1cov:
 		indu = indd + 1
 		fac = (r-self.ximodmin)/self.sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print('BAD FAC in wmod')
 			return 'ERROR'
 		if indu >= len(f)-1:
 			return 0
@@ -159,11 +160,11 @@ class baofit3D_ellFull_1cov:
 
 	def mkxi(self):
 		self.xia = []
-		for i in range(0,len(self.rl)/2):
+		for i in range(0,len(self.rl)//2):
 			xi0,xi2 = self.wmod(self.rl[i])
 			self.xia.append(xi0)
 			#self.xi2a.append(xi2)
-		for i in range(len(self.rl)/2,self.nbin):
+		for i in range(len(self.rl)//2,self.nbin):
 			xi0,xi2 = self.wmod(self.rl[i])
 			self.xia.append(xi2)
 			#self.xi2a.append(xi2)
@@ -171,11 +172,11 @@ class baofit3D_ellFull_1cov:
 
 	def mkxism(self):
 		self.xiasm = []
-		for i in range(0,len(self.rl)/2):
+		for i in range(0,len(self.rl)//2):
 			xi0,xi2 = self.wmodsm(self.rl[i])
 			self.xiasm.append(xi0)
 			#self.xi2a.append(xi2)
-		for i in range(len(self.rl)/2,self.nbin):
+		for i in range(len(self.rl)//2,self.nbin):
 			xi0,xi2 = self.wmodsm(self.rl[i])
 			self.xiasm.append(xi2)
 			#self.xi2a.append(xi2)
@@ -211,7 +212,7 @@ class baofit3D_ellFull_1cov:
 		modl = []
 		if wo == 'y':
 			fo = open('ximod'+fw+'.dat','w')
-		for i in range(0,self.nbin/2):
+		for i in range(0,self.nbin//2):
 			r = self.rl[i]
 			
 			mod0 = BB*self.xia[i]+A0+A1/r+A2/r**2.
@@ -219,9 +220,9 @@ class baofit3D_ellFull_1cov:
 			if wo == 'y':
 				fo.write(str(self.rl[i])+' '+str(mod0)+'\n')
 		
-		for i in range(self.nbin/2,self.nbin):
+		for i in range(self.nbin//2,self.nbin):
 			r = self.rl[i]
-			mod2 = 5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-self.nbin/2])+A02+A12/r+A22/r**2.
+			mod2 = 5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-self.nbin//2])+A02+A12/r+A22/r**2.
 			if wo == 'y':
 				fo.write(str(self.rl[i])+' '+str(mod2)+'\n')			
 			modl.append(mod2)
@@ -237,7 +238,7 @@ class baofit3D_ellFull_1cov:
 			dl.append(self.xim[i]-modl[i])
 		chit = dot(dot(dl,self.invt),dl)
 		if v == 'y':
-			print dl,chit
+			print(dl,chit)
 		BBfac = (log(BB/self.BB)/self.Bp)**2.
 		#Btfac = ((Beta-self.B0)/self.Bt)**2.
 		Btfac = (log(Beta/self.B0)/self.Bt)**2.
@@ -261,18 +262,19 @@ class baofit3D_ellFull_1cov:
 		#self.b0 = BB*(1.+2/3.*Beta+.2*Beta**2.)/self.B0fac
 		#self.b2 = BB*(4/3.*Beta+4/7.*Beta**2.)/self.B2fac
 		#self.b4 = 8/35.*BB*Beta**2./self.B4fac
+		nrbin = self.nbin//2
 		modl = []
 		if wo == 'y':
 			fo = open('ximod'+fw+'.dat','w')
 		pv = []
-		for i in range(0,self.nbin/2):
+		for i in range(0,self.nbin//2):
 			pv.append(self.xim[i]-BB*self.xia[i])
-		for i in range(self.nbin/2,self.nbin):
-			pv.append(self.xim[i]-(5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-self.nbin/2])))
+		for i in range(self.nbin//2,self.nbin):
+			pv.append(self.xim[i]-(5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-self.nbin//2])))
 		 
 		Al = findPolya(self.H,self.invt,pv)
 		A0,A1,A2,A02,A12,A22 = Al[0],Al[1],Al[2],Al[3],Al[4],Al[5]
-		for i in range(0,self.nbin/2):
+		for i in range(0,self.nbin//2):
 			r = self.rl[i]
 			
 			mod0 = BB*self.xia[i]+A0+A1/r+A2/r**2.
@@ -281,11 +283,11 @@ class baofit3D_ellFull_1cov:
 				mod0sm = BB*self.xiasm[i]+A0+A1/r+A2/r**2.
 				fo.write(str(self.rl[i])+' '+str(mod0)+' '+str(mod0sm)+'\n')
 		
-		for i in range(self.nbin/2,self.nbin):
+		for i in range(self.nbin//2,self.nbin):
 			r = self.rl[i]
-			mod2 = 5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-self.nbin/2])+A02+A12/r+A22/r**2.
+			mod2 = 5.*(Beta*self.xia[i]-BB*0.5*self.xia[i-nrbin])+A02+A12/r+A22/r**2.
 			if wo == 'y':
-				mod2sm = 5.*(Beta*self.xiasm[i]-BB*0.5*self.xiasm[i-self.nbin/2])+A02+A12/r+A22/r**2.
+				mod2sm = 5.*(Beta*self.xiasm[i]-BB*0.5*self.xiasm[i-nrbin])+A02+A12/r+A22/r**2.
 				fo.write(str(self.rl[i])+' '+str(mod2)+' '+str(mod2sm)+'\n')			
 			modl.append(mod2)
 		if wo == 'y':
@@ -300,7 +302,7 @@ class baofit3D_ellFull_1cov:
 			dl.append(self.xim[i]-modl[i])	
 		chit = dot(dot(dl,self.invt),dl)
 		if v == 'y':
-			print dl,chit
+			print(dl,chit)
 		BBfac = (log(BB/self.BB)/self.Bp)**2.
 		#Btfac = ((Beta-self.B0)/self.Bt)**2.
 		Btfac = (log(Beta/self.B0)/self.Bt)**2.
@@ -709,13 +711,13 @@ def sigreg_2dme(file,spar=.006,spat=.003,min=.8,max=1.2):
 	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
 
 
-def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=.8,maxa=1.2,nobao='n',Bp=.4,Bt=.4,meth='Powell'):
+def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=.8,maxa=1.2,nobao='n',Bp=.4,Bt=.4,meth='Powell',bs=8,fout=''):
 	from time import time
 	import numpy	
 	#from optimize import fmin
 	from random import gauss, random
 	from scipy.optimize import minimize 
-	print 'try meth = "Nelder-Mead" if does not work or answer is weird'
+	print('try meth = "Nelder-Mead" if does not work or answer is weird')
 	bb = baofit3D_ellFull_1cov(dvb,icovb,mod,rlb) #initialize for bias prior
 	b = baofit3D_ellFull_1cov(dv,icov,mod,rl) #initialize for fitting
 	b.B0 = B0
@@ -731,14 +733,15 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	
 	B = .1
 	chiBmin = 1000
- 	while B < 2.:
- 		chiB = bb.chi_templ_alphfXX((B,0,0,0,1.,0,0,0))
- 		if chiB < chiBmin:
-			chiBmin = chiB
- 			BB = B
- 		B += .01	
+	while B < 4.:
+		chiB = bb.chi_templ_alphfXX((B,0,0,0,1,0,0,0))
+		if chiB < chiBmin:
+			chiBmin = chiB			
+			BB = B
+			print(BB,chiBmin)
+		B += .01	
  	#bb.chi_templ_alphfXX((BB,0,0,0,1.,0,0,0),v='y')	
- 	print BB,chiBmin
+	print(BB,chiBmin)
 	b.BB = BB
 	b.B0 = BB		
 	b.Bp= Bp
@@ -760,7 +763,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 
 	for i in range(0,nar):		
 		b.ar = mina+spar*i+spar/2.
-		print b.ar
+		print(b.ar)
 		for j in range(0,nat):
 			b.at = mina+spat*j+spat/2.
 			b.mkxi()
@@ -771,7 +774,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 			fo.write(str(b.ar)+' '+str(b.at)+' '+str(chi)+'\n')
 			fg.write(str(chi)+' ')
 			if chi < chim:
-				print b.ar,b.at,chi	
+				print(b.ar,b.at,chi)	
 				chim = chi
 				alrm = b.ar
 				altm = b.at
@@ -783,7 +786,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	b.mkxi()
 	b.mkxism()
 	chi = b.chi_templ_alphfXX_an((Bm,Betam),wo='y',fw=fout) #writes out best-fit model
-	print alrm,altm,chim#,alphlk,likm
+	print(alrm,altm,chim)#,alphlk,likm
 	alph = (alrm*altm**2.)**(1/3.)
 	b.ar = alph
 	b.at = alph	
@@ -813,7 +816,7 @@ if __name__ == '__main__':
 	d0 = np.loadtxt(dir+ft+zb+'correlation_function_monopole_'+bc).transpose()[1]
 	d2 = np.loadtxt(dir+ft+zb+'correlation_function_quadrupole_'+bc).transpose()[1]
 	if len(c) != len(d0)*2:
-		print 'MISMATCHED data and cov matrix!'
+		print('MISMATCHED data and cov matrix!')
 	dv = [] #empty list to become data vector
 	dvb = [] #empty list to become data vector for setting bias prior
 	rl = [] #empty list to become list of r values to evaluate model at	
@@ -823,24 +826,27 @@ if __name__ == '__main__':
 		r = i*bs+bs/2.+binc
 		if r > min and r < max:
 			dv.append(d0[i])
-			rl.append(r*1.000396) #factor to correct for pairs should have slightly larger average pair distance than the bin center
+			rbc = .75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.) #correct for pairs should have slightly larger average pair distance than the bin center
+			rl.append(rbc) 
 			if mini == 0:
 				mini = i #minimum index number to be used for covariance matrix index assignment
 			if r < maxb:
 				dvb.append(d0[i])
-				rlb.append(r*1.000396)
+				rlb.append(rbc)
 	for i in range(0,len(d2)):
 		r = i*bs+bs/2.+binc
 		if r > min and r < max:
 			dv.append(d2[i])
-			rl.append(r*1.000396)
+			rbc = .75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.)
+			rl.append(rbc)
 			if r < maxb:
 				dvb.append(d2[i])
-				rlb.append(r*1.000396)
+				rlb.append(rbc)
 
 	dv = np.array(dv)
-	print len(dv)
+	print(len(dv))
 	covm = zeros((len(dv),len(dv))) #will become covariance matrix to be used with data vector
+	#need to cut it to correct size
 	for i in range(0,len(c)):
 		if i < len(d0):
 			ri = i*bs+bs/2.+binc
