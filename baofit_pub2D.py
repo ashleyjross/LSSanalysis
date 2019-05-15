@@ -734,7 +734,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	B = .1
 	chiBmin = 1000
 	while B < 4.:
-		chiB = bb.chi_templ_alphfXX((B,0,0,0,1,0,0,0))
+		chiB = bb.chi_templ_alphfXX((B,0,0,0,B,0,0,0))
 		if chiB < chiBmin:
 			chiBmin = chiB			
 			BB = B

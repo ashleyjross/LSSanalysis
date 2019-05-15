@@ -4567,7 +4567,7 @@ def sigreg_c12(file,file2='',fac=1.,md='f'):
 	return am,a1d,a1u,a2d,a2u,chim	
 
 
-def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1):
+def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',covmd='QSO',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',tempmd='iso',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -4616,8 +4616,8 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 	rl = dn[0]
 	##print rl
 
-	mod = np.loadtxt('BAOtemplates/xi0Challenge_matterpower'+damp+'.dat').transpose()[1]
-	modsmooth = np.loadtxt('BAOtemplates/xi0smChallenge_matterpower'+damp+'.dat').transpose()[1]
+	mod = np.loadtxt('BAOtemplates/xi0'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
+	modsmooth = np.loadtxt('BAOtemplates/xi0sm'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
 
 
 	if mb == 'nobao':		
@@ -4626,10 +4626,36 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 			
 	fn = 1.
 	fs = 1.
+	if version == 'v1.8':
+		fn = 1./1.192
+		fs = 822/857.
+	if version == '4' and sample == 'QSO':
+		fn = .89/1.82
+		fs = .594/0.966	
+	if version == 'test' and sample == 'QSO':	
+		fn = .89/2.2
+		fs = .594/1.24	
 
-	#if covmd == 'ELG':# and rec == '':
-	covN = np.loadtxt(indir+'cov0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
-	covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
+	csample = sample
+	if sample == 'aveQPM_QSO' or sample == 'QPM_QSO':
+		if covmd == 'an':
+			csample = 'QSO'
+		if covmd == 'mock':
+			csample = 'QPM_QSO'	
+	if sample == 'QSO' and covmd == 'mock':
+		csample = 'QPM_QSO'	
+	if covmd == 'an':	
+		cov = np.loadtxt(ebossdir+'covxiNS'+csample+version+wz+str(float(bs))+'.dat')
+	if covmd == 'mock':
+		cov = np.loadtxt(ebossdir+'cov0'+csample+version+'NScomb'+str(bs)+'st'+str(start)+'.dat')
+	cov2 = ''
+	if covmd == 'QSO':
+		covN = np.loadtxt(indir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
+		covS = np.loadtxt(indir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
+
+	if covmd == 'ELG':# and rec == '':
+		covN = np.loadtxt(indir+'cov0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
+		covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
 					
 	covti = np.linalg.pinv(covN)+np.linalg.pinv(covS)
 	covt = np.linalg.pinv(covti)
@@ -4679,7 +4705,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 	print(bsst)
 	return True
 
-def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2):
+def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2):
 	from baofit_pub2D import Xism_arat_1C_an
 	maxind = int(200/bs)
 	print(maxind)
@@ -4687,19 +4713,22 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 	if md == 'data':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
 		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
-		d0N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
-		d0S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
 	if md == 'mockave':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
-		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
 
-	cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat')
-	cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZangfac0'+str(bs)+'st'+str(binc)+'.dat')  
+	cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat')
+	cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat')  
 		
 	if len(cN) != len(d0N)*2:
 		print( 'MISMATCHED data and cov matrix!')
@@ -4784,11 +4813,11 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 			covmbS[i][j] = covmS[indi][indj]
 	invcbN = np.linalg.pinv(covmbN)
 	invcbS = np.linalg.pinv(covmbS)
-	if rec == 'rec':
-		mod = 'Challenge_matterpower0.44.02.54.015.01.0.dat' #BAO template used	post-recon
-	if rec == '':
-		mod = 'Challenge_matterpower'+damp+'.dat'		
-	fout = samp+md+str(bs)
+	#if rec == 'rec':
+	#	mod = 'Challenge_matterpower'+.dat' #BAO template used	post-recon
+	#if rec == '':
+	mod = 'Challenge_matterpower'+damp+'.dat'		
+	fout = samp+rec+md+ver+str(bs)
 
 	print(len(dvN),len(invcN),len(dvbN),len(invcbN))
 	#ansN = Xism_arat_1C_an(dvN,invcN,rl,mod,dvbN,invcbN,rlb,bs=bs,fout=fout+'NGC')
@@ -4817,12 +4846,17 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 	#X,Y = np.meshgrid(chi2f[0],chi2f[1])
 	#Z = chi2f[2].reshape(len(chi2f[0]),len(chi2f[0]))
 	#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
-	vmax=1
+	if md == 'mockave':
+		vmax=1
+		levels = np.arange(0,vmax,vmax/10)
+	if md == 'data':
+		vmax = 25*2.3
+		levels = [0,2.3,4.*2.3,9.*2.3,16*2.3]
 	extent = (mina, maxa,mina,maxa)
 	im = plt.imshow(chi2f,vmin=0,vmax=vmax,origin='lower',cmap = cm.PRGn,extent=extent,aspect='auto')
 	#v = plt.axis()
 	plt.colorbar(im)
-	levels = np.arange(0,vmax,vmax/10)
+	
 	
 	ct = plt.contour(chi2f, levels, colors='k', origin='lower',extent=extent)
 	#plt.clabel(ct, inline=1, fontsize=12,fmt='%1.0f')
@@ -5408,7 +5442,7 @@ def plotxi_mockcomth(mom=0,sample='ELG',reg='SGC',bs='8st0',mini=3,maxi=25,damp=
 	#nb = len(ds[1])	
 	rl = ds[0][mini:maxi]
 	xil = ds[1]#[mini:maxi]
-	wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
+	#wp = np.loadtxt(ebossdir+'wrp024ELG'+reg+'_data'+bs+'.dat').transpose()
 	ind = int(mom/2+1)
 	xils = xil#-angfac*wp[ind]#[mini:maxi]
 	xils = xils[mini:maxi]
@@ -6358,15 +6392,21 @@ if __name__ == '__main__':
 	#do bao fit on EZ mocks
 	import sys
 	#fl = ''
-	ind = int(sys.argv[1])
-	#xi2DBAONS(md='mockave',bs=5,damp='0.353.06.010.015.00')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
+	#ind = int(sys.argv[1])
+	#LRGpCMASS post-rec 2D
+	xi2DBAONS(md='data',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='test')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
+	#pre-rec
+	#xi2DBAONS(md='data',bs=5,damp='0.406.010.015.00',rec='',ver='test')
+	
+	#quasars
+	#xibaoNS('QSO',0.8,2.2,version='test',wm='fkp',bs=8,mom='024',covmd='QSO')#,rmin=40,rmax=150)
 	#make all xi files pre and post reconstruction
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='rec')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='rec')
-	calcxi_mockEZ(ind,reg='SGC',samp='LRG',pcmass=True,bs=5,rec='rec')
-	calcxi_mockEZ(ind,reg='NGC',samp='LRG',pcmass=True,bs=5,rec='rec')
+	#calcxi_mockEZ(ind,reg='SGC',samp='LRG',pcmass=True,bs=5,rec='rec')
+	#calcxi_mockEZ(ind,reg='NGC',samp='LRG',pcmass=True,bs=5,rec='rec')
 #	calcxi_mockELGEZ(ind,reg='SGC',bs=8,start=0,rec='')
 #	calcxi_mockELGEZ(ind,reg='NGC',bs=8,start=0,rec='')
 #	calcxi_mockELGEZ(ind,reg='SGC',bs=8,start=0,rec='shuff')

@@ -7,6 +7,7 @@ from matplotlib import rcParams
 from pylab import *
 from numpy import loadtxt as load
 import matplotlib.cm as cm
+from Cosmo import *
 
 rcParams['font.family'] = 'serif'
 plt.rc('text', usetex=True)
@@ -14,13 +15,13 @@ plt.rc('font', family='serif', size=14)
 
 
 
-def BAOrelPlanckCurrent(wo='Current',xmax=2.5,Lya=True,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=True,eboss=False,desi=False):
+def BAOrelPlanckCurrent(wo='current',xmax=2.5,Lya=True,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=True,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
 	from matplotlib.backends.backend_pdf import PdfPages
 	import matplotlib.axes as ax
 	import numpy as np
-	from Cosmo import *
+	
 	from numpy import loadtxt as load
 
 	pp = PdfPages('BAOrelPlanck'+wo+'.pdf')
@@ -61,18 +62,18 @@ def BAOrelPlanckCurrent(wo='Current',xmax=2.5,Lya=True,BOSS=False,BOSSDR12=True,
 	delh = 0.012
 	delm = .017
 	hpd = 0.6665
- 	df = distance(omp,1.-omp,hp,obhh=.022)
- 	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
- 	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
- 	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
- 	print wigf
- 	#ru = du.rs/df.rs
- 	#rd = dd.rs/df.rs
- 	#re = (ru-rd)/2.
- 	#fo = open('planckdvrserr_om.dat','w')
- 	for i in range(0,len(x)):
- 		#dvrsf = df.dV(x[i])/df.rs
- 		#dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
+	df = distance(omp,1.-omp,hp,obhh=.022)
+	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
+	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
+	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
+	print(wigf)
+	#ru = du.rs/df.rs
+	#rd = dd.rs/df.rs
+	#re = (ru-rd)/2.
+	#fo = open('planckdvrserr_om.dat','w')
+	for i in range(0,len(x)):
+		#dvrsf = df.dV(x[i])/df.rs
+		#dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
 		#fo.write(str(x[i])+' '+str(dd)+'\n')
 		yu[i] = y[i]+pe[i]#pe[1][i]#+dd#sqrt(pe[1][i]**2.)#+re**2.)
 		yd[i] = y[i]-pe[i]#pe[1][i]#dd#sqrt(pe[1][i]**2.)#+re**2.)
@@ -194,23 +195,23 @@ def BAOrelPlanckCurrent(wo='Current',xmax=2.5,Lya=True,BOSS=False,BOSSDR12=True,
 		el = d[-1]
 		plt.errorbar(xl,yl,el,fmt='-*',markeredgecolor='purple',markersize=7,elinewidth=1.75,color='purple')
 	if Lya:
- 		lyf = [alph(2.33,omp,hp,obp,0.1426/.6731/.6731,.6731,0.02222)[0],alph(2.35,omp,hp,obp,.27,.7,.0227)[0]]
- 		print lyf
- 		lyb = [1.026/lyf[0],0.988/lyf[1]]
- 		lyt = (lyb[0]/.026**2.+lyb[1]/.022**2.)/(1/.026**2.+1/.022**2.)
- 		lyst = sqrt(1./(1/.026**2.+1/.022**2.))
- 		print lyt,lyst
- 		xl = [2.34]
- 		yl = [lyt]
- 		el = [lyst]
- 		plt.errorbar(xl,yl,el,fmt='o',color='b',markersize=8,markeredgecolor='k')
-		plt.text(1.85,.97,r'BOSS Ly$\alpha$',color='b',fontsize=18)
+		lyf = [alph(2.33,omp,hp,obp,0.1426/.6731/.6731,.6731,0.02222)[0],alph(2.35,omp,hp,obp,.27,.7,.0227)[0]]
+		print(lyf)
+		lyb = [1.026/lyf[0],0.988/lyf[1]]
+		lyt = (lyb[0]/.026**2.+lyb[1]/.022**2.)/(1/.026**2.+1/.022**2.)
+		lyst = sqrt(1./(1/.026**2.+1/.022**2.))
+		print(lyt,lyst)
+		xl = [2.34]
+		yl = [lyt]
+		el = [lyst]
+		plt.errorbar(xl,yl,el,fmt='o',color='b',markersize=8,markeredgecolor='k')
+		plt.text(1.85,.97,r'(e)BOSS Ly$\alpha$',color='b',fontsize=18)
 		for i in range(0,len(xl)):
 			dv = np.interp(xl[i],zlf,dvlf)
 			fo.write(str(xl[i])+' '+str(dv*yl[i])+' '+str(dv*el[i])+'\n')
 
 	plt.xlim ( 0.0, xmax )
-	
+
 	plt.xlabel ('Redshift', fontsize=18)
 	#plt.ylabel (r'$(D_{\rm V}/r_{\rm d})/(D_{\rm V}/r_{\rm d})_{\rm Planck}$', fontsize=18)
 	plt.ylabel (r'Distance/Distance(Planck$\Lambda$CDM)', fontsize=18)
@@ -225,7 +226,7 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 	from matplotlib.backends.backend_pdf import PdfPages
 	import matplotlib.axes as ax
 	import numpy as np
-	from Cosmo import *
+	#from Cosmo import distance,a
 	from numpy import loadtxt as load
 
 	pp = PdfPages('BAOrelPlanck'+wo+'.pdf')
@@ -266,18 +267,18 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 	delh = 0.012
 	delm = .017
 	hpd = 0.6665
- 	df = distance(omp,1.-omp,hp,obhh=.022)
- 	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
- 	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
- 	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
- 	print wigf
- 	#ru = du.rs/df.rs
- 	#rd = dd.rs/df.rs
- 	#re = (ru-rd)/2.
- 	#fo = open('planckdvrserr_om.dat','w')
- 	for i in range(0,len(x)):
- 		#dvrsf = df.dV(x[i])/df.rs
- 		#dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
+	df = distance(omp,1.-omp,hp,obhh=.022)
+	dh = distance(omp,1.-omp,hp+.01,obhh=.022)
+	dm = distance(omp+.01,1.-omp-.01,hp,obhh=.022)
+	wigf = (alph(.44,omp,hp,obp,omwig,hwig,obw)[0],alph(.6,omp,hp,obp,omwig,hwig,obw)[0],alph(.73,omp,hp,obp,omwig,hwig,obw)[0])
+	print(wigf)
+	#ru = du.rs/df.rs
+	#rd = dd.rs/df.rs
+	#re = (ru-rd)/2.
+	#fo = open('planckdvrserr_om.dat','w')
+	for i in range(0,len(x)):
+		#dvrsf = df.dV(x[i])/df.rs
+		#dd = delm*(dm.dV(x[i])/dm.rs/dvrsf-1.)/.01
 		#fo.write(str(x[i])+' '+str(dd)+'\n')
 		yu[i] = y[i]+pe[i]#pe[1][i]#+dd#sqrt(pe[1][i]**2.)#+re**2.)
 		yd[i] = y[i]-pe[i]#pe[1][i]#dd#sqrt(pe[1][i]**2.)#+re**2.)
@@ -425,23 +426,23 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 		el = d[-1]
 		plt.errorbar(xl,yl,el,fmt='-*',markeredgecolor='purple',markersize=7,elinewidth=1.75,color='purple')
 	if Lya:
- 		lyf = [alph(2.33,omp,hp,obp,0.1426/.6731/.6731,.6731,0.02222)[0],alph(2.35,omp,hp,obp,.27,.7,.0227)[0]]
- 		print lyf
- 		lyb = [1.026/lyf[0],0.988/lyf[1]]
- 		lyt = (lyb[0]/.026**2.+lyb[1]/.022**2.)/(1/.026**2.+1/.022**2.)
- 		lyst = sqrt(1./(1/.026**2.+1/.022**2.))
- 		print lyt,lyst
- 		xl = [2.34]
- 		yl = [lyt]
- 		el = [lyst]
- 		plt.errorbar(xl,yl,el,fmt='o',color='b',markersize=8,markeredgecolor='k')
-		plt.text(1.85,.97,r'BOSS Ly$\alpha$',color='b',fontsize=18)
-		for i in range(0,len(xl)):
-			dv = np.interp(xl[i],zlf,dvlf)
-			fo.write(str(xl[i])+' '+str(dv*yl[i])+' '+str(dv*el[i])+'\n')
+		lyf = [alph(2.33,omp,hp,obp,0.1426/.6731/.6731,.6731,0.02222)[0],alph(2.35,omp,hp,obp,.27,.7,.0227)[0]]
+		print(lyf)
+		lyb = [1.026/lyf[0],0.988/lyf[1]]
+		lyt = (lyb[0]/.026**2.+lyb[1]/.022**2.)/(1/.026**2.+1/.022**2.)
+		lyst = sqrt(1./(1/.026**2.+1/.022**2.))
+		print(lyt,lyst)
+		xl = [2.34]
+		yl = [lyt]
+		el = [lyst*.8]
+		plt.errorbar(xl,yl,el,fmt='o',color='b',markersize=8,markeredgecolor='k')
+		plt.text(1.85,.97,r'(e)BOSS Ly$\alpha$',color='b',fontsize=18)
+		#for i in range(0,len(xl)):
+		#	dv = np.interp(xl[i],zlf,dvlf)
+		#	fo.write(str(xl[i])+' '+str(dv*yl[i])+' '+str(dv*el[i])+'\n')
 
 	plt.xlim ( 0.0, xmax )
-	
+
 	plt.xlabel ('Redshift', fontsize=18)
 	#plt.ylabel (r'$(D_{\rm V}/r_{\rm d})/(D_{\rm V}/r_{\rm d})_{\rm Planck}$', fontsize=18)
 	plt.ylabel (r'Distance/Distance(Planck$\Lambda$CDM)', fontsize=18)

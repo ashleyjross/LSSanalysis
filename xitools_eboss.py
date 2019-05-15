@@ -1921,15 +1921,25 @@ def ppxi024calc_LSDfjack_bs(sample,NS,version,jack,zmin=.6,zmax=1.,wm='',bs=5,st
 			pl.append((0,0,0,0,0,0))	
 	##print len(pl)
 	for i in range(0,njack):
-		##print i
+		#print('opening data '+str(i))
 		for j in range(0,njack):
 			if jack != i and jack != j:
+				#print(j)
 				fdp = open(dirpc+gf+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
 				DDnormt += float(fdp[0])
+				#fdp = np.array(fdp[1:])
+				#fdp = fdp.astype(np.float)
+				#DDnl += fdp
 				fdnp = open(dirpc+rf+'0'+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
 				fr = open(dirpc+rf+'0'+wz+wm+str(j)+rf+'0'+wz+wm+str(i)+'2ptdmu.dat').readlines()
 				DRnormt += float(fdnp[0])
 				RRnormt += float(fr[0])
+				#fdnp = np.array(fdnp[1:])
+				#fdnp.astype(np.float)
+				#DRnl += fdnp
+				#fr = np.array(fr[1:])
+				#fr.astype(np.float)
+				#RRnl += fr
 				for k in range(1,len(fdp)):
 					dp = float(fdp[k])
 					dr = float(fdnp[k])
@@ -1940,6 +1950,7 @@ def ppxi024calc_LSDfjack_bs(sample,NS,version,jack,zmin=.6,zmax=1.,wm='',bs=5,st
 					
 	#print DDnormt,DRnormt,RRnormt				
 	for nr in range(1,nranf):
+		print(nr)
 		for i in range(0,njack):
 			##print i
 			for j in range(0,njack):
@@ -1947,20 +1958,32 @@ def ppxi024calc_LSDfjack_bs(sample,NS,version,jack,zmin=.6,zmax=1.,wm='',bs=5,st
 					#print(nr,i,j)
 					fdnp = open(dirpc+rf+str(nr)+wz+wm+str(j)+gf+str(i)+'2ptdmu.dat').readlines()
 					fr = open(dirpc+rf+str(nr)+wz+wm+str(j)+rf+str(nr)+wz+wm+str(i)+'2ptdmu.dat').readlines()
-					#try:
-					DRnormt += float(fdnp[0])
-					#except:
-					#	print(nr,i,j)
-					#	return('ERROR, empty file')
-					RRnormt += float(fr[0])
-					for k in range(1,len(fdp)):						
-						dr = float(fdnp[k])
-						rp = float(fr[k])
-						DRnl[k-1] += dr
-						RRnl[k-1] += rp
+					gd = 1
+					try:
+						DRnormt += float(fdnp[0])
+						
+					except:
+						print(nr,i,j)
+						print('empty DR file')
+						gd = 0
+						#return('ERROR, empty file')
+					try:
+						RRnormt += float(fr[0])
+					except:
+						print(nr,i,j)
+						print('empty RR file')
+						gd=0
+						#return('ERROR, empty file')
+					if gd == 1:
+						for k in range(1,len(fdp)):						
+							dr = float(fdnp[k])
+							rp = float(fr[k])
+							DRnl[k-1] += dr
+							RRnl[k-1] += rp
 
 	if rec == '_rec':
 		for nr in range(0,nranf):
+			print(nr)
 			for i in range(0,njack):
 				##print i
 				for j in range(0,njack):
@@ -5557,6 +5580,10 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 			dn = np.loadtxt(indir+'xi0geboss'+sample+'_NGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
 			ds = np.loadtxt(indir+'xi0geboss'+sample+'_SGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
 
+		elif version == 'test':
+			dn = np.loadtxt(indir+'xi024geboss'+sample+'_NGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
+			ds = np.loadtxt(indir+'xi024geboss'+sample+'_SGC'+version+'_'+wz+wm+bsst+'.dat').transpose()
+
 		else:
 			dn = np.loadtxt(indir+'xi0geboss'+sample+'_N'+version+'_'+wz+wm+bsst+'.dat').transpose()
 			ds = np.loadtxt(ebossdir+'xi0geboss'+sample+'_S'+version+'_'+wz+wm+bsst+'.dat').transpose()
@@ -5647,6 +5674,10 @@ def xibaoNS(sample,zmin,zmax,version='v1.8',wm='',bs=8,start=0,rmin=35,rmax=180.
 	if version == '4' and sample == 'QSO':
 		fn = .89/1.82
 		fs = .594/0.966	
+	if version == 'test' and sample == 'QSO':	
+		fn = .89/2.2
+		fs = .594/1.24	
+
 	csample = sample
 	if sample == 'aveQPM_QSO' or sample == 'QPM_QSO':
 		if covmd == 'an':

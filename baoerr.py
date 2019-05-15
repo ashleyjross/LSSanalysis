@@ -55,7 +55,7 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
 	if num > 1:
 		num = num/volume
-		print num
+		print(num)
 	if dampz == 'n':
 		sigzdampl = ones((len(Pbao_list)))
 	else:
@@ -141,7 +141,7 @@ def baoerr(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',keff=.15
 		keff += kl[i]*keffl[i]
 		wkeff += keffl[i]
 		peff += Pbao_list[i]*keffl[i]*BAO_POWER#*sigma8*sigma8
-	print neff,keff/wkeff,peff/wkeff
+	print(neff,keff/wkeff,peff/wkeff)
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
 	#return Drms,Hrms,Rrms,r,1./sqrt(sumt),sqrt(monosum),1./sqrt(sumW1),1./sqrt(sumW2)
@@ -182,7 +182,7 @@ def baoerr_input(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',ke
 	neff = 0
 
 	z = (zmax+zmin)/2.
-	print z
+	print(z)
 	z1 = zmin
 	z2 = zmax
 	
@@ -190,7 +190,7 @@ def baoerr_input(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',ke
 	volume= 4./3.*pi*fsky*(d.dc(z2)**3.-d.dc(z1)**3.)
 	if num > 1:
 		num = num/volume
-		print num
+		print(num)
 	if dampz == 'n':
 		sigzdampl = ones((len(Pbao_list)))
 	else:
@@ -211,14 +211,14 @@ def baoerr_input(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',ke
 	Sigma_zb = Sigma_z/d.dc(z)*105. #percentage distance error multiplied by BAO scale
 	#print Sigma_zb
 	Sigma_z2 = Sigma_z*Sigma_z
-	print Sigma_z2
+	print(Sigma_z2)
 	sigma8 = bias*Dg
 	#print sigma8
 	
 	power = sigma8*sigma8*BAO_POWER
 	#print power,sigma8**2.
 	nP = num*power
-	print nP
+	print(nP)
 	Silk_list  = []
 
 	for i in range(0,len(Pbao_list)):
@@ -260,7 +260,7 @@ def baoerr_input(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,dampz='y',ke
 	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
 	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
 	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
-	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	print(Drms,Hrms,Rrms,r,z1,z2,volume,z)
 	dtot = sumt
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
@@ -315,7 +315,7 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	neff = 0
 	keffl = np.zeros((len(k_list)))
 	z = (zmax+zmin)/2.
-	print z
+	print(z)
 	z1 = zmin
 	z2 = zmax
 	#sigzdampl = BAOdampsigz(z,sigz)
@@ -330,13 +330,13 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	Sig0 = 9.4*sig8/.9*Dg*recon_fac
 	Sigma_perp = Sig0
 	Sigma_par = Sig0*(1.+f)
-	print Sigma_perp,Sigma_par
+	print(Sigma_perp,Sigma_par)
 	Sigma_perp2 = Sigma_perp*Sigma_perp
 	Sigma_par2 = Sigma_par*Sigma_par
 
 	Sigma_z = d.cHz(z)*sigz
 	Sigma_z2 = Sigma_z*Sigma_z
-	print Sigma_z2
+	print(Sigma_z2)
 
 	Pkamp = bias*Dg
 	power = Pkamp*Pkamp
@@ -345,7 +345,7 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	nP_list = num*P_list
 	for i in range(0,len(nP_list)):
 		if k_list[i] > .2:
-			print nP_list[i]
+			print(nP_list[i])
 			break
 
 	k0 = k_list[0]
@@ -409,11 +409,11 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 	Fdd *= mustep*volume
 	Fhh *= mustep*volume
 	sumt *= mustep*volume
-	print sqrt(sumt)
+	print(sqrt(sumt))
 	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
 	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
 	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
-	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	print(Drms,Hrms,Rrms,r,z1,z2,volume,z)
 	dtot = sumt
 	keff = 0
 	wkeff = 0
@@ -422,7 +422,7 @@ def baoerr_full(zmin,zmax,sigz,area,num,bias,recon_fac=1.,sig8=0.8,vis='n',dampz
 		if k > kmin and k < kmax:
 			keff += k_list[i]*keffl[i]
 			wkeff += keffl[i]
-	print neff,keff/wkeff
+	print(neff,keff/wkeff)
 	#print 'total BAO error '+str(sqrt(1.0/dtot))
 	return sqrt(1.0/dtot)
 
@@ -540,18 +540,18 @@ def baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1.,sig8=0.8,vis='n',dampz='y',kef
 			sumt += sum*volume
 			sumz += sum*volume*mustep
 			mu += mustep
-		print z,bias,num,sqrt(1./sumz),nP2,P2	
+		print(z,bias,num,sqrt(1./sumz),nP2,P2)	
 	Fdd *= mustep
 	Fdh *= mustep
 	Fhh *= mustep
 	sumt *= mustep
 
 	r = Fdh/sqrt(Fhh*Fdd)
-	print sqrt(sumt)
+	print(sqrt(sumt))
 	Drms = 1.0/sqrt(Fdd*(1.0-(r)*(r)))
 	Hrms = 1.0/sqrt(Fhh*(1.0-(r)*(r)))
 	Rrms = (Drms)*sqrt((1-(r)*(r))/(1+(Drms)/(Hrms)*(2*(r)+(Drms)/(Hrms))))
-	print Drms,Hrms,Rrms,r,z1,z2,volume,z
+	print(Drms,Hrms,Rrms,r,z1,z2,volume,z)
 	dtot = sumt
 	return sqrt(1.0/dtot)
 
@@ -662,7 +662,7 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 			z += dz
 	area = 620.			
 	siglong = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
-	print 'sigma BAO SGC long is '+str(siglong)
+	print('sigma BAO SGC long is '+str(siglong))
 	z = .65
 	zl = []
 	nl = []
@@ -678,7 +678,7 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 			z += dz
 	area = 620.			
 	signom = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
-	print 'sigma BAO SGC nominal is '+str(signom)
+	print('sigma BAO SGC nominal is '+str(signom))
 	z = .65
 	zl = []
 	nl = []
@@ -694,12 +694,12 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 			z += dz
 	area = 740.			
 	signgc = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
-	print 'sigma BAO NGC is '+str(signgc)
+	print('sigma BAO NGC is '+str(signgc))
 	
 	sigtnom = sqrt(1./(1/signom**2.+1/signgc**2.))
 	sigtlong = sqrt(1./(1/siglong**2.+1/signgc**2.))
-	print 'sigma BAO nomtot '+str(sigtnom)
-	print 'sigma BAO longtot '+str(sigtlong)
+	print('sigma BAO nomtot '+str(sigtnom))
+	print('sigma BAO longtot '+str(sigtlong))
 	z = .65
 	zl = []
 	nl = []
@@ -715,7 +715,7 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 			z += dz
 	area = 1400.			
 	siglow = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
-	print 'sigma BAO low is '+str(siglow)
+	print('sigma BAO low is '+str(siglow))
 
 	z = .65
 	zl = []
@@ -732,7 +732,7 @@ def baoerr_fullELG(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02
 			z += dz
 	area = 1100.			
 	sighigh = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
-	print 'sigma BAO high is '+str(sighigh)
+	print('sigma BAO high is '+str(sighigh))
 	
 	return True
 
@@ -760,7 +760,7 @@ def baoerr_ELGY1(zmin=.6,zmax=1.1,b0=1.,recon_fac=.5,cosm='Challenge',kmin=.02,k
 	area = 489.5			
 	sigrec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
 	signorec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1,cosm=cosm,kmin=kmin,kmax=kmax)
-	print sigrec,signorec
+	print(sigrec,signorec)
 	
 	return True
 
@@ -788,7 +788,7 @@ def baoerr_LRGDR14(zmin=.6,zmax=1.,b0=1.7,recon_fac=.5,cosm='Challenge',kmin=.02
 	area = 1844.			
 	sigrec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=recon_fac,cosm=cosm,kmin=kmin,kmax=kmax)
 	signorec = baoerr_fullnz(zl,nl,bl,sigz,area,recon_fac=1,cosm=cosm,kmin=kmin,kmax=kmax)
-	print sigrec,signorec
+	print(sigrec,signorec)
 	
 	return True
 
@@ -860,12 +860,12 @@ def errvsigweight(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax=.85
 		#numw = numt/(w1+w2)
 		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
 		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
-		print w1,err,w1+w2,w2,numt,numw,sigz
+		print(w1,err,w1+w2,w2,numt,numw,sigz)
 		if err < emin:
 			emin = err
 			wmin = (w1,w2)
-	print wmin
-	print err1,err2,emin/err1,emin/err2,emin/errt
+	print(wmin)
+	print(err1,err2,emin/err1,emin/err2,emin/errt)
 	return (emin/errt,emin/err1,emin/err2)
 
 def errvsigweight_alt(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax=.85,bias=1.8,dampz='n'):
@@ -893,7 +893,7 @@ def errvsigweight_alt(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax
 		#numw = numt/(w1+w2)
 		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
 		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
-		print w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz
+		print(w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz)
 		if err < emin:
 			emin = err
 			wmin = (w1,w2)
@@ -908,13 +908,13 @@ def errvsigweight_alt(num1,num2,sig1,sig2,wstep=0.01,wmin=0,wmax=1,zmin=.75,zmax
 		#numw = numt/(w1+w2)
 		sigz = (w1*sig1*num1+w2*sig2*num2)/(w1*num1+w2*num2)
 		err = baoerr(zmin,zmax,sigz,1400.,numw,bias,dampz=dampz)
-		print w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz
+		print(w1,err,err1,err2,errt,w1+w2,w2,numt,numw,sigz)
 		if err < emin:
 			emin = err
 			wmin = (w1,w2)
 
-	print wmin
-	print err1,err2,emin/err1,emin/err2,emin/errt
+	print(wmin)
+	print(err1,err2,emin/err1,emin/err2,emin/errt)
 	return (emin/errt,emin/err1,emin/err2)
 
 	
@@ -927,7 +927,7 @@ def mkgfvssigz(sig2=0.03,num1=1.e-3,num2=1.e-3):
 		eb = max(errvsigweight(num1,num2,sig1,sig2))
 		fo.write(str(sig2/sig1)+' '+str(eb)+'\n')
 		sig1 += de
-		print sig1,eb
+		print(sig1,eb)
 	fo.close()
 	return True
 
@@ -1021,7 +1021,7 @@ def baoerr_comp2(z,sigz,sigz2,num,num2,bias,bias2,sig8=0.8,recon_fac=1.):
 	Sig0 = 12.4*sig8/0.9*Dg*.758*recon_fac
 	Sigma_perp = Sig0
 	Sigma_par = Sig0*(1.+f)
-	print Sigma_perp,Sigma_par
+	print(Sigma_perp,Sigma_par)
 	volume=1.0
 	Sigma_perp2 = Sigma_perp*Sigma_perp
 	Sigma_par2 = Sigma_par*Sigma_par
@@ -1032,7 +1032,7 @@ def baoerr_comp2(z,sigz,sigz2,num,num2,bias,bias2,sig8=0.8,recon_fac=1.):
 	Sigma_z22 = Sigma_zn*Sigma_zn
 	Sigma_zb = Sigma_z/d.dc(z)*105.
 	Sigma_zb2 = Sigma_zn/d.dc(z)*105.
-	print Sigma_z2
+	print(Sigma_z2)
 	sigma8 = sig8*bias*Dg
 	sigma82 = sig8*bias2*Dg
 	KSTEP = .01
@@ -1145,7 +1145,7 @@ def testweight(w):
 		ai = ai/(2.)
 		asqw += ai**2.
 	sw = sqrt(asqw/10000.)
-	print sw,snw
+	print(sw,snw)
 	return True
 
 def testweightnum(w,n=10000):
@@ -1170,7 +1170,7 @@ def testweightnum(w,n=10000):
 		ai = (ai*w+a2*w2)/(2.)
 		asq += ai**2.
 			
-	print 4.*asq/n,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.))
+	print(4.*asq/n,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.)))
 	#snw = asqnw/10000.
 	
 	#print sw,snw
@@ -1202,7 +1202,7 @@ def testweightnum_alt(w,n=10000):
 		a1sq += (ai*w)**2.
 		a2sq += (a2*w2)**2.
 			
-	print asq/n-(amw/n)**2.,(a1sq+a2sq)/n-(amw/n)**2.,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.))
+	print(asq/n-(amw/n)**2.,(a1sq+a2sq)/n-(amw/n)**2.,a1sq/(n/2.),a2sq/(n/2.),1./(a1sq/(n/2.))+1./(a2sq/(n/2.)))
 	#snw = asqnw/10000.
 	
 	#print sw,snw
@@ -1263,7 +1263,7 @@ def mudistobszerr(r=100.,z=0.8,sigz=0.03,dampz='n',bias=1.5,rmin=10.,rmax=300,mu
 		rzl.append(d.dc(zb)/d0)
 		#rzl.append(1.)
 		wl.append(1./(sqrt(2.)*sigz*(1.+z)*sqrt(2.*pi))*exp(-.5*((zb-z)/(sqrt(2.)*sigz*(1.+z)))**2.))
-	print sum(wl)*dz
+	print(sum(wl)*dz)
 	sumw = sum(wl)
 	#print wl
 	fmuw = load('Fmufiles/FdaHvsmu_z0.750.85_zerr0.03_10e3n1.0_b1.8'+dampz+'.dat').transpose()
@@ -1495,11 +1495,11 @@ def xisigmuplotzerr(zerr):
 		d2 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.4mumax0.60.406.010.0combzsiglsp1.0.dat').transpose()
 		d3 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.6mumax0.80.406.010.0combzsiglsp1.0.dat').transpose()
 		d4 = load('/Users/ashleyross/DESY1/xizconvcsigz'+str(zerr)+'MICE_matterpowermumin0.80.406.010.0combzsiglsp1.0.dat').transpose()
- 	plt.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
- 	plt.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
- 	plt.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
- 	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
- 	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
+	plt.plot(d0[0],(d0[1]-d0[2])*1000,'k-',linewidth=3)
+	plt.plot(d0[0],(d1[1]-d1[2])*1000,'k--',linewidth=3)
+	plt.plot(d0[0],(d2[1]-d2[2])*1000,'k:',linewidth=3)
+	plt.plot(d0[0],(d3[1]-d3[2])*1000,'-',color='r',linewidth=3)
+	plt.plot(d0[0],(d4[1]-d4[2])*1000,'-',color='b',linewidth=3)
 	plt.ylim(-.2,.4)
 	if zerr == 0.02:
 		plt.ylim(-.2,.5)
@@ -1514,15 +1514,15 @@ def xisigmuplotzerr(zerr):
 	yl = [.74,.74]
 	plt.plot(xl,yl,'k--',linewidth=3)
 	plt.text(210,.73,r'$0.2 < \mu < 0.4$',color='k')
-	
+
 	yl = [.68,.68]
 	plt.plot(xl,yl,'k:',linewidth=3)
 	plt.text(210,.67,r'$0.4 < \mu < 0.6$',color='k')
-	
+
 	yl = [.62,.62]
 	plt.plot(xl,yl,'r-',linewidth=3)
 	plt.text(210,.61,r'$0.6 < \mu < 0.8$',color='k')
-	
+
 	yl = [.56,.56]
 	plt.plot(xl,yl,'b-',linewidth=3)
 	plt.text(210,.55,r'$0.8 < \mu $',color='k')
@@ -1570,7 +1570,7 @@ def xisigmuplot8pan():
 	import matplotlib as mpl
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	from pylab import *
+	#from pylab import *
 	from numpy import loadtxt as load
 	import numpy as np
 	rcParams['font.family'] = 'serif'
@@ -1607,32 +1607,32 @@ def xisigmuplot8pan():
 	axp.minorticks_on()
 	start, end = axp.get_xlim()
 	axp.xaxis.set_ticks(np.arange(start, end, 40))
-	
+
 	#axs.plot(xl,yl,'k:')
 	axs.plot(xl,yl,'k:')
 	axp.plot(xl,yl,'k:')
- 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
- 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
+	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
+	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[0],linewidth=3)
 	mu = .7
 	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
 	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
- 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
- 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
+	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
+	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[3],linewidth=3)
 	mu = .9
 	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
 	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
- 	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
- 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
+	axs.plot(d0[0],(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
+	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'-',color=colors[4],linewidth=3)
 	mu = .3
 	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
 	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
- 	axs.plot(d0[0],(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
- 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
+	axs.plot(d0[0],(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
+	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,'--',color=colors[1],linewidth=3)
 	mu = .5
 	db = d0[1]+P2(mu)*d2[1]+P4(mu)*d4[1]
 	dbsm = d0sm[1]+P2(mu)*d2sm[1]+P4(mu)*d4sm[1]
- 	axs.plot(d0[0],(db-dbsm)*1000,':',color=colors[2],linewidth=3)
- 	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,':',color=colors[2],linewidth=3)
+	axs.plot(d0[0],(db-dbsm)*1000,':',color=colors[2],linewidth=3)
+	axp.plot(d0[0]*(1.-mu**2.)**.5,(db-dbsm)*1000,':',color=colors[2],linewidth=3)
 	cnr = [135,289,.35,1.4]
 	cxl = [cnr[0],cnr[1]]
 	cyl = [cnr[2],cnr[2]]
@@ -1662,7 +1662,7 @@ def xisigmuplot8pan():
 	axs.text(180,.4,'(0.8,1)',size=10)
 	lyl = [.42,.42]
 	axs.plot(lxl,lyl,'-',color=colors[4],linewidth=3)
-	
+
 	axs.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	axs.set_title(r'$\sigma_{zf} = 0$')
 	axp.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
@@ -1681,17 +1681,17 @@ def xisigmuplot8pan():
 
 	ax = fig.add_subplot(2,4,2)
 
-	
+
 	ax.set_xlim(40,300)
 	ax.set_ylim(-.5,1.)
 	ax.minorticks_on()
 	ax.plot(xl,yl,'k:')
- 	ax.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)
-	
+	ax.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)
+
 	ax.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax.set_title(r'$\sigma_{zf} = 0.01$')
 
@@ -1703,11 +1703,11 @@ def xisigmuplot8pan():
 	ax2.set_xlim(30,200)
 	ax2.set_ylim(-.5,1.)
 	ax2.plot(xl,yl,'k:')
- 	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax2.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax2.get_xlim()
 	ax2.xaxis.set_ticks(np.arange(start, end, 40))
@@ -1729,11 +1729,11 @@ def xisigmuplot8pan():
 	ax3.set_xlim(40,300)
 	ax3.set_ylim(-.2,.5)
 	ax3.plot(xl,yl,'k:')
- 	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax3.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax3.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax3.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax3.set_title(r'$\sigma_{zf} = 0.02$')
 
@@ -1742,11 +1742,11 @@ def xisigmuplot8pan():
 	ax4.set_xlim(30,200)
 	ax4.set_ylim(-.2,.5)
 	ax4.plot(xl,yl,'k:')
- 	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax4.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax4.get_xlim()
 	ax4.xaxis.set_ticks(np.arange(start, end, 40))
@@ -1770,11 +1770,11 @@ def xisigmuplot8pan():
 	ax5.set_xlim(40,300)
 	ax5.set_ylim(-.15,.35)
 	ax5.plot(xl,yl,'k:')
- 	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax5.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax5.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax5.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax5.set_title(r'$\sigma_{zf} = 0.029$')
 
@@ -1783,11 +1783,11 @@ def xisigmuplot8pan():
 	ax6.set_xlim(30,200)
 	ax6.set_ylim(-.15,.35)
 	ax6.plot(xl,yl,'k:')
- 	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax6.plot(d4p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax6.plot(d4p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax6.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax6.get_xlim()
 	ax6.xaxis.set_ticks(np.arange(start, end, 40))
@@ -1801,7 +1801,7 @@ def xisigmuplot6pan():
 	import matplotlib as mpl
 	from matplotlib import rc
 	from matplotlib.backends.backend_pdf import PdfPages
-	from pylab import *
+	#from pylab import *
 	from numpy import loadtxt as load
 	import numpy as np
 	rcParams['font.family'] = 'serif'
@@ -1859,17 +1859,17 @@ def xisigmuplot6pan():
 	lyl = [.43,.43]
 	ax.plot(lxl,lyl,'-',color=colors[4],linewidth=3)
 
-	
+
 	ax.set_xlim(40,300)
 	ax.set_ylim(-.5,1.)
 	ax.minorticks_on()
 	ax.plot(xl,yl,'k:')
- 	ax.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)
-	
+	ax.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)
+
 	ax.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax.set_title(r'$\sigma_z /(1+z) = 0.01$')
 
@@ -1881,11 +1881,11 @@ def xisigmuplot6pan():
 	ax2.set_xlim(30,200)
 	ax2.set_ylim(-.5,1.)
 	ax2.plot(xl,yl,'k:')
- 	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax2.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax2.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax2.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax2.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax2.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax2.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax2.get_xlim()
 	ax2.xaxis.set_ticks(np.arange(start, end, 40))
@@ -1907,11 +1907,11 @@ def xisigmuplot6pan():
 	ax3.set_xlim(40,300)
 	ax3.set_ylim(-.2,.5)
 	ax3.plot(xl,yl,'k:')
- 	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax3.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax3.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax3.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax3.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax3.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax3.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax3.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax3.set_title(r'$\sigma_z /(1+z) = 0.02$')
 
@@ -1920,11 +1920,11 @@ def xisigmuplot6pan():
 	ax4.set_xlim(30,200)
 	ax4.set_ylim(-.2,.5)
 	ax4.plot(xl,yl,'k:')
- 	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax4.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax4.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax4.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax4.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax4.plot(d0p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax4.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax4.get_xlim()
 	ax4.xaxis.set_ticks(np.arange(start, end, 40))
@@ -1948,11 +1948,11 @@ def xisigmuplot6pan():
 	ax5.set_xlim(40,300)
 	ax5.set_ylim(-.15,.35)
 	ax5.plot(xl,yl,'k:')
- 	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax5.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
- 	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax5.plot(d0[0],(d0[1]-d0[2])*1000,'-',color=colors[0],linewidth=3)
+	ax5.plot(d0[0],(d1[1]-d1[2])*1000,'--',color=colors[1],linewidth=3)
+	ax5.plot(d0[0],(d2[1]-d2[2])*1000,':',color=colors[2],linewidth=3)
+	ax5.plot(d0[0],(d3[1]-d3[2])*1000,'-',color=colors[3],linewidth=3)
+	ax5.plot(d0[0],(d4[1]-d4[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax5.set_xlabel(r'$s$ ($h^{-1}$ Mpc)',size=12)
 	ax5.set_title(r'$\sigma_z /(1+z) = 0.029$')
 
@@ -1961,11 +1961,11 @@ def xisigmuplot6pan():
 	ax6.set_xlim(30,200)
 	ax6.set_ylim(-.15,.35)
 	ax6.plot(xl,yl,'k:')
- 	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
- 	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
- 	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
- 	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
- 	ax6.plot(d4p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
+	ax6.plot(d0p[0],(d0p[1]-d0p[2])*1000,'-',color=colors[0],linewidth=3)
+	ax6.plot(d0p[0],(d1p[1]-d1p[2])*1000,'--',color=colors[1],linewidth=3)
+	ax6.plot(d0p[0],(d2p[1]-d2p[2])*1000,':',color=colors[2],linewidth=3)
+	ax6.plot(d0p[0],(d3p[1]-d3p[2])*1000,'-',color=colors[3],linewidth=3)
+	ax6.plot(d4p[0],(d4p[1]-d4p[2])*1000,'-',color=colors[4],linewidth=3)	
 	ax6.set_xlabel(r'$s_{\perp}$ ($h^{-1}$ Mpc)',size=12)
 	start, end = ax6.get_xlim()
 	ax6.xaxis.set_ticks(np.arange(start, end, 40))
@@ -2097,15 +2097,15 @@ def xisigmumockcompthplot():
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/25.,fmt='gs',linewidth=3)
 	#plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/25.,fmt='y<',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1],dm0[0][:40]**2.*dm0[2]/25.,fmt='ko',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d1[1]*1.4,'r-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d2[1]*1.4,'b-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d3[1]*1.4,'g-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d1[1]*1.4,'r-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d2[1]*1.4,'b-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d3[1]*1.4,'g-',linewidth=3)
  	#plt.plot(d0[0],d0[0]**2.*d4[1]*1.4,'y-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d0[1]*1.4,'k-',linewidth=3)
- 	plt.text(40,5,r'$\mu < 0.2$',color='k')
- 	plt.text(40,3,r'$0.2 < \mu < 0.4$',color='r')
- 	plt.text(40,1,r'$0.4 < \mu < 0.6$',color='b')
- 	plt.text(40,-1,r'$0.6 < \mu < 0.8$',color='g')
+	plt.plot(d0[0],d0[0]**2.*d0[1]*1.4,'k-',linewidth=3)
+	plt.text(40,5,r'$\mu < 0.2$',color='k')
+	plt.text(40,3,r'$0.2 < \mu < 0.4$',color='r')
+	plt.text(40,1,r'$0.4 < \mu < 0.6$',color='b')
+	plt.text(40,-1,r'$0.6 < \mu < 0.8$',color='g')
 	plt.ylim(-5,25)
 	plt.xlim(30,200)
 	pp.savefig()
@@ -2152,27 +2152,27 @@ def xirpsigmumockcompthplot():
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*(dm3[1]-off),dm0[0][:40]**2.*dm3[2]/sqrt(504.),fmt='s',color=colors[3],linewidth=3,markeredgecolor='k',markeredgewidth=.5)
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*(dm4[1]-off),dm0[0][:40]**2.*dm4[2]/sqrt(504.),fmt='<',color=colors[4],linewidth=3,markeredgecolor='k',markeredgewidth=.5)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm0[1]-off)+2.,dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='o',color=colors[0],linewidth=3,markeredgecolor='k',markeredgewidth=.5)
- 	plt.plot(d0[0],d0[0]**2.*d1[1]*b+1.,'-',color=colors[1],linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d2[1]*b,'-',color=colors[2],linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d3[1]*b,'-',color=colors[3],linewidth=2)
- 	plt.plot(d4[0],d4[0]**2.*d4[1]*b,'-',color=colors[4],linewidth=2)
- 	plt.plot(d0[0],d0[0]**2.*d0[1]*b+2.,'-',color=colors[0],linewidth=2)
- 	xl = [42]
- 	plt.plot(xl,[.3],'o',color=colors[0],markeredgecolor='k',markeredgewidth=.5)
- 	plt.text(45,0,r'$\mu < 0.2$',color=colors[0],size=16)
- 	plt.plot(xl,[-1.2],'d',color=colors[1],markeredgecolor='k',markeredgewidth=.5)
- 	plt.text(45,-1.5,r'$0.2 < \mu < 0.4$',color=colors[1],size=16)
- 	plt.plot(xl,[-2.7],'^',color=colors[2],markeredgecolor='k',markeredgewidth=.5)
- 	plt.text(45,-3,r'$0.4 < \mu < 0.6$',color=colors[2],size=16)
- 	plt.plot(xl,[-4.2],'s',color=colors[3],markeredgecolor='k',markeredgewidth=.5)
- 	plt.text(45,-4.5,r'$0.6 < \mu < 0.8$',color=colors[3],size=16)
- 	plt.plot(xl,[-5.7],'<',color=colors[4],markeredgecolor='k',markeredgewidth=.5)
- 	plt.text(45,-6,r'$0.8 < \mu$',color=colors[4],size=16)
- 	crn = [(39,-6.5),(90,-6.5),(90,1.2),(39,1.2)]
- 	plt.plot([crn[0][0],crn[1][0]],[crn[0][1],crn[1][1]],'k-')
- 	plt.plot([crn[1][0],crn[2][0]],[crn[1][1],crn[2][1]],'k-')
- 	plt.plot([crn[2][0],crn[3][0]],[crn[2][1],crn[3][1]],'k-')
- 	plt.plot([crn[3][0],crn[0][0]],[crn[3][1],crn[0][1]],'k-')
+	plt.plot(d0[0],d0[0]**2.*d1[1]*b+1.,'-',color=colors[1],linewidth=2)
+	plt.plot(d0[0],d0[0]**2.*d2[1]*b,'-',color=colors[2],linewidth=2)
+	plt.plot(d0[0],d0[0]**2.*d3[1]*b,'-',color=colors[3],linewidth=2)
+	plt.plot(d4[0],d4[0]**2.*d4[1]*b,'-',color=colors[4],linewidth=2)
+	plt.plot(d0[0],d0[0]**2.*d0[1]*b+2.,'-',color=colors[0],linewidth=2)
+	xl = [42]
+	plt.plot(xl,[.3],'o',color=colors[0],markeredgecolor='k',markeredgewidth=.5)
+	plt.text(45,0,r'$\mu < 0.2$',color=colors[0],size=16)
+	plt.plot(xl,[-1.2],'d',color=colors[1],markeredgecolor='k',markeredgewidth=.5)
+	plt.text(45,-1.5,r'$0.2 < \mu < 0.4$',color=colors[1],size=16)
+	plt.plot(xl,[-2.7],'^',color=colors[2],markeredgecolor='k',markeredgewidth=.5)
+	plt.text(45,-3,r'$0.4 < \mu < 0.6$',color=colors[2],size=16)
+	plt.plot(xl,[-4.2],'s',color=colors[3],markeredgecolor='k',markeredgewidth=.5)
+	plt.text(45,-4.5,r'$0.6 < \mu < 0.8$',color=colors[3],size=16)
+	plt.plot(xl,[-5.7],'<',color=colors[4],markeredgecolor='k',markeredgewidth=.5)
+	plt.text(45,-6,r'$0.8 < \mu$',color=colors[4],size=16)
+	crn = [(39,-6.5),(90,-6.5),(90,1.2),(39,1.2)]
+	plt.plot([crn[0][0],crn[1][0]],[crn[0][1],crn[1][1]],'k-')
+	plt.plot([crn[1][0],crn[2][0]],[crn[1][1],crn[2][1]],'k-')
+	plt.plot([crn[2][0],crn[3][0]],[crn[2][1],crn[3][1]],'k-')
+	plt.plot([crn[3][0],crn[0][0]],[crn[3][1],crn[0][1]],'k-')
 	plt.ylim(-8,17)
 	plt.xlim(30,200)
 	pp.savefig()
@@ -2195,7 +2195,7 @@ def xirpsigmumockcompthplotfull(b=1.46):
 	off = .5e-4
 	b = 1.46
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*(dm0[1]-off),dm0[0][:40]**2.*dm0[2]/sqrt(504.),fmt='rd',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d0[1]*b,'k-',linewidth=2)
+	plt.plot(d0[0],d0[0]**2.*d0[1]*b,'k-',linewidth=2)
 	plt.ylim(-10,17)
 	plt.xlim(30,200)
 	pp.savefig()
@@ -2227,15 +2227,15 @@ def xisigmulampcompthplot():
 	plt.errorbar(dm0[0][:40],dm0[0]**2.*dm3[1],dm0[0][:40]**2.*dm3[2]/25.,fmt='gs',linewidth=3)
 	#plt.errorbar(dm0[0][:40],dm0[0]**2.*dm4[1],dm0[0][:40]**2.*dm4[2]/25.,fmt='y<',linewidth=3)
 	plt.errorbar(dm0[0][:40],dm0[0][:40]**2.*dm0[1],dm0[0][:40]**2.*dm0[2]/25.,fmt='ko',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d1[1]*1.85,'r-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d2[1]*1.85,'b-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d3[1]*1.85,'g-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d1[1]*1.85,'r-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d2[1]*1.85,'b-',linewidth=3)
+	plt.plot(d0[0],d0[0]**2.*d3[1]*1.85,'g-',linewidth=3)
  	#plt.plot(d0[0],d0[0]**2.*d4[1]*1.4,'y-',linewidth=3)
- 	plt.plot(d0[0],d0[0]**2.*d0[1]*1.85,'k-',linewidth=3)
- 	plt.text(40,5,r'$\mu < 0.2$',color='k')
- 	plt.text(40,3,r'$0.2 < \mu < 0.4$',color='r')
- 	plt.text(40,1,r'$0.4 < \mu < 0.6$',color='b')
- 	plt.text(40,-1,r'$0.6 < \mu < 0.8$',color='g')
+	plt.plot(d0[0],d0[0]**2.*d0[1]*1.85,'k-',linewidth=3)
+	plt.text(40,5,r'$\mu < 0.2$',color='k')
+	plt.text(40,3,r'$0.2 < \mu < 0.4$',color='r')
+	plt.text(40,1,r'$0.4 < \mu < 0.6$',color='b')
+	plt.text(40,-1,r'$0.6 < \mu < 0.8$',color='g')
 	plt.ylim(-5,25)
 	plt.xlim(30,200)
 	pp.savefig()
@@ -2262,7 +2262,7 @@ def xisigmumockcompthrsdplot(mumin,mumax,b=1.5,sfog=0,alph=1.):
 	#dnr = load('xizconv0MICE_matterpower'+muw+'0.4'+str(sfog)+'6.010.00.029norsdsp5.0.dat').transpose()
 	dm = load('xiave0'+muw+'SM.dat').transpose()
 	plt.errorbar(dm[0][:40],dm[0][:40]**2.*dm[1],dm[0][:40]**2.*dm[2]/25.,fmt='ko',linewidth=3)
- 	plt.plot(dt[0]*alph,dt[0]**2.*dt[1]*b,'k-',linewidth=3)
+	plt.plot(dt[0]*alph,dt[0]**2.*dt[1]*b,'k-',linewidth=3)
  	#plt.plot(dnr[0],dnr[0]**2.*dnr[1]*b,'k--',linewidth=3)
 	plt.show()
 	#plt.ylim(-.001,.001)
@@ -2276,7 +2276,7 @@ def rbaomu():
 	from matplotlib.backends.backend_pdf import PdfPages
 	import matplotlib.axes as ax
 	import numpy as np
-	from Cosmo import *
+	#from Cosmo import *
 	from numpy import loadtxt as load
 
 	pp = PdfPages('rbaomu.pdf')
@@ -2299,7 +2299,7 @@ def BAOerrplot(wo='test',BOSS=True,MGS=False,wz=False,sdss=False,df6=False,des=T
 	from matplotlib.backends.backend_pdf import PdfPages
 	import matplotlib.axes as ax
 	import numpy as np
-	from Cosmo import *
+	#from Cosmo import *
 	from numpy import loadtxt as load
 
 	pp = PdfPages('BAOerr'+wo+'.pdf')
