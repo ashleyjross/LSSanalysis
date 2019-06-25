@@ -44,18 +44,18 @@ def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20,sran=0):
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(galf,galf,i)
 			fo.write('qsub sub'+str(i)+'.sh \n')
-			fo.write('sleep 1 \n')
+			#fo.write('sleep 1 \n')
 	for j in range(sran,sran+nran):	
 		off = 20+40*j
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(ranf+str(j)+wr,galf,i,off)
 			fo.write('qsub sub'+str(i+off)+'.sh \n')
-			fo.write('sleep 1 \n')
+			#fo.write('sleep 1 \n')
 		off = 40+40*j
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(ranf+str(j)+wr,ranf+str(j)+wr,i,off)
 			fo.write('qsub sub'+str(i+off)+'.sh \n')
-			fo.write('sleep 1 \n')
+			#fo.write('sleep 1 \n')
 
 	fo.close()
 	return True
@@ -674,6 +674,8 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',psfx=99,cp=''
 					w = f[i]['WEIGHT_SYSTOT']
 				else:
 					w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']
+				if wm == 'SSR':
+					w = f[i]['WEIGHT_SYSTOT']*f[i]['WEIGHT_CP']/f[i]['sector_SSR']
 				if wm == 'MRlin':
 					w = 1./wmap[pixl[i]]*f[i]['WEIGHT_CP']*f[i]['WEIGHT_NOZ']	
 				if samp == 'LRGpCMASS':
@@ -692,7 +694,7 @@ def mkgal4xime(samp,NS,v='test',zmin=.6,zmax=1.1,c='sci',fkp='fkp',psfx=99,cp=''
 				fo.write(str(f[i]['RA'])+' '+str(f[i]['DEC'])+' '+str(z)+' '+str(w)+'\n')
 				n += 1.
 				nw += w
-	#print( n,nw,nnan)	
+	print( n,nw,nnan)	
 	fo.close()
 	return True		
 
@@ -1948,7 +1950,7 @@ def ppxi024calc_LSDfjack_bs(sample,NS,version,jack,zmin=.6,zmax=1.,wm='',bs=5,st
 					DRnl[k-1] += dr
 					RRnl[k-1] += rp
 					
-	#print DDnormt,DRnormt,RRnormt				
+	print( DDnormt,DRnormt,RRnormt	)			
 	for nr in range(1,nranf):
 		print(nr)
 		for i in range(0,njack):

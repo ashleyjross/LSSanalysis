@@ -68,10 +68,10 @@ NEW BAO measurement goes HERE
 '''
 newmeas = np.zeros((2,2))
 newmeas[0][0] = 0.021*0.021 #Gaussian approximation to alpha_perp error
-newmeas[1][1] = 0.024*0.024 #Gaussian approximation to 1/alpha_|| error
-newmeas[1][0] = 0.37*0.021*0.024 #Gaussian approximation to cross term
-newmeas[0][1] = 0.37*0.021*0.024
-diralph = '/Users/ashleyross/Dropbox/eboss/' #wherever you put the alphas
+newmeas[1][1] = 0.027*0.027 #Gaussian approximation to 1/alpha_|| error
+newmeas[1][0] = 0.39*0.021*0.027 #Gaussian approximation to cross term
+newmeas[0][1] = 0.39*0.021*0.027
+diralph = '/Users/ashleyross/Dropbox/eboss/BAO_dM_Hz_BOSSLRG/' #wherever you put the alphas
 alphas = np.loadtxt(diralph+'LRGgaussalphas.txt') #do it this way so nothing is public
 ap = alphas[0] #alpha_perp
 ar = alphas[1] #alpha_||
@@ -102,6 +102,13 @@ for i in range(0,6):
 	for j in range(0,6):
 		if canew[i][j] == 0:
 			canew[i][j] = canew[j][i]
+
+corrnew = np.zeros((6,6))
+for i in range(0,len(canew)):
+	for j in range(0,len(canew)):
+		corrnew[i][j] = canew[i][j]/sqrt(canew[i][i]*canew[j][j])
+		
+print(corrnew)
 
 #print(canew)
 #check to see if we gained any information over BOSS DR12

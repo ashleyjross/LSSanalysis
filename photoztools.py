@@ -5,6 +5,7 @@ from romberg import rom
 from numpy import array
 from numpy.linalg import *
 from numpy import loadtxt as load
+import numpy as np
 #from pklin import *
 #from simulate import *
 from bessel import *
@@ -31,7 +32,7 @@ def diserr(z1,z2,ang,dz,dz2):
 	ddsq = (2.*dd1*cz1-2.*dd1*cz2*cra)**2.+(2.*dd2*cz2-2.*dd2*cz1*cra)**2.
 	dd = sqrt(ddsq)
 	derr = .5*dd/dis
-	print dd1,dd2,ddsq,dis
+	print(dd1,dd2,ddsq,dis)
 	return derr
 
 def thbao(z1,z2,rbao=105.):
@@ -136,9 +137,9 @@ def mkClsigfile_limb(dz,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.0003,fsky=1/8.,
 	from Cosmo import distance
 	from numpy import zeros
 	n = tz/dz
-	print n
+	print(n)
 	n = int(n)
-	print n
+	print(n)
 	zls = zeros((n,2000),'f')
 	d = distance(.25,.75)
 	zmin = zmed-tz/2.
@@ -161,10 +162,10 @@ def mkClsigfile_limb(dz,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.0003,fsky=1/8.,
 			z = tophatGaussconv(z1,z2,zsig)
 			zind = int(1000*z)
 			zls[i][zind] += 1.
-	print 'zl done'
+	print('zl done')
 	
 	fo = open('clsigTHG'+str(tz)+str(dz)+'.dat','w')
-	print nl	
+	print(nl)	
 	l = dl
 	while l < lmax:
 		cl = 0
@@ -193,7 +194,7 @@ def mkClsigfilepz_limb(zz,wf,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.0003,fsky=
 	from numpy import zeros
 	from random import random
 	n = tz/zsig
-	print n
+	print(n)
 	zls = zeros((2000),'f')
 	d = distance(.25,.75)
 	zmin = zmed-tz/2.
@@ -213,13 +214,13 @@ def mkClsigfilepz_limb(zz,wf,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.0003,fsky=
 		w = exp(-.5*sig**2.*wf)
 		zind = int(1000*z)
 		zls[zind] += w
-	print 'zl done'
+	print('zl done')
 	sum = 0
 	for i in range(0,len(zls)):
 		sum += zls[i]#*.001
-	print sum
+	print(sum)
 	neff = nn/nz*sum
-	print neff
+	print(neff)
 	fo = open('clsigPZ'+str(zz)+str(zsig)+str(wf)+'.dat','w')
 	l = dl
 	#minn = (zmin-zz)/zsig
@@ -243,9 +244,9 @@ def mkClsigfilepz_series_limb(dz,wf,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.000
 	from numpy import zeros
 	from random import random
 	n = tz/dz
-	print n
+	print(n)
 	n = int(n)
-	print n
+	print(n)
 	zls = zeros((n,2000),'f')
 	d = distance(.25,.75)
 	zmin = zmed-tz/2.
@@ -273,12 +274,12 @@ def mkClsigfilepz_series_limb(dz,wf,tz=.2,zsig=.05,nz=1000000.,zmed=.5,nbar=.000
 		sum = 0
 		for i in range(0,len(zls[j])):
 			sum += zls[j][i]#*.001
-		print sum
+		print(sum)
 		neff = nn/nz*sum
 		neffl.append(neff/(4.*pi))
-	print neffl
+	print(neffl)
 
-	print 'zl done'
+	print('zl done')
 	fo = open('clsigPZs'+str(dz)+str(zsig)+str(wf)+'.dat','w')
 	l = dl
 	while l < lmax:
@@ -447,7 +448,7 @@ def mkxicovfile(file,kmin=.001,kmax=10.,bias=1.4,dk=.03):
 		pkl.append(pk)
 		vfl.append(nr2veff('nzDR7spece2c'+file+'nr.dat',pk))
 		k += k*dk
-	print 'lists done'
+	print('lists done')
 	while r < 210.:
 		rl.append(r)
 		r = r*mult
@@ -1009,7 +1010,7 @@ def mkphi(l,zf='TH0.40.60.05',dz=.01,om=.279):
 	sumz = 0
 	for i in range(1,len(nzf)):
 		sumz += float(nzf[i].split()[1])*dz
-	print sumz
+	print(sumz)
 	dm = 0
 	rm = 0
 	hm = 0
@@ -1103,7 +1104,7 @@ def mkphi_D1(l,zf='TH0.40.60.05',dz=.01,om=.279):
 	sumz = 0
 	for i in range(1,len(nzf)):
 		sumz += float(nzf[i].split()[1])*dz
-	print sumz
+	print(sumz)
 	dm = 0
 	rm = 0
 	hm = 0
@@ -1418,7 +1419,7 @@ def pcdist(z1,z2,sigz=.03,binmin=.45,binmax=.55,dz=.01):
 def mkpcdistfile(binmin,binmax,sigz=0.03):
 	f = open('pcdist'+str(binmin)+str(binmax)+str(sigz)+'.dat','w')
 	for i in range(0,100):
-		print i
+		print(i)
 		for j in range(0,100):
 			#print j
 			f.write(str(pcdist(i/100.,j/100.,binmin=binmin,binmax=binmax))+'\n')
@@ -1449,7 +1450,7 @@ def mkphipc(l,zmin,zmax,zcmin=.4,zcmax=.6):
 	for i in range(0,len(nzf)):
 		zl.append(float(nzf[i].split()[1])/normf)
 		
-	print zcminind,maxind
+	print(zcminind,maxind)
 	for i in range(zcminind,zcmaxind):
 		sum = 0
 		#zf = float(nzf[i].split()[1])/normf
@@ -1465,7 +1466,7 @@ def mkphipc(l,zmin,zmax,zcmin=.4,zcmax=.6):
 	fo = open('nzpctemp.dat','w')
 	for i in range(0,len(nzpc1)):
 		fo.write(str(i/1000.)+' '+str(nzpc1[i])+'\n')
-	print minind,zcmaxind
+	print(minind,zcmaxind)
 	for i in range(minind,zcmaxind):
 		sum = 0
 		zf = float(nzf[i].split()[1])/normf
@@ -1498,7 +1499,7 @@ def mkphipc(l,zmin,zmax,zcmin=.4,zcmax=.6):
 			#	print i,j,i*10,j/10, pcdfind
 			t += sqrt(zl[i]*zl[j])*.001*float(pcdf[pcdfind])
 	fac = ta/t			
-	print t,ta,normpc1,normpc2,normf
+	print(t,ta,normpc1,normpc2,normf)
 # 	for i in range(0,1000*zmax):
 # 		if i > zcminind and i < zcmaxind:
 # 			norm1 += float(nzf[i].split()[1])*.001
@@ -1562,7 +1563,7 @@ def mkphipc(l,zmin,zmax,zcmin=.4,zcmax=.6):
 		sphjm = 1
 	for i in range(0,len(nzf)):
 		sphl.append(0)
-	print fac
+	print(fac)
 	while k < 10:
 		#print k
 		sum = 0
@@ -1618,7 +1619,7 @@ def nzsqpc(zf='zsig0.030.450.55'):
 	
 	norm = 1./sumz
 	normpc = 1./pcsum
-	print norm,normpc
+	print(norm,normpc)
 	nzl = []
 	for i in range(0,2000):
 		nzl.append(0)
@@ -1655,7 +1656,7 @@ def mkphiRS(l,zf='TH0.40.60.05',zmed=.5,bias=2.,dz=.01,om=.279):
 	nzf = open('nz'+zf+'.dat').readlines()
 	d = distance(om,1.-om)
 	beta = d.omz(zmed)**.557/bias
-	print beta
+	print(beta)
 	fo = open('phiL/phiRS'+str(l)+str(om)+zf+str(bias)+'.dat','w')
 	k = .001
 	dl = []
@@ -1672,12 +1673,12 @@ def mkphiRS(l,zf='TH0.40.60.05',zmed=.5,bias=2.,dz=.01,om=.279):
 		hl.append(d.Hz(z))
 	cfac = d.c
 	norm = 1./sumz
-	print norm
+	print(norm)
 	nzint = 0
 	for i in range(0,len(nzf)):
 		zf = norm*float(nzf[i].split()[1])
 		nzint += zf**2.*dz
-	print nzint
+	print(nzint)
 	ld = l - 2
 	lu = l + 2
 	
@@ -1848,7 +1849,7 @@ def cl2om_fnl(theta,zf='TH0.40.60.05',maxl=1000,md = 'n'):
 	
 	return omp,omp1,omp2
 
-def cl2om(theta,zf='TH0.40.60.05',maxl=1000,md = 'n',ll='n'):
+def cl2om(theta,zf='TH0.40.60.05',maxl=1000,md = 'rs',ll='n'):
 	om = 0
 	omrs = 0
 	rad = theta*pi/180.
@@ -1857,7 +1858,7 @@ def cl2om(theta,zf='TH0.40.60.05',maxl=1000,md = 'n',ll='n'):
 		try:
 			frs = open('clrs'+zf+'.dat').readlines()
 		except:
-			print 'no z-dist file'
+			print('no z-dist file')
 			md = 'n'
 	oldpl = 1.
 	cr = 0
@@ -2017,7 +2018,7 @@ def wxifile(nm,dz=0.05357,samp=1,min=.1,mult=1.2):
 		w = calcwxi(nm,th,dz,samp)
 		fo.write(str(th)+' '+str(w)+'\n')
 		th = th*mult
-		print th,w
+		print(th,w)
 	fo.close()
 	return True
 
@@ -2027,7 +2028,7 @@ def mkwxifile(nm,dz=0.001,samp=1,max=8.97164,mult=0.794,min=.1,gam=-1.7):
 	th = max
 	while th > min:
 		w = calcwxi(nm,th,dz,samp,gam=gam)
-		print th,w[0],w[1],w[2]
+		print(th,w[0],w[1],w[2])
 		fo.write(str(th)+' '+str(w[0])+' '+str(w[1])+' '+str(w[2])+'\n')
 		th = th*mult
 		
@@ -2040,7 +2041,7 @@ def mkwxifile_thf(nm,dz=0.001,samp=1,thf='',min=.1,gam=-1.7):
 	for i in range(0,len(thf)):
 		th = thf[i]
 		w = calcwxi(nm,th,dz,samp,gam=gam)
-		print th,w[0],w[1],w[2]
+		print(th,w[0],w[1],w[2])
 		fo.write(str(th)+' '+str(w[0])+' '+str(w[1])+' '+str(w[2])+'\n')
 		
 	fo.close()
@@ -2064,6 +2065,43 @@ def mkwxifilelinbin(nm,dz=0.001,samp=1,max=9,bs=.15,min=0,gam=-1.7,bao='',cosm='
 	fo.close()
 	return True
 
+def mkwxifilelinbin_simp(nm,dz=0.1,samp=1,max=10,bs=.1,min=0,gam=-1.7,bao='',cosm='MICE',nzm='',md='three'):
+	#8.97164
+	fo = open('wxi'+nm+cosm+str(bs)+bao+md+'lbsimp.dat','w')
+	#th = max-bs/2.
+	nbin = int((max-min)/bs)
+	#while th > min:
+	for i in range(0,nbin):
+		th = min+i*bs+bs/2.
+		if md == 'one':
+			#w = calcwxi(nm,th,dz,samp,gam=gam,bao=bao,cosm=cosm,nzm=nzm)
+			w = calcwxi3(nm,th,dz,samp,gam=gam,bao=bao,cosm=cosm,nzm=nzm)
+			fo.write(str(th)+' '+str(w[0])+'\n')
+		if md == 'three':	
+		#print th,w[0],w[1],w[2]
+			w = calcwxi3(nm,th,dz,samp,gam=gam,bao=bao,cosm=cosm,nzm=nzm)
+			fo.write(str(th)+' '+str(sum(w))+'\n')
+		#th = th-bs
+		
+	fo.close()
+	return True
+
+def mkwclfilelinbin_simp(nm,max=10,bs=.1,min=0):
+	#8.97164
+	fo = open('wcl'+nm+'lbsimp.dat','w')
+	#th = max-bs/2.
+	nbin = int((max-min)/bs)
+	#while th > min:
+	for i in range(0,nbin):
+		th = min+i*bs+bs/2.
+		w = cl2om(th,nm)
+		fo.write(str(th)+' '+str(w[0])+'\n')
+		#th = th-bs
+		
+	fo.close()
+	return True
+
+
 
 def mkwXxifile(nm,nm2,dz=0.001,samp=1,max=8.97164,mult=0.794):
 	#8.97164
@@ -2071,7 +2109,7 @@ def mkwXxifile(nm,nm2,dz=0.001,samp=1,max=8.97164,mult=0.794):
 	th = max
 	while th > .1:
 		w = calcwXxi(nm,nm2,th,dz,samp)
-		print th,w[0],w[1],w[2]
+		print(th,w[0],w[1],w[2])
 		fo.write(str(th)+' '+str(w[0])+' '+str(w[1])+' '+str(w[2])+'\n')
 		th = th*mult
 		
@@ -2079,7 +2117,7 @@ def mkwXxifile(nm,nm2,dz=0.001,samp=1,max=8.97164,mult=0.794):
 	return True
 
 
-def calcwxi3(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='MICE',nzm='',dirz='/Users/ashleyross/DESY1/'):
+def calcwxi3(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='Challenge',nzm='',dirz=''):
 	from Cosmo import distance
 	from numpy import loadtxt
 	#mf0 = open('/Users/ashleyross/DR12/xi0tkqpm0.413.03.57.015.0.dat').readlines()
@@ -2091,7 +2129,7 @@ def calcwxi3(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='MICE',n
 		dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
 	if cosm == 'Challenge':	
 		xif = 'Challenge_matterpower0.406.010.015.00'
-		dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
+		dir = 'BAOtemplates/'
 	if bao == '':
 		
 		mf0 = open(dir+'xi0'+xif+'.dat').readlines()
@@ -2129,18 +2167,35 @@ def calcwxi3(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='MICE',n
 		fz = loadtxt(dir+'MICE_WN_inter_V1.2.1_lightcone_corner000_photoz_mock0.zph'+nm+'_ztruedist').transpose()
 	else:	
 		fz = loadtxt(dirz+nm+'.dat').transpose()
-	normz = sum(fz[1])*dz
-	nz = fz[1]/normz
+	dzf = (fz[0][1]-fz[0][0])*1.01
+	zmin = fz[0][0]-dzf/2.
+	if dzf != dz:
+		#just copy info into more narrow bins; spline could be better
+		print(dz,dzf)
+		nez = int(dzf/dz)
+		nzl = np.zeros(nez*len(fz[0]))
+		zl = np.zeros(nez*len(fz[0]))
+		for i in range(0,len(fz[0])):
+			for j in range(0,nez):
+				nzl[i*nez+j] = fz[1][i]
+				zb = zmin+(i*nez+j)*dz+dz/2.
+				zl[i*nez+j] = zb
+				#print(zb,fz[1][i])
+	else:
+		nzl = fz[1]
+		zl = fz[0]				
+	normz = sum(nzl)*dz
+	nz = nzl/normz
 	#d = distance(.3,.7)
 	if cosm == 'Challenge':
 		d = distance(.31,.69)
 	if cosm == 'MICE':
 		d = distance(.25,.75)
-	for i in range(0,len(fz[0]),samp):
-		z = fz[0][i]
+	for i in range(0,len(zl)):#,samp):
+		z = zl[i]
 		#print z
 		#if z > 0:
-		zl.append(nz[i])		
+		#zl.append(nz[i])		
 		zd = d.dc(z)
 		dl.append(zd)
 		zd2 = d.dc(z)#+dz/2.)
@@ -2153,15 +2208,15 @@ def calcwxi3(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='MICE',n
 	#frev = open('revcomp.dat','w')
 	cthr = cos(theta*pi/180.)
 	rmax = 250.**2.
-	for i in range(1,len(zl),samp):
+	for i in range(0,len(zl),samp):
 		sumi = 0
 		sumi2 = 0
 		sumi4 = 0
 		if zl[i] > 0:
-			for j in range(1,len(zl),samp):
+			for j in range(0,len(zl),samp):
 				dzg = dz*gl[j]*zl[j]
 				if i == j:
-					zi = fz[0][i]
+					zi = zl[i]
 					sumk = 0
 					sumk2 = 0
 					sumk4 = 0
@@ -2209,11 +2264,12 @@ def calcwxi(nm,theta,dz=.001,samp=1,zm=.6,beta=.4,gam=-1.7,bao='',cosm='MICE',nz
 	#mf4 = open('/Users/ashleyross/DR12/xi4tkqpm0.413.03.57.015.0.dat').readlines()
 	if cosm == 'MICE':
 		xif = 'MICE_matterpower0.43.06.010.015.00'
-		dir = ''
-		dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
+		dir = 'BAOtemplates/'
+		#dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
 	if cosm == 'BOSS':	
+		dir = 'BAOtemplates/'
 		xif = 'Challenge_matterpower0.563.04.07.015.00'
-		dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
+		#dir = '/Users/ashleyross/LSSanalysis/BAOtemplates/'
 	if bao == '':
 		
 		mf0 = open(dir+'xi0'+xif+'.dat').readlines()
@@ -2447,7 +2503,7 @@ def projxi(theta,dr=.01,zm=.6):
 	d = distance(.3,.7)
 	dang = d.dc(zm)*pi/180.*theta
 	xid = wmod(dang,0,mf)
-	print dang,wmod(dang,0,mf)
+	print(dang,wmod(dang,0,mf))
 	#frev = open('revcomp.dat','w')
 	cthr = cos(theta*pi/180.)
 	for i in range(0,nr):
@@ -2477,7 +2533,7 @@ def wmod(r,mu,mf,sp=1.,gam=-2.,beta=.4):
 		indu = indd + 1
 		fac = (r-10.)/sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print('BAD FAC in wmod')
 			return 'ERROR'
 		if indu >= len(mf)-1:
 			return 0
@@ -2502,13 +2558,17 @@ def wmodtest(r,beta=.4,gam=-1.7):
 			
 		xi2 = xi0-3.*(10.+1.*i)**(-3.)*(sump+20.**3.*xi10/(3.+gam))		
 		if i == 11:
-			print sump,xi2,20.**3.*xi10/(3.+gam),xi0
+			print(sump,xi2,20.**3.*xi10/(3.+gam),xi0)
 		xi4 = xi0+2.5*3.*(10.+1.*i)**(-3.)*(sump+20.**3.*xi10/(3.+gam))-3.5*5.*(10.+1.*i)**(-5.)*(sumpp+20.**5.*xi10/(5.+gam))
 		mf.append((xi0,xi2,xi4))
 	w = wmod3(r,0,mf)
 	return w[0],w[1]/legendre(2,0),w[2]/legendre(4,0)
 
 def wmod3(r,mu,mf,sp=1.,gam=-1.7):
+	if mu > 1.:
+		print('mu greater than 1, changed to 0.999 ' +str(mu))
+		mu = 0.9999
+		
 	p2 = legendre(2,mu)
 	p4 = legendre(4,mu)
 	#p2 = 0
@@ -2537,7 +2597,7 @@ def wmod3(r,mu,mf,sp=1.,gam=-1.7):
 		indu = indd + 1
 		fac = (r-10.)/sp-indd
 		if fac > 1.:
-			print 'BAD FAC in wmod'
+			print('BAD FAC in wmod')
 			return 'ERROR'
 		if indu >= len(mf)-1:
 			return mf[-1][0],p2*mf[-1][1],p4*mf[-1][2]
@@ -2546,8 +2606,11 @@ def wmod3(r,mu,mf,sp=1.,gam=-1.7):
 		xi2 = (mf[indu][1]*fac+(1.-fac)*mf[indd][1])
 		xi4 = (mf[indu][2]*fac+(1.-fac)*mf[indd][2])
 		#return xi0,p2*(mf[indu][1]*fac+(1.-fac)*mf[indd][1]),p4*(mf[indu][2]*fac+(1.-fac)*mf[indd][2])
-		return xi0,p2*xi2,p4*xi4
-		
+		try:
+			return xi0,p2*xi2,p4*xi4
+		except:
+			print(xi0,xi2,xi4,p2,p4,mu)
+			return 'ERROR'
 def xip(mf,r):
 	indmax = int((r-10)/1.)
 	x = 0
@@ -2584,7 +2647,7 @@ def mkw_lgfnl(nm,z=.74,md='',om=.25,ob=.0459):
 	th = 54.5589364964
 	#ngnorm = om*(pw.hf/pw.speedc)**2.*3.*1.686#/pw.Dzf
 	ngnorm = om*(1./pw.speedc)**2.*3.*1.686
-	print ngnorm
+	print(ngnorm)
 	#print pw.Dzf
 	#ngnorm = ngnorm/pw.Dzf
 	#print ngnorm
@@ -2608,7 +2671,7 @@ def mkw_cambsp(nm,sp=.01,maxl=2000):
 		fo.write(str(thi)+' '+str(w)+'\n')
 		thi -= sp
 		#if int(thi/1.-.01) == thi/1.:
-		print thi
+		print(thi)
 	fo.close()
 	return True
 
@@ -2624,7 +2687,7 @@ def mkcov_camb(nm,ngal,bias=1.,thmax=12,fs=.035,bins=.15,nbin=40,wa='a'):
 			p = legendre(j,cth1)
 			fo.write(str(p)+'\n')
 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('cov'+nm+wa+str(bins)+'.dat','w')
 	fd = open('diag'+nm+wa+str(bins)+'.dat','w')
 	for i in range(0,nbin):
@@ -2650,7 +2713,7 @@ def mkcov_cambminmax(nm,ngal,bias=1.,thmin=0.075,fs=.035,bins=.15,nbin=40,wa='a'
 # 			p = legendre(j,cth1)
 # 			fo.write(str(p)+'\n')
 # 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('cov'+nm+wa+str(bins)+'.dat','w')
 	fd = open('diag'+nm+wa+str(bins)+'.dat','w')
 	for i in range(0,nbin):
@@ -2677,7 +2740,7 @@ def mkcov_cambNzbin(nmlist,ngallist,biaslist,cfm,thmax=6,fs=.035,bins=.15,nbin=3
 			p = legendre(j,cth1)
 			fo.write(str(p)+'\n')
 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('covall'+wa+str(bins)+'.dat','w')
 	for k in range(0,len(nmlist)):
 		for i in range(0,nbin):
@@ -2708,7 +2771,7 @@ def mkcov_camblg(nm,ngal,bias=1.,thmax=8.97164,nbin=20,fs=.0275):
 			fo.write(str(p)+'\n')
 		thi = thi*m
 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('cov'+nm+'lg.dat','w')
 	fd = open('diag'+nm+'lg.dat','w')
 	thi = thmax
@@ -2727,7 +2790,7 @@ def mkcov_camblg(nm,ngal,bias=1.,thmax=8.97164,nbin=20,fs=.0275):
 		thi = thi*m
 		bins = oldi-thi
 		fo.write('\n')
-		print i
+		print(i)
 	fo.close()
 	return True
 
@@ -2742,7 +2805,7 @@ def mkcov_lg(nm,ngal,bias,thmax=54.5589364964,nbin=20,fs=.125):
 			fo.write(str(p)+'\n')
 		thi = thi*m
 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('cov'+nm+'melg.dat','w')
 	fd = open('diag'+nm+'melg.dat','w')
 	thi = thmax
@@ -2761,7 +2824,7 @@ def mkcov_lg(nm,ngal,bias,thmax=54.5589364964,nbin=20,fs=.125):
 		thi = thi*m
 		bins = oldi-thi
 		fo.write('\n')
-		print i
+		print(i)
 	fo.close()
 	return True
 
@@ -2776,7 +2839,7 @@ def mkcov_cambrp(nm='BOSS0.450.5wall',ngal=863000.,nb=40):
 			p = legendre(j,cth1)
 			fo.write(str(p)+'\n')
 		fo.close()
-	print 'made legendre files'
+	print('made legendre files')
 	fo = open('covBOSSrp.dat','w')
 	fj = open('diagBOSSrp.dat','w')
 	for i in range(0,nb):
@@ -2789,7 +2852,7 @@ def mkcov_cambrp(nm='BOSS0.450.5wall',ngal=863000.,nb=40):
 			if i == j:
 				fj.write(str(thj)+' '+str(sqrt(cov))+'\n')
 		fo.write('\n')
-		print i
+		print(i)
 	fo.close()
 	fj.close()
 	return True
@@ -2916,7 +2979,7 @@ def cl2ompc(theta,zf='0.450.55',maxl=1000,md = 'rs'):
 	try:
 		frs = open('clrs'+zf+'.dat').readlines()
 	except:
-		print 'no z-dist file'
+		print('no z-dist file')
 		md = 'n'
 	oldpl = 1.
 	cr = 0
@@ -2943,7 +3006,7 @@ def cl2ompc(theta,zf='0.450.55',maxl=1000,md = 'rs'):
 		pl = legendre(l,cos(rad))
 		if pl < 0 and oldpl >0:
 			cr += 1
-			print l
+			print(l)
 			if cr == 7:
 				break
 		om += c*pl*(2.*l+1.)/(4.*pi)
@@ -2957,7 +3020,7 @@ def cl2ompc(theta,zf='0.450.55',maxl=1000,md = 'rs'):
 			pl = legendre(l,cos(rad))
 			if pl < 0 and oldpl >0:
 				cr += 1
-				print l
+				print(l)
 				if cr == 7:
 					break
 			om += l**plin*c2/(999**plin)*pl*(2.*l+1.)/(4.*pi)
@@ -3036,7 +3099,7 @@ def mkclfilepc(mult,zf='zsig0.030.450.55',maxl=1000):
 		else:
 			c = cl_limb(l,'TH'+zf+'nzDES')*mult
 		f.write(str(l)+' '+str(c)+'\n')
-		print l,c
+		print(l,c)
 	f.close()
 
 
@@ -3119,7 +3182,7 @@ def cl2cov2bin(theta1,theta2,zf1,zf2,fs=.125,ngal=5000000.,md='n',maxl=1000,bins
 	f = open(dir+'cl'+zf1+zf2+'nodamp.dat').readlines()
 	#f = open('cl'+zf+'.dat').readlines()
 	if md == 'rs':
-		print 'STILL NEEDS TO BE DONE'
+		print('STILL NEEDS TO BE DONE')
 		frs = open(dir+'clrs'+zf+str(bias)+'.dat').readlines()
 	sumrs = 0
 	sum = 0
@@ -3234,7 +3297,7 @@ def mkcovarmcl(file,zmed=.5,thetamin=.5,nbin=20,thetap=.25,ng=5000000.,m=1.,rsm=
 	fo = open('covarm'+str(thetamin)+'deg'+str(nbin)+'bin'+file+'mult'+str(m)+'cl.dat','w')
 	fd = open('diagerr'+str(thetamin)+'deg'+str(nbin)+'bin'+file+'mult'+str(m)+'cl.dat','w')
 	for i in range(0,nbin):
-		print i
+		print(i)
 		theta1 = (thetamin + i*thetap)		
 		for j in range(0,nbin):
 			theta2 = (thetamin + j*thetap)
@@ -3252,7 +3315,7 @@ def mkcovarmcl2bin(file1,file2,zmed=.5,thetamin=.5,nbin=20,thetap=.25,ng=5000000
 	fo = open('covarm2bin'+str(thetamin)+'deg'+str(nbin)+'bin'+file1+file2+'mult'+str(m)+'cl.dat','w')
 	#fd = open('diagerr'+str(thetamin)+'deg'+str(nbin)+'bin'+file+'mult'+str(m)+'cl.dat','w')
 	for i in range(0,2*nbin):
-		print i
+		print(i)
 		if i < nbin:
 			theta1 = (thetamin + i*thetap)
 			im = 0
@@ -3305,7 +3368,7 @@ def mkpcbinclsnophot(zmin,zmax,zw,zpcd=.475,zpcu=.525):
 	z = zmin
 	for i in range(0,nbins):
 		zu = z+zw
-		print z,zu
+		print(z,zu)
 		try:
 			open('nzDESTH'+str(z)+str(zu)+'.dat')
 		except:
@@ -3383,8 +3446,8 @@ def wtest(zmin,zmax,zw,zpcd=.475,zpcu=.525):
 	norm2 = 0
 	bd = zpcd
 	bu = zpcu
- 	wt = 0
- 	for i in range(int(zmin*1000),int(1000*zmax)):
+	wt = 0
+	for i in range(int(zmin*1000),int(1000*zmax)):
  		norm1 += float(nzf[i].split()[1])*.001
 	for i in range(0,nbins):
 		for j in range(i,nbins):
@@ -3402,7 +3465,7 @@ def wtest(zmin,zmax,zw,zpcd=.475,zpcu=.525):
 			if zmm >= zpcd and zmm < zpcu:
 				if i == j:
 					zm = (float(nzf[z1mind].split()[1])/norm1)*(float(nzf[z2mind].split()[1])/norm1)
-					print zmm,zm*zw
+					print(zmm,zm*zw)
 					wt += zm*w*zw*zw	
 
 	return wt
@@ -3450,13 +3513,13 @@ def pccl(zmin,zmax,zw,zpcd=.475,zpcu=.525):
 				else:
 					zm = (float(nzf[z1mind].split()[1])/norm1)*(float(nzf[z2mind].split()[1])/norm2)
 					f = open('clLO'+zf1+'nodamp.dat')
-					print zmm,zm*zw
+					print(zmm,zm*zw)
 					for i in range(0,1000):
 						cl = float(f.readline().split()[1])
 						clpc[i] += zm*cl*zw*zw
 	#	weight += zm
 	weight = 1.
-	print weight
+	print(weight)
 	for i in range(0,len(clpc)):
 		clpc[i] = clpc[i]/weight
 	fo = open('clpcDES'+str(zmin)+str(zmax)+str(zw)+'nodamp.dat','w')
@@ -3487,9 +3550,9 @@ def pcbinerr(zmin,zmax,zw,theta=1.):
 		sig2 = cl2cov(theta,theta,zf=zf1+zf2,fs=.125,ngal=5000000.,md='n',maxl=1000,bins=.25)[0]
 		sig2l.append(sig2)
 		sum += sig2*(float(nzf[z1mind].split()[1])/norm)**2.*(float(nzf[z2mind].split()[1])/norm)**2.
-		print sum
+		print(sum)
 		weight += (float(nzf[z1mind].split()[1])/norm)*(float(nzf[z2mind].split()[1])/norm)
-	print weight
+	print(weight)
 	for i in range(0,(nbins+1)/2):
 		z1d = zmin+i*zw
 		z1u = z1d+zw		
@@ -3507,9 +3570,9 @@ def pcbinerr(zmin,zmax,zw,theta=1.):
 			cl2 = cl(50,'THzsig0.03'+str(z2d)+str(z2u)+'nzDES')
 			cc = clc/sqrt(cl1*cl2)
 			sig = cc*sqrt(sig2l[i]*sig2l[j])
-			print i,j,sig,cc,clc,cl1,cl2
+			print(i,j,sig,cc,clc,cl1,cl2)
 			sum += 2.*sig*(float(nzf[z1mind].split()[1])/norm)*(float(nzf[zumind].split()[1])/norm)**2.
-			print sum
+			print(sum)
 	return sum/weight
 	
 
@@ -3677,7 +3740,7 @@ def chisquare(bias,meas,model,thetamin=1.,thetamax=20.):
 			lmod = fmodel[i].split()
 			mod = float(lmod[1])*bias**2.
 			chi += (mod-meas)**2./err**2.
-			print theta,chi
+			print(theta,chi)
 	return chi
 
 def com2rcom(file):
@@ -3714,7 +3777,7 @@ def chicalccons(cons,source1,source2,bins,min=.9,max=5.1):
 			if i > maxi:
 				maxi = i
 			leng += 1
-	print leng
+	print(leng)
 	#leng = len(b2)
 
 	matrix = zeros((leng,leng),'f')
@@ -3731,7 +3794,7 @@ def chicalccons(cons,source1,source2,bins,min=.9,max=5.1):
 					matrix[i-mini,j-mini] = float(line[j])/float(b2[j].split()[1])/float(b2[i].split()[1])#*.001
 					#if matrix[i,j] < 0:# or abs(i-j) > 7:
 					#	matrix[i,j] = 0.1
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	#print invCov
@@ -3755,7 +3818,7 @@ def chicalccons(cons,source1,source2,bins,min=.9,max=5.1):
 				#
 				ChiSq += (ra-moda)*invCov[i-mini,j-mini]*(rb-modb)
 				if i == j:
-					print ChiSq,ra,rb,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini]
+					print(ChiSq,ra,rb,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini])
 	return ChiSq
 
 def chicalcratio(source,nzs,mult,min=.4,max=5.1,modf='temp',md='nm',gamma=0.557):
@@ -3780,7 +3843,7 @@ def chicalcratio(source,nzs,mult,min=.4,max=5.1,modf='temp',md='nm',gamma=0.557)
 			if i > maxi:
 				maxi = i
 			leng += 1
-	print leng
+	print(leng)
 	#leng = len(b2)
 
 	matrix = zeros((leng,leng),'f')
@@ -3797,7 +3860,7 @@ def chicalcratio(source,nzs,mult,min=.4,max=5.1,modf='temp',md='nm',gamma=0.557)
 					matrix[i-mini,j-mini] = float(line[j])#*.001
 					#if matrix[i,j] < 0:# or abs(i-j) > 7:
 					#	matrix[i,j] = 0.1
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	#print invCov
@@ -3824,7 +3887,7 @@ def chicalcratio(source,nzs,mult,min=.4,max=5.1,modf='temp',md='nm',gamma=0.557)
 				#
 				ChiSq += (ra-moda)*invCov[i-mini,j-mini]*(rb-modb)
 				if i == j:
-					print ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini]
+					print(ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini])
 	return ChiSq
 
 
@@ -3947,14 +4010,14 @@ def mkbins(binw,z0=.5,zs=0.03):
 	fb.write(str(zmax)+'\n')
 	fm.write(str(z)+'\n')
 	while zmax < 1.4:
-		print zmin,zmax
+		print(zmin,zmax)
 		#mknzdTH('nzDES.dat',zmin,zmax,zsig=zs)
 		#print 'nz file done'
 		for l in range(0,30):
 			mkphi(l,'THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES')
-		print 'phi made'
+		print('phi made')
 		mkclfile('THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES')
-		print 'cl file made'
+		print('cl file made')
 		thmin = 12./(d.dc(z)*pi/180.)
 		thmin = int(100*thmin)/100.
 		thplus = 6./(d.dc(z)*pi/180.)
@@ -3962,7 +4025,7 @@ def mkbins(binw,z0=.5,zs=0.03):
 		#omegadzz('zdTHzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES.dat',z,of='om',nbin=20,thmin=thmin,gam=.557,m=.25,b=.045,hub=.7,bias=1.0,p=thplus)
 		#print 'w2 file made'
 		mkcovarmcl('THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES',zmed=z,thetamin=thmin,nbin=20,thetap=thplus,ng=ngal,m=1.,rsm='nrs')
-		print 'covar file made'
+		print('covar file made')
 		zmin = zmax
 		zmax = zmin+binw*(1.+zmin)
 		z = (zmin+zmax)/2.
@@ -3976,22 +4039,22 @@ def mkbins(binw,z0=.5,zs=0.03):
 		zml.append(z)
 		fb.write(str(zmax)+'\n')
 		fm.write(str(z)+'\n')
-	print zmin,zmax	
+	print(zmin,zmax)	
 	mknzdTH('nzDES.dat',zmin,zmax,zsig=zs)
-	print 'nz file done'
+	print('nz file done')
 	for l in range(0,30):
 		mkphi(l,'THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES')
-	print 'phi made'
+	print('phi made')
 	mkclfile('THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES')
-	print 'cl file made'
+	print('cl file made')
 	thmin = 12./(d.dc(z)*pi/180.)
 	thmin = int(100*thmin)/100.
 	thplus = 6./(d.dc(.5)*pi/180.)
 	thplus = int(100*thplus)/100.
 	omegadzz('zdTHzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES.dat',z,of='om',nbin=20,thmin=thmin,gam=.557,m=.25,b=.045,hub=.7,bias=1.0,p=thplus)
-	print 'w2 file made'
+	print('w2 file made')
 	mkcovarmcl('THzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES',zmed=z,thetamin=thmin,nbin=20,thetap=thplus,ng=ngal,m=1.,rsm='nrs')
-	print 'covar file made'
+	print('covar file made')
 	fm.close()
 	fb.close()
 	return zbl,zml
@@ -4003,7 +4066,7 @@ def findferrs(binw,zs=.03):
 	fo = open('DESferr'+str(zs)+str(binw)+'a.dat','w')
 	for i in range(0,len(fm)):
 		z = float(fm[i])
-		print z
+		print(z)
 		zmin = float(fb[i])
 		zmax = float(fb[i+1])
 		gamhi = findgamhi(zmin,zmax,z,zs=zs)
@@ -4022,7 +4085,7 @@ def mkferrssubfiles(binw,zs):
 	ngalth = 15000000.*binw/.0666
 	for i in range(0,len(fm)):
 		z = float(fm[i])
-		print z
+		print(z)
 		zmin = float(fb[i])
 		zmax = float(fb[i+1])
 		#if i > 0:
@@ -4061,7 +4124,7 @@ def findferrsb(binw,zs=.03):
 		start = 1
 	for i in range(start,len(fm)):
 		z = float(fm[i])
-		print z
+		print(z)
 		zmin = float(fb[i])
 		zmax = float(fb[i+1])
 		#if i > 0:
@@ -4093,7 +4156,7 @@ def findferrsb(binw,zs=.03):
 		omf = str(thmin)+'deg20bin'
 		zmf = str(zmin)+str(zmax)+'nzDES'
 		ferr = chicombggrid(omf,zmf,fc,min=2.*thmin,mt=mult,fmin=.025,fmax=1.5,zsig=zs)
-		print 'ferr is '+str(ferr)+' at z = '+str(z)
+		print('ferr is '+str(ferr)+' at z = '+str(z))
 		fo.write(str(z)+' '+str(ferr)+'\n')
 	fo.close()
 
@@ -4253,7 +4316,7 @@ def mkfsigfile(binw,zs,gam):
 	bl = []
 	norm = 1.
 	#norm = ld0[1088000]/ld[1088000]
-	print norm
+	print(norm)
 	fo = open('fsig'+str(binw)+str(zs)+str(gam)+'z0.dat','w')
 	for i in range(0,len(fm)):
 		z = float(fm[i])
@@ -4274,7 +4337,7 @@ def gamchi(binw,zs,gam,bm='n'):
 	fgl = []
 	bl = []
 	norm = ld0[1088000]/ld[1088000]
-	print norm
+	print(norm)
 	for i in range(0,len(fm)):
 		z = float(fm[i])
 		zind = int(1000*z)
@@ -4351,7 +4414,7 @@ def findgamhirange(binw,zs=.03,tol=.01):
 			gamlo = gamlo - (gamhi-gamg)
 			if gamlo < .557:
 				gamlo = .557
-				print 'gamlo = .557, possible problem!!!'
+				print('gamlo = .557, possible problem!!!')
 			newgam = gamlo
 		mkfsigzfile(newgam,binw,zs)
 		chihi = chicalcgamma(binw,zs,gamhi)
@@ -4400,7 +4463,7 @@ def findgamlorange(binw,zs=.03,tol=.01):
 		chimin = chig
 		gammin = gamg
 	while chimin > tol:
-		print gamlo, gamg,gamhi
+		print(gamlo, gamg,gamhi)
 		if chig == chimin:
 			if chihi < chilo:
 				gamlo = gamg
@@ -4416,7 +4479,7 @@ def findgamlorange(binw,zs=.03,tol=.01):
 			gamhi = gamhi + (gamg-gamlo)
 			if gamhi > .557:
 				gamhi = .557
-				print 'gamhi = .557, possible problem!!!'
+				print('gamhi = .557, possible problem!!!')
 			newgam = gamhi
 		if chilo == chimin:
 			gamhi = gamg
@@ -4503,7 +4566,7 @@ def findgamhi(zmin,zmax,z,zs=0.03,tol=.03):
 			gamlo = gamlo - (gamhi-gamg)
 			if gamlo < .557:
 				gamlo = .557
-				print 'gamlo = .557, possible problem!!!'
+				print('gamlo = .557, possible problem!!!')
 			newgam = gamlo
 		try:
 			open('omfiles/om'+str(thm)+'deg20binbias1.0m0.25b0.045h0.7g'+str(newgam)+'pcfzdTHzsig'+str(zs)+str(zmin)+str(zmax)+'nzDES.dat')
@@ -4601,7 +4664,7 @@ def findgamlo(zmin,zmax,z,zs=0.03,tol=.03):
 			gamhi = gamhi + (gamg-gamlo)
 			if gamhi > .557:
 				gamhi = .557
-				print 'gamhi = .557, possible problem!!!'
+				print('gamhi = .557, possible problem!!!')
 			newgam = gamhi
 		if chilo == chimin:
 			gamhi = gamg
@@ -4670,7 +4733,7 @@ def chicalcratiocosmo(source,nzs,min=.4,max=5.1,gamma1=0.557,g2=0.557,bias=1.,m=
 			if i > maxi:
 				maxi = i
 			leng += 1
-	print leng,mini,maxi
+	print(leng,mini,maxi)
 	#leng = len(b2)
 
 	matrix = zeros((leng,leng),'f')
@@ -4687,7 +4750,7 @@ def chicalcratiocosmo(source,nzs,min=.4,max=5.1,gamma1=0.557,g2=0.557,bias=1.,m=
 					matrix[i-mini,j-mini] = float(line[j])#*.001
 					#if matrix[i,j] < 0:# or abs(i-j) > 7:
 					#	matrix[i,j] = 0.1
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	#print invCov
@@ -4712,7 +4775,7 @@ def chicalcratiocosmo(source,nzs,min=.4,max=5.1,gamma1=0.557,g2=0.557,bias=1.,m=
 				#
 				ChiSq += (ra-moda)*invCov[i-mini,j-mini]*(rb-modb)
 				if i == j:
-					print ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini]
+					print(ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini])
 	return ChiSq
 
 def testcosmoratio(bs,g0,b=0.054,m=0.25,g1=0.557,h=.7):
@@ -4723,14 +4786,12 @@ def testcosmoratio(bs,g0,b=0.054,m=0.25,g1=0.557,h=.7):
 
 def chol(zf1='0.4850.515',zf2='0.5150.545',th=0.5):
 	from numpy import zeros
-	from numpy.linalg import *
+	from numpy.linalg import cholesky
 	from random import gauss
-	#mt = bias**2.
-	#mt = 1.
 	mfile = open('covarm2bin'+str(th)+'deg20binTHzsig0.03'+zf1+'nzDESTHzsig0.03'+zf2+'nzDESmult1.0cl.dat').readlines()
 
 	leng= len(mfile)
-	print leng
+	print(leng)
 	matrix = zeros((leng,leng),'f')
 	for i in range(0,leng):
 		line = mfile[i].strip('\n').split()
@@ -4755,7 +4816,7 @@ def pchol(zf1='0.4850.515',zf2='0.5150.545',n=100,fmin1=0.702,fmin2=.712,thm1=0.
 	#fsig2 = open('diagerr0.5deg20binTHzsig0.030.5250.575nzDESmult1.0cl.dat').readlines()
 	
 	for k in range(0,n):
-		print k
+		print(k)
 		dx = []
 		for i in range(0,40):
 			if i < 20:
@@ -4964,7 +5025,7 @@ def chicombggrid(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bmin=.
 				sum += float(ln[j])
 			else:
 				sum += float(ln[j])*2.
-	print sum
+	print(sum)
 	find = int((fmc-fmin+.001)/fstep)
 	find = int(findd+(fmc-0.5+.001)/fstep)
 	
@@ -4978,7 +5039,7 @@ def chicombggrid(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bmin=.
 			ln = f[i].split()
 			for j in range(find-ran,find+1+ran):
 				per += float(ln[j])/sum
-		print per,ran,find
+		print(per,ran,find)
 	if ran <= findu - findd:
 		f1 = ran*fstep
 	else:
@@ -4991,7 +5052,7 @@ def chicombggrid(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bmin=.
 		f2 = (findu-find)*fstep+(ran-1.-(findu-find))*2.*fstep
 
 	err = (f1/abs(per-.68)+f2/abs(oldper-.68))/(1./abs(per-.68)+1./abs(oldper-.68))
-	print per, oldper
+	print(per, oldper)
 	return err	
 
 def chicombggridsimp(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bmin=.8,bmax=1.2,bstep=.01,fmin=.05,fmax=1.6,fstep=.05,bmode='y'):
@@ -5048,7 +5109,7 @@ def chicombggridsimp(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bm
 			sum += float(ln[j])
 			#else:
 			#	sum += float(ln[j])*2.
-	print sum
+	print(sum)
 	find = int((fmc-fmin+.001)/fstep)
 	#find = int(findd+(fmc-0.5+.001)/fstep)
 	
@@ -5062,7 +5123,7 @@ def chicombggridsimp(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bm
 			ln = f[i].split()
 			for j in range(find-ran,find+1+ran):
 				per += float(ln[j])/sum
-		print per,ran,find
+		print(per,ran,find)
 	#if ran <= findu - findd:
 	f1 = ran*fstep
 	#else:
@@ -5075,7 +5136,7 @@ def chicombggridsimp(source,nzs,fmc,min=.5,max=5.1,mt=0.116279069767,zsig=.03,bm
 	#	f2 = (findu-find)*fstep+(ran-1.-(findu-find))*2.*fstep
 
 	err = (f1/abs(per-.68)+f2/abs(oldper-.68))/(1./abs(per-.68)+1./abs(oldper-.68))
-	print per, oldper
+	print(per, oldper)
 	return err	
 
 	
@@ -5203,7 +5264,7 @@ def chiminfindmock(ind,source='0.2deg40bin',nzs='MICE0.05',min=.8,max=5.01,gamma
 # 		d = distance(.25,.75)
 # 		fmin = d.omz(.5)**gammin
 	fmin = gammin
-	print gammin, chimin, fmin
+	print(gammin, chimin, fmin)
 	return gammin, chimin, fmin
 
 def chiminmultmock(nzs,g,min=.15,max=5.1,TH='n',chid=.001):
@@ -5237,7 +5298,7 @@ def chiminmultmock(nzs,g,min=.15,max=5.1,TH='n',chid=.001):
 		chi1 = chicalcmock('0.2deg40bin',nzs,min=min,max=max,md='f',g=g,THfile=TH,mult=mu)
 		chi2 = chicalcmock('0.2deg40bin',nzs,min=min,max=max,md='f',g=g,THfile=TH,mult=md)
 		chif = abs(chi/chi1-1.)
-		print md,mo,mu,chi
+		print(md,mo,mu,chi)
 	return mo
 		
 def chidiagmice(source,nzs,THfile='n',min=.4,max=5.1,g=0.557,h=.7,bias=1.0,mult=1.,md='g'):
@@ -5445,7 +5506,7 @@ def chicalcTHcosm(source,nzs,min=.4,max=5.1,md='f',b=0.045,m=0.25,g0=0.557,g1=0.
 			if i > maxi:
 				maxi = i
 			leng += 1
-	print leng
+	print(leng)
 	#leng = len(b2)
 
 	matrix = zeros((leng,leng),'f')
@@ -5463,7 +5524,7 @@ def chicalcTHcosm(source,nzs,min=.4,max=5.1,md='f',b=0.045,m=0.25,g0=0.557,g1=0.
 						matrix[i-mini,j-mini] = float(line[j])#*.001
 					#if matrix[i,j] < 0:# or abs(i-j) > 7:
 					#	matrix[i,j] = 0.1
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	#print invCov
@@ -5485,7 +5546,7 @@ def chicalcTHcosm(source,nzs,min=.4,max=5.1,md='f',b=0.045,m=0.25,g0=0.557,g1=0.
 				#
 				ChiSq += (ra-moda)*invCov[i-mini,j-mini]*(rb-modb)
 				if i == j:
-					print ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini]
+					print(ChiSq,ra,moda,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini])
 	return ChiSq
 
 
@@ -5509,7 +5570,7 @@ def chicalcf(source,f,nzs,min=.4,max=5.1):
 			if i > maxi:
 				maxi = i
 			leng += 1
-	print leng
+	print(leng)
 	#leng = len(b2)
 
 	matrix = zeros((leng,leng),'f')
@@ -5526,7 +5587,7 @@ def chicalcf(source,f,nzs,min=.4,max=5.1):
 					matrix[i-mini,j-mini] = float(line[j])#*.001
 					#if matrix[i,j] < 0:# or abs(i-j) > 7:
 					#	matrix[i,j] = 0.1
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	#print invCov
@@ -5550,7 +5611,7 @@ def chicalcf(source,f,nzs,min=.4,max=5.1):
 				#
 				ChiSq += (ra-moda)*invCov[i-mini,j-mini]*(rb-modb)
 				if i == j:
-					print ChiSq,ra,rb,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini]
+					print(ChiSq,ra,rb,invCov[i-mini,j-mini],matrix[i-mini,j-mini],mtest[i-mini,j-mini])
 	return ChiSq
 
 
@@ -5587,15 +5648,15 @@ def pperCV(k,n,z1,z2):
 	
 	pkl = pkz(om=0.3,lam=0.7,sig8=0.8,h=.7)
 	pk = pkl.DELsqlin(k,(z1+z2)/2.)/k**3.*2.*pi**2
-	print pk
+	print(pk)
 	d = distance(h=1.)
 	#v = d.covol(z1,z2)
 	v = 4.*pi/3.*(d.dc(z2)**3.-d.dc(z1)**3.)
-	print v
+	print(v)
 	dk = k*.1
 	vk = 4.*pi*k**2.*dk#/(2.*pi)**3.
 	nbar = n/v
-	print nbar,pk,sqrt(v),sqrt(vk)
+	print(nbar,pk,sqrt(v),sqrt(vk))
 	return (2.*pi)**1.5/sqrt(vk)/sqrt(v)*(1.+1./(nbar*pk))
 	
 def pperCA(k,zmed,nzfile,n=5000000.,f=.125):
@@ -5645,7 +5706,7 @@ def covarw2sum(r,r2,dr,dr2,zmed=.5,n=5000000.,f=.125,pkfile='projcrosspc'):
 	m = 1.-float(pkfile[1].split()[0])/float(pkfile[0].split()[0])
 	A = 4.*pi*(d.dc(zmed)**2.)*f
 	nbar = n/A
-	print A,nbar,m
+	print(A,nbar,m)
 	for i in range(0,len(pkfile)):
 		ln = pkfile[i].split()
 		k = float(ln[0])
@@ -5670,7 +5731,7 @@ def covarw2sum(r,r2,dr,dr2,zmed=.5,n=5000000.,f=.125,pkfile='projcrosspc'):
 		covarc += 2.*sig2r*sig2r2*pk/nbar
 		covarn += sig2r*sig2r2*(1./nbar)**2.
 	covar = covarp + covarc + covarn
-	print covarp,covarc,covarn
+	print(covarp,covarc,covarn)
 	return covar
 
 def jdt0(r,k,dr):
@@ -5709,7 +5770,7 @@ def covarw2cohn(r,r2,dr,dr2,zmed=.5,n=5000000.,f=.125,pkfile='kprojpcDES.4.6'):
 		covarc += k*dk*(2./nbar*pk)*jdt0(r,k,dr)*jdt0(r2,k,dr2)
 		#print k, dk, pk, jdt0(r,k,dr)*jdt0(r2,k,dr2), covar
 	covar = covarp*m+covarc*m+innp
-	print covarp*m,covarc*m,innp
+	print(covarp*m,covarc*m,innp)
 	return covar
 
 
@@ -5799,7 +5860,7 @@ def mkcovarmratcl(file,zf,mult=1.,cv=1./7.,m=.25,b=.045,h=.7,g=.849,mcon='n',con
 				cxy = -1.*cxy
 			ctot = cx/y1/y2+cy*x1*x2/y1**2./y2**2.-1.*cxy*x1/y1**2./y2-1.*cxy*x2/y1/y2**2.
 			if i == j:
-				print cx/y1/y2,cy*x1*x2/y1**2./y2**2.,-1.*cxy*x1/y1**2./y2,-1.*cxy*x2/y1/y2**2.,cx,cy,cxy,ctot
+				print(cx/y1/y2,cy*x1*x2/y1**2./y2**2.,-1.*cxy*x1/y1**2./y2,-1.*cxy*x2/y1/y2**2.,cx,cy,cxy,ctot)
 				fdiag.write(str(sqrt(ctot))+'\n')
 			fo.write(str(ctot)+' ')
 			if j == len(dl1) -1:
@@ -5840,7 +5901,7 @@ def mkcovarmr(f1,f2,cm1,cm2,cv=.125):
 				cxy = -1.*cxy
 			ctot = cx/y1/y2+cy*x1*x2/y1**2./y2**2.-2.*cxy/y1/y2
 			if i == j:
-				print x1,x2,y1,y2,cx,cy,cxy,ctot
+				print(x1,x2,y1,y2,cx,cy,cxy,ctot)
 			fo.write(str(ctot)+' ')
 			if j == len(dl1) -1:
 				fo.write('\n')
@@ -5852,7 +5913,7 @@ def pkerr(sigz,n,k=.01,zl=.2,zh=.3,zmed=.25,solidang=6000.):
 	pkl = pkz(om=0.3,lam=0.7,sig8=0.8,h=.7)
 	pk = pkl.DELsqlin(k,zmed)/k**3.*2.*pi**2.
 	vol = solidang/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zl)**3.)
-	print vol
+	print(vol)
 	#sigfz = exp(k**2.*sigd**2.)
 	#sigsq = 1./pi*((2.*sigd*k)/erf(k*sigd))**2.*(2.*pi)**3./vol*(1.+1./(n*pk**2.))
 	sigfz = 1./sqrt(pi)*((2.*sigd*k)/erf(k*sigd))
@@ -5919,7 +5980,7 @@ def chicalcfake(nbin,md='f'):
 				else:
 					if md != 'd':
 						matrix[i,j] = float(line[j])#*.001
-	print 'made matrix'		
+	print('made matrix')		
 	invCov = inv(matrix)
 	mtest = inv(invCov)
 	ChiSq = 0
@@ -5932,7 +5993,7 @@ def chicalcfake(nbin,md='f'):
 			rb = 2.
 			ChiSq += (ra-moda)*invCov[i,j]*(rb-modb)
 			if i == j:
-				print ChiSq,ra,moda,invCov[i,j],matrix[i,j],mtest[i,j]
+				print(ChiSq,ra,moda,invCov[i,j],matrix[i,j],mtest[i,j])
 	return ChiSq
 
 def covarTHpc(thfile,pcfile):
@@ -5956,7 +6017,7 @@ def covarTHpc(thfile,pcfile):
 		pcTHint += sqrt(float(nzpcu[i].split()[1])*.001/pcnormu*float(nzpcd[i].split()[1])*.001/pcnormd)*float(nzTH[i].split()[1])*.001/thnorm
 		pcint += float(nzpcu[i].split()[1])*.001/pcnormu*float(nzpcd[i].split()[1])*.001/pcnormd
 		thint += (float(nzTH[i].split()[1])*.001/thnorm)**2.
-	print pcTHint,pcint,thint
+	print(pcTHint,pcint,thint)
 	return pcTHint**2./pcint/thint
 
 def davecalc(file):
@@ -5999,7 +6060,7 @@ def mknzpc(zmin,zmax,nzf='nzDES.dat',err=.03):
 			indg = int(z*1000)
 			if indg >= 0 and indg < len(f):
 				pcl[indg] += 1
-		print i,n
+		print(i,n)
 	fo = open('nzpc'+str(zmin)+str(zmax)+'DES.dat','w')
 	for i in range(0,len(pcl)):
 		fo.write(str(i*.001)+' '+str(pcl[i])+'\n')
@@ -6062,7 +6123,7 @@ def mdif():
 			nl[zdind] += 1.
 			dl[zdind] += d
 		else:
-			print zd,zdind
+			print(zd,zdind)
 	fo = open('mdifavediag0.40.6.dat','w')
 	for i in range(0,20):
 		fo.write(str(i/100.)+' '+str(dl[i]/nl[i])+'\n')
@@ -6112,7 +6173,7 @@ def thdif():
 			dl[zdind] += d
 			pl[zdind] += abs(d)/dth
 		else:
-			print zd,zdind
+			print(zd,zdind)
 	fo = open('thdifavediag0.40.6.dat','w')
 	for i in range(0,20):
 		fo.write(str(i/100.)+' '+str(dl[i]/nl[i])+' '+str(pl[i]/nl[i])+'\n')
@@ -6181,7 +6242,7 @@ def diagpcerr(zmin,zmax,thmin=.5,thmax=5.1,md='mock',step=.01,nbin=20):
 		sum = 0
 		cov = mkcov4commock(ang,ang,zmin=zmin,zmax=zmax,nsl=ng,step=step,zm=(zmin+zmax)/2.,zrmin=rmin,zrmax=rmax,zsig=.03)
 
-		print ang,cov
+		print(ang,cov)
 		fo.write(str(ang)+' '+str(cov)+'\n')
 		ang += astep
 	fo.close()
@@ -6212,7 +6273,7 @@ def mkpccovm(zmin,zmax,thmin=.5,thmax=5.1,nbin=20,astep=.25,md='th',step=.01,zsi
 			ang2 = j*astep+thmin
 			cov = mkcov4commock(ang,ang2,zmin=zmin,zmax=zmax,nsl=ng,step=step,zm=(zmin+zmax)/2.,zrmin=rmin,zrmax=rmax,zsig=.03)
 			m[i][j] = cov
-		print ang,m[i][i]
+		print(ang,m[i][i])
 		
 
 	for i in range(0,nbin):
@@ -6298,7 +6359,7 @@ def mkcov4commock(ang,ang2,zmin=.4,zmax=.6,md='pc',nsl=500000.,step=.006,zm=.48,
 			mf.write(str(m)+'\n')
 			#print z1,z2,m
 			if m > 1.:
-				print m
+				print(m)
 		else:
 			m = float(mf[k])
 
@@ -6546,7 +6607,7 @@ def mkaveAnnasliceszr1deg(zmin,zmax,bins='0.03',nmock=60,row=1):
 		z2 = float(ln[1])
 		if z1 > zmin and z2 < zmax and z1 < zmax and z2 > zmin:
 			nc += 1
-	print nc
+	print(nc)
 	for i in range(0,nc):
 		th.append(0)
 	for i in range(1,nmock+1):

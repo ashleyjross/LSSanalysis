@@ -2,6 +2,8 @@ from numpy import loadtxt
 from math import *
 from EH import simulate
 from scipy.special import jn
+import numpy as np
+from fftlog_JB import *
 
 def sph_jn(l,x):
 	return sqrt(pi/(2.*x))*jn(l+.5,x)
@@ -818,10 +820,13 @@ def wmod3(r,mu,mf,r0,sp=1.,gam=-1.7):
 	return xi0,xi2,xi4
 
 def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,beta=0.4,sfog=0,amc=0.0,sigz=0,sigt=6.,sigr=10.,mult=1.,sigs=15.):
+	
 	dir = 'BAOtemplates/'
 	wsigz = ''
 	if sigz != 0:
 		wsigz += 'sigz'+str(sigz)
+	#pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n')	
+	k,pl0,pl2,pl4,psm0,psm2,psm4 = pk3elldfile_dewig(file=file,beta=beta,sfog=sfog,sigz=sigz,sigt=sigt,sigr=sigr,mun=mun,sigs=sigs,dir=dir)	
 	f0 = open(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f2 = open(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f4 = open(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
@@ -832,28 +837,46 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 		f0O = open(dir+'xi0O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 		f2O = open(dir+'xi2O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 		f4O = open(dir+'xi4O'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
+	
+	rl = []
 
 	r = 10.
 
 	while r < 300:
-		if file == 'TSPT_out_z_1.5':
-			xid = xi3elldfilePT(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
-		else:	
-			xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
-		f0.write(str(r)+' '+str(xid[0])+'\n')
-		f2.write(str(r)+' '+str(xid[1])+'\n')
-		f4.write(str(r)+' '+str(xid[2])+'\n')
-		f0mc.write(str(r)+' '+str(xid[3])+'\n')
-		f2mc.write(str(r)+' '+str(xid[4])+'\n')
-		f4mc.write(str(r)+' '+str(xid[5])+'\n')
-		if file == 'TSPT_out_z_1.5':
-			f0O.write(str(r)+' '+str(xid[6])+'\n')
-			f2O.write(str(r)+' '+str(xid[7])+'\n')
-			f4O.write(str(r)+' '+str(xid[8])+'\n')
+		rl.append(r)
+# 		if file == 'TSPT_out_z_1.5':
+# 			xid = xi3elldfilePT(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
+# 		else:	
+# 			xid = xi3elldfile_dewig(r,file,dir,beta=beta,sfog=sfog,sigt=sigt,sigr=sigr,sigs=sigs,mun=mun,sigz=sigz)
+# 		f0.write(str(r)+' '+str(xid[0])+'\n')
+# 		f2.write(str(r)+' '+str(xid[1])+'\n')
+# 		f4.write(str(r)+' '+str(xid[2])+'\n')
+# 		f0mc.write(str(r)+' '+str(xid[3])+'\n')
+# 		f2mc.write(str(r)+' '+str(xid[4])+'\n')
+# 		f4mc.write(str(r)+' '+str(xid[5])+'\n')
+# 		if file == 'TSPT_out_z_1.5':
+# 			f0O.write(str(r)+' '+str(xid[6])+'\n')
+# 			f2O.write(str(r)+' '+str(xid[7])+'\n')
+# 			f4O.write(str(r)+' '+str(xid[8])+'\n')
 
 		r += sp
 		if v == 'y':
 			print(r)
+	rl = np.array(rl)
+	rout,xiout0 = HankelTransform(k,pl0,q=1.5,mu=0.5,output_r=rl,output_r_power=-3,r0=10.)
+	rout,xiout2 = HankelTransform(k,pl2,q=1.5,mu=2.5,output_r=rl,output_r_power=-3,r0=10.)
+	rout,xiout4 = HankelTransform(k,pl4,q=1.5,mu=4.5,output_r=rl,output_r_power=-3,r0=10.)
+	rout,xiout0sm = HankelTransform(k,psm0,q=1.5,mu=0.5,output_r=rl,output_r_power=-3,r0=10.)
+	rout,xiout2sm = HankelTransform(k,psm2,q=1.5,mu=2.5,output_r=rl,output_r_power=-3,r0=10.)
+	rout,xiout4sm = HankelTransform(k,psm4,q=1.5,mu=4.5,output_r=rl,output_r_power=-3,r0=10.)
+	for i in range(0,len(rout)):
+		f0.write(str(rout[i])+' '+str(xiout0[i]/(5.*pi))+'\n')
+		f2.write(str(rout[i])+' '+str(xiout2[i]/(-5.*pi))+'\n')
+		f4.write(str(rout[i])+' '+str(xiout4[i]/(5.*pi))+'\n')
+		f0mc.write(str(rout[i])+' '+str(xiout0sm[i]/(5.*pi))+'\n')
+		f2mc.write(str(rout[i])+' '+str(xiout2sm[i]/(-5.*pi))+'\n')
+		f4mc.write(str(rout[i])+' '+str(xiout4sm[i]/(5.*pi))+'\n')
+		
 	f0.close()
 	f2.close()
 	f4.close()
@@ -938,10 +961,10 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 	for i in range(0,100):
 		mu = i/100.+.005
 		mul.append(mu)		
-		anipoly = (1.+beta*mu**2.)**2.
-		anipoly2 = (1.+beta*mu**2.)**2.*pl2[i]
-		anipoly4 = (1.+beta*mu**2.)**2.*pl4[i]
-		anipolyl.append((anipoly,anipoly2,anipoly4))
+# 		anipoly = (1.+beta*mu**2.)**2.
+# 		anipoly2 = (1.+beta*mu**2.)**2.*pl2[i]
+# 		anipoly4 = (1.+beta*mu**2.)**2.*pl4[i]
+# 		anipolyl.append((anipoly,anipoly2,anipoly4))
 	k0 = float(f[0].split()[0])
 	k1 = float(f[1].split()[0])
 	ldk = log(k1)-log(k0)
@@ -1006,7 +1029,7 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 			#damp4 = (1.-exp(-0.25*k**2.*mu**2.*(2.*ff+ff**2.)*sigt*sigr))
 			#damp = damp1*damp2+damp3*damp4 	
 			
-			anipoly = anipolyl[m]
+			#anipoly = anipolyl[m]
 			pk0 += C**2.*(dpk*damp**2.+pksm)
 			pk2 += (dpk*damp**2.+pksm)*pl2[m]*C**2.
 			pk4 += (dpk*damp**2.+pksm)*pl4[m]*C**2.
@@ -1037,6 +1060,149 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 		plt.plot(d[0],d[-2]/d[-1])
 		plt.show()
 	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
+
+def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
+	from scipy.integrate import quad
+	from Cosmo import distance
+	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
+	#print dir
+	mult = 1.
+	dir = 'powerspectra/'
+	if file=='Challenge_matterpower' or file == 'TSPT_out':
+		om = 0.31
+		lam = 0.69
+		h = .676
+		nindex = .963
+		ombhh = .022
+	if file == 'MICE_matterpower':
+		om = 0.25
+		lam = .75
+		h = .7
+		ombhh = .044*0.7*.7	
+		nindex = .949
+
+	f = np.loadtxt(dir+file+'.dat').transpose()
+	if pw == 'y':
+		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
+		fo.write('# k P0 P2 P4 Psmooth\n')
+	if file != 'Pk_MICEcosmology_z0_Plin_Pnowig':
+		s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
+	else:
+		mult = 8.*pi**3.	
+	pl2 = []
+	pl4 = []
+	beta0 = 0.4
+	for i in range(0,100):
+		pl2.append(P2(i/100.+.005))
+	for i in range(0,100):
+		pl4.append(P4(i/100.+.005))
+	mul = []
+	anipolyl = []
+	for i in range(0,100):
+		mu = i/100.+.005
+		mul.append(mu)		
+# 		anipoly = (1.+beta*mu**2.)**2.
+# 		anipoly2 = (1.+beta*mu**2.)**2.*pl2[i]
+# 		anipoly4 = (1.+beta*mu**2.)**2.*pl4[i]
+# 		anipolyl.append((anipoly,anipoly2,anipoly4))
+	#k = f[0][0]
+	#if file == 'camb_Nacc' or file == 'Pk_MICEcosmology_z0_Plin_Pnowig':
+	#	norm = 1.
+	#else:
+	#	norm = f[0][1]/s.Psmooth(k,0)*mult
+	#print norm
+	b = 2.
+	ff =beta*b
+	if sigz != 0:
+		z = .8
+		d = distance(.25,.75)
+		sigzc = d.cHz(z)*sigz
+	
+	kl = f[0]
+	pml = f[1]
+	norm = pml[0]/s.Psmooth(kl[0],0)
+	p0l = []
+	p2l = []
+	p4l = []
+	psm0l = []
+	psm2l = []
+	psm4l = []
+
+	for i in range(0,len(kl)):
+		k = kl[i]
+		pk = pml[i]*mult
+		pk0 = 0
+		pk2 = 0
+		pk4 = 0
+		pksm0 = 0
+		pksm2 = 0
+		pksm4 = 0
+		if file == 'Pk_MICEcosmology_z0_Plin_Pnowig':
+			pksm = float(f[i].split()[2])*mult
+		else:	
+			pksm = s.Psmooth(k,0)*norm
+		dpk = pk-pksm
+		for m in range(0,100):
+			#mu = (1.-mul[m])			
+			mu = mul[m]
+
+			if mun == 'n':
+				mu = (1.-mul[m])
+			if sfog > 0:
+				F = 1./(1.+k**2.*mu**2.*sfog**2./2.)**2.
+			else:
+				F = (1.+k**2.*sfog**2./2.)**2./(1.+k**2.*(1.-mu)**2.*sfog**2./2.)**2.
+			if mun == 'b':
+				mus2 = mu**2.
+				F = (1.+beta*mus2*(1.-exp(-0.5*(k*sigs)**2.)))**2.*1./(1.+k**2.*mu**2.*(sfog)**2./2.)**2.
+			#C *doesn't include damping*
+			S = mun*exp(-0.5*(k*sigs)**2.)
+			C = (1.+beta*mu*mu*(1.-S))*1./(1.+k**2.*mu**2.*(sfog)**2./2.)
+			sigv2 = (1-mu**2.)*sigt**2./4.+mu**2.*sigr**2./4.
+			damp = exp(-1.*k*k*sigv2)
+			if sigz != 0:
+				C = C*exp(-0.5*k*k*mu*mu*sigzc*sigzc)	
+			pkmu = C**2.*(dpk*damp**2.+pksm)
+			pkmusm = C**2.*pksm
+			pk0 += pkmu
+			pk2 += pkmu*pl2[m]
+			pk4 += pkmu*pl4[m]
+			pksm0 += pkmusm
+			pksm2 += pkmusm*pl2[m]
+			pksm4 += pkmusm*pl4[m]
+		pk0 = pk0/100.
+		pk2 = 5.*pk2/100.
+		pk4 = 9.*pk4/100.
+		pksm0 = pksm0/100.
+		pksm2 = 5.*pksm2/100.
+		pksm4 = 9.*pksm4/100.
+		p0l.append(pk0)
+		p2l.append(pk2)
+		p4l.append(pk4)
+		psm0l.append(pksm0)
+		psm2l.append(pksm2)
+		psm4l.append(pksm4)
+		print(pk0,pksm0,dpk)
+
+		if pw == 'y':
+			fo.write(str(k)+' '+str(pk0)+' '+str(pk2)+' '+str(pk4)+' '+str(pksm0)+' '+str(pksm2)+' '+str(pksm4)+' '+str(pk)+' '+str(pksm)+'\n')
+		
+	if pw == 'y':
+		fo.close()
+		from matplotlib import pyplot as plt
+		from numpy import loadtxt as load
+		d = load('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat').transpose()
+		plt.xlim(0,.3)
+		plt.plot(d[0],d[-2]/d[-1])
+		plt.show()
+	p0l = np.array(p0l)
+	p2l = np.array(p2l)
+	p4l = np.array(p4l)
+	psm0l = np.array(psm0l)
+	psm2l = np.array(psm2l)
+	psm4l = np.array(psm4l)
+	return kl,p0l,p2l,p4l,psm0l,psm2l,psm4l
+
 
 def xi0dfile_dewig(r,file='Challenge_matterpower',dir='',sig=8.,max=51,ns=.95,sigz=0,pw='n'):
 	from scipy.integrate import quad

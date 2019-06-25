@@ -244,7 +244,7 @@ class baofit3D_ellFull_1cov:
 		Btfac = (log(Beta/self.B0)/self.Bt)**2.
 		return chit+BBfac+Btfac
 
-	def chi_templ_alphfXX_an(self,list,wo='n',fw='',v='n'):
+	def chi_templ_alphfXX_an(self,list,wo='n',fw='',v='n',dir=''):
 		from time import time
 		t = time()
 		BB = list[0]
@@ -265,7 +265,8 @@ class baofit3D_ellFull_1cov:
 		nrbin = self.nbin//2
 		modl = []
 		if wo == 'y':
-			fo = open('ximod'+fw+'.dat','w')
+			fo = open(dir+'ximod'+fw+'.dat','w')
+			fp = open(dir+'xipar'+fw+'dat','w')
 		pv = []
 		for i in range(0,self.nbin//2):
 			pv.append(self.xim[i]-BB*self.xia[i])
@@ -274,6 +275,8 @@ class baofit3D_ellFull_1cov:
 		 
 		Al = findPolya(self.H,self.invt,pv)
 		A0,A1,A2,A02,A12,A22 = Al[0],Al[1],Al[2],Al[3],Al[4],Al[5]
+		if wo == 'y':
+			fp.write(str(BB)+' '+str(Beta)+' '+str(A0)+' '+str(A1)+' '+str(A2)+' '+str(A02)+' '+str(A12)+' '+str(A22)+'\n')
 		for i in range(0,self.nbin//2):
 			r = self.rl[i]
 			
@@ -305,7 +308,7 @@ class baofit3D_ellFull_1cov:
 			print(dl,chit)
 		BBfac = (log(BB/self.BB)/self.Bp)**2.
 		#Btfac = ((Beta-self.B0)/self.Bt)**2.
-		Btfac = (log(Beta/self.B0)/self.Bt)**2.
+		Btfac = 0#(log(Beta/self.B0)/self.Bt)**2.
 		return chit+BBfac+Btfac
 
 

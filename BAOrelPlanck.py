@@ -363,7 +363,7 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 		plt.text(1.2,1.02,'eBOSS quasars',fontsize=18,color='orange')
 		#plt.text(1.2,.94,'(predicted)',fontsize=18,color='b')
 		xl = [1.5]
-		yl = [0.996]
+		yl = [1.005]
 		el = [0.02]
 		plt.errorbar(xl,yl,el,color='orange',markeredgecolor='k',markersize=8,elinewidth=2.25,markeredgewidth=0,linewidth=0)
 		plt.plot(xl,yl,'*',color='orange',markeredgecolor='k',markersize=18,markeredgewidth=1.5)
@@ -381,14 +381,14 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 	if LRG:
 		plt.text(.68,.95,'eBOSS+BOSS LRGs',fontsize=18,color='firebrick')
 		xl = [.71]
-		yl = [0.968]
-		el = [0.01]
+		yl = [0.975]
+		el = [0.015]
 		plt.errorbar(xl,yl,el,fmt='x',markeredgecolor='k',markersize=7,elinewidth=1.75,color='firebrick')
 
 	if ELG:
 		plt.text(.68,1.03,'eBOSS ELGs',fontsize=18,color='k')
 		xl = [.81]
-		yl = [1.0]
+		yl = [.99]
 		el = [0.03]
 		plt.errorbar(xl,yl,el,fmt='o',markeredgecolor='k',markersize=7,elinewidth=1.75,color='k')
 		plt.plot(xl,yl,'wo')
