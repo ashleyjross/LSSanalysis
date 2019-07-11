@@ -4854,6 +4854,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 			fs = .594/1.24	
 		fn = 1.
 		fs = 1.
+	print(fn,fs)	
 	csample = sample
 	if sample == 'aveQPM_QSO' or sample == 'QPM_QSO':
 		if covmd == 'an':
@@ -5050,7 +5051,7 @@ def xibaoNSmu(sample,mu,zmin=0.6,zmax=1.1,version='4',wm='fkp',bs=8,start=0,md='
 	return True
 
 
-def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4):
+def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,covf=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4):
 	from baofit_pub2D import Xism_arat_1C_an
 	maxind = int(200/bs)
 	print(maxind)
@@ -5078,10 +5079,10 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 
 	if md == 'mockave':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
-		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
 
 	if md == 'mockaveJB':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
@@ -5091,8 +5092,8 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[2][:maxind]
 
 	if covm == 'me':
-		cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat')
-		cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZ'+rec+'angfac0'+str(bs)+'st'+str(binc)+'.dat')  
+		cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')
+		cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')  
 		
 		if len(cN) != len(d0N)*2:
 			print( 'MISMATCHED data and cov matrix!')
@@ -5217,7 +5218,7 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 		dvbS = np.array(dvbS)
 		dvt = (dvN*fsumN+dvS*fsumS)/(fsumS+fsumN)
 		dvbt = (dvbN*fsumN+dvbS*fsumS)/(fsumS+fsumN)
-	anst = Xism_arat_1C_an(dvt,invct,rl,mod,dvbt,invcbt,rlb,bs=bs,fout=fout+'NScomb',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
+	anst = Xism_arat_1C_an(dvt,invct*covf,rl,mod,dvbt,invcbt,rlb,bs=bs,fout=fout+'NScomb',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
 	print(anst)
 	#chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchi.dat').transpose()
 	chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchigrid.dat').transpose()
@@ -7461,12 +7462,15 @@ if __name__ == '__main__':
 	#fl = ''
 	#ind = int(sys.argv[1])
 	#LRGpCMASS post-rec 2D
-	xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='5',min=50,max=150,Bp=0.4)#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
+	#xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='5',min=50,max=150,Bp=0.4,af='angfac0')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
 	#pre-rec
-	#xi2DBAONS(md='data',bs=5,damp='0.406.010.015.00',rec='',ver='test')
+	#xi2DBAONS(md='data',bs=5,damp='0.406.010.015.00',rec='',ver='5_1')
 	
 	#quasars
-	#xibaoNS('QSO',0.8,2.2,version='5',wm='fkp',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
+	xibaoNS('QSO',0.8,2.2,version='5_1_alt_fibIDpSSR',wm='fkp',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
+	#2D
+	#xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4)
+	xi2DBAONS(md='data',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.04.08.015.00',rec='',ver='5_1_alt_fibIDpSSR',min=50,max=150,Bp=0.4,covm='me')
 	#make all xi files pre and post reconstruction
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='')
@@ -7496,7 +7500,33 @@ if __name__ == '__main__':
 #prerec
 #	xibaoNS('ELG',.6,1.1,'5',rec='',covv='',md='data',covmd='ELG',damp='0.5933.06.010.015.00',bs=8,rmin=50,rmax=150,rmaxb=58)
 #postrec
-	#xibaoNS('ELG',.6,1.1,'5',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=50,rmax=150,rmaxb=58)
+# 	xibaoNS('ELG',.6,1.1,'4',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('4 done')
+# 	xibaoNS('ELG',.6,1.1,'4_a',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('4_a done')
+# 	xibaoNS('ELG',.6,1.1,'5_a',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_a done')
+# 	xibaoNS('ELG',.6,1.1,'5_b',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_b done')
+# 	xibaoNS('ELG',.6,1.1,'5_c',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_c done')
+# 	xibaoNS('ELG',.6,1.1,'5_d',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_d done')
+# 	xibaoNS('ELG',.6,1.1,'5_e',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_e done')
+# 	xibaoNS('ELG',.6,1.1,'5_f',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_f done')
+# 	xibaoNS('ELG',.6,1.1,'5',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5 done')
+# 	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_1 done')
+# 	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,start=2,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_1 2 done')
+# 	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,start=4,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_1 4 done')
+# 	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,start=6,rmin=30,rmax=150,rmaxb=50)
+# 	print('5_1 6 done')
+
 	#xibaoNS('ELG',.6,1.1,'5',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=50,rmax=150,rmaxb=58,mb='')
 #as function of mu
 # 	print('mu = 0.05')
