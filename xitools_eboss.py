@@ -44,18 +44,18 @@ def mksuball_nran_Dmufbfjack(ranf,galf,nran,wr,njack=20,sran=0):
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(galf,galf,i)
 			fo.write('qsub sub'+str(i)+'.sh \n')
-			#fo.write('sleep 1 \n')
+			fo.write('sleep .5 \n')
 	for j in range(sran,sran+nran):	
 		off = 20+40*j
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(ranf+str(j)+wr,galf,i,off)
 			fo.write('qsub sub'+str(i+off)+'.sh \n')
-			#fo.write('sleep 1 \n')
+			fo.write('sleep .5 \n')
 		off = 40+40*j
 		for i in range(0,njack):
 			mksubfile_Dmufbfjack(ranf+str(j)+wr,ranf+str(j)+wr,i,off)
 			fo.write('qsub sub'+str(i+off)+'.sh \n')
-			#fo.write('sleep 1 \n')
+			fo.write('sleep .5 \n')
 
 	fo.close()
 	return True
