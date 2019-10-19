@@ -17,8 +17,9 @@ def findPolya(H,ci,d):
 	return dot(comb,d)
 
 class baofit3D_ellFull_1cov:
-	def __init__(self,dv,ic,mod,rl):
+	def __init__(self,dv,ic,mod,rl,dirout=''):
 		self.xim = dv
+		self.dirout = dirout
 		xinl = []
 		xisl = []
 		xinli = []
@@ -32,9 +33,9 @@ class baofit3D_ellFull_1cov:
 
 		self.nbin = len(self.rl)
 		
-		print(self.nbin)
-		print(self.xim)		
-		print(self.rl)
+		#print(self.nbin)
+		#print(self.xim)		
+		#print(self.rl)
 		self.invt = ic
 		if self.nbin != len(self.invt):
 			print('vector matrix mismatch!')
@@ -244,7 +245,7 @@ class baofit3D_ellFull_1cov:
 		Btfac = (log(Beta/self.B0)/self.Bt)**2.
 		return chit+BBfac+Btfac
 
-	def chi_templ_alphfXX_an(self,list,wo='n',fw='',v='n',dir=''):
+	def chi_templ_alphfXX_an(self,list,wo='n',fw='',v='n'):
 		from time import time
 		t = time()
 		BB = list[0]
@@ -265,8 +266,8 @@ class baofit3D_ellFull_1cov:
 		nrbin = self.nbin//2
 		modl = []
 		if wo == 'y':
-			fo = open(dir+'ximod'+fw+'.dat','w')
-			fp = open(dir+'xipar'+fw+'dat','w')
+			fo = open(self.dirout+'ximod'+fw+'.dat','w')
+			fp = open(self.dirout+'xipar'+fw+'dat','w')
 		pv = []
 		for i in range(0,self.nbin//2):
 			pv.append(self.xim[i]-BB*self.xia[i])
@@ -308,7 +309,7 @@ class baofit3D_ellFull_1cov:
 			print(dl,chit)
 		BBfac = (log(BB/self.BB)/self.Bp)**2.
 		#Btfac = ((Beta-self.B0)/self.Bt)**2.
-		Btfac = 0#(log(Beta/self.B0)/self.Bt)**2.
+		Btfac = (log(Beta/self.B0)/self.Bt)**2.
 		return chit+BBfac+Btfac
 
 
@@ -714,15 +715,15 @@ def sigreg_2dme(file,spar=.006,spat=.003,min=.8,max=1.2):
 	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
 
 
-def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=.8,maxa=1.2,nobao='n',Bp=.4,Bt=.4,meth='Powell',bs=8,fout=''):
+def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=.8,maxa=1.2,nobao='n',Bp=.4,Bt=.4,meth='Powell',bs=8,fout='',dirout=''):
 	from time import time
 	import numpy	
 	#from optimize import fmin
 	from random import gauss, random
 	from scipy.optimize import minimize 
 	print('try meth = "Nelder-Mead" if does not work or answer is weird')
-	bb = baofit3D_ellFull_1cov(dvb,icovb,mod,rlb) #initialize for bias prior
-	b = baofit3D_ellFull_1cov(dv,icov,mod,rl) #initialize for fitting
+	bb = baofit3D_ellFull_1cov(dvb,icovb,mod,rlb,dirout=dirout) #initialize for bias prior
+	b = baofit3D_ellFull_1cov(dv,icov,mod,rl,dirout=dirout) #initialize for fitting
 	b.B0 = B0
 	b.Bt = Bt	
 	
@@ -741,7 +742,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 		if chiB < chiBmin:
 			chiBmin = chiB			
 			BB = B
-			print(BB,chiBmin)
+			#print(BB,chiBmin)
 		B += .01	
  	#bb.chi_templ_alphfXX((BB,0,0,0,1.,0,0,0),v='y')	
 	print(BB,chiBmin)
@@ -749,8 +750,8 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	b.B0 = BB		
 	b.Bp= Bp
 	b.Bt = Bt
-	fo = open(Hdir+'2Dbaofits/arat'+fout+'1covchi.dat','w')
-	fg = open(Hdir+'2Dbaofits/arat'+fout+'1covchigrid.dat','w')
+	fo = open(dirout+'2Dbaofits/arat'+fout+'1covchi.dat','w')
+	fg = open(dirout+'2Dbaofits/arat'+fout+'1covchigrid.dat','w')
 	chim = 1000
 	nar = int((maxa-mina)/spar)
 	nat = int((maxa-mina)/spat)
@@ -766,7 +767,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 
 	for i in range(0,nar):		
 		b.ar = mina+spar*i+spar/2.
-		print(b.ar)
+		#print(b.ar)
 		for j in range(0,nat):
 			b.at = mina+spat*j+spat/2.
 			b.mkxi()
@@ -777,7 +778,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 			fo.write(str(b.ar)+' '+str(b.at)+' '+str(chi)+'\n')
 			fg.write(str(chi)+' ')
 			if chi < chim:
-				print(b.ar,b.at,chi)	
+				#print(b.ar,b.at,chi)	
 				chim = chi
 				alrm = b.ar
 				altm = b.at
@@ -799,7 +800,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	#print chi
 	fo.close()
 	fg.close()
-	ans = sigreg_2dme(Hdir+'2Dbaofits/arat'+fout+'1covchi',spar=spar,spat=spat)
+	ans = sigreg_2dme(dirout+'2Dbaofits/arat'+fout+'1covchi',spar=spar,spat=spat)
 	return ans
 
 

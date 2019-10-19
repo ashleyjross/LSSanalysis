@@ -1827,10 +1827,13 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 
 
 def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec=''):
-	dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
-	predir = dir + 'prerec/2PCF/'
-	recdir = dir + 'recon/2PCF/'
-	shuffdir = dir + 'prerec_shuf/2PCF/'
+	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
+	dir = '/global/cscratch1/sd/ajross/ebossxi/'
+	#predir = '/project/projectdirs/eboss/czhao/EZmock/'+samp+'_v'+ver+'/clustering/2PCF/'
+	predir = dir + samp+'_v'+str(ver)+'/2PCF/'
+	#recdir = '/project/projectdirs/eboss/czhao/EZmock/'+samp+'_v'+ver+rec+'/clustering/2PCF/'
+	#shuffdir = dir + 'prerec_shuf/2PCF/'
+	dirout = dir+ samp+'_v'+str(ver)+'/'
 	muw = ''
 	if mumin != 0:
 		muw += 'mumin'+str(mumin)
@@ -1839,14 +1842,14 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 	if samp == 'ELG':
 		zmin = 0.6
 		zmax = 1.1
-	if samp == 'LRG':
+	if samp == 'LRG' or samp == 'LRGpCMASS':
 		zmin = 0.6
 		zmax = 1.0
 	if samp == 'QSO':
 		zmin = 0.8
 		zmax = 2.2
-	if pcmass:
-		samp += 'pCMASS'	
+	#if pcmass:
+	#	samp += 'pCMASS'	
 	#ddnorm = af['ddnorm'][0][num]/2.
 	#drnorm = af['drnorm'][0][num]/2.
 	#ddnorm = 1.
@@ -1872,9 +1875,9 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 		
 		dd = np.loadtxt(predir+fn+'.dd').transpose()[-1]#*ddnorm
 		dr = np.loadtxt(predir+fn+'.dr').transpose()[-1]#*drnorm
-		normd = (np.loadtxt(predir+fn+'.dd').transpose()[-2]/dd)[1000]
-		normdr = (np.loadtxt(predir+fn+'.dr').transpose()[-2]/dr)[0]
-		print(normdr/normd,normr/normdr)
+		#normd = (np.loadtxt(predir+fn+'.dd').transpose()[-2]/dd)[1000]
+		#normdr = (np.loadtxt(predir+fn+'.dr').transpose()[-2]/dr)[0]
+		#print(normdr/normd,normr/normdr)
 
 	if rec == 'rec':
 		
@@ -1888,10 +1891,10 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 		dd = np.loadtxt(shuffdir+fn+'.dd').transpose()[-1]#*ddnorm
 		dr = np.loadtxt(shuffdir+fn+'.ds').transpose()[-1]#*drnorm
 		ss = np.loadtxt(shuffdir+fn+'.ss').transpose()[-1]#*rrnorm
-		normd = (np.loadtxt(shuffdir+fn+'.dd').transpose()[-2]/dd)[1000]
-		normdr = (np.loadtxt(shuffdir+fn+'.ds').transpose()[-2]/dr)[0]
-		norms = (np.loadtxt(shuffdir+fn+'.ss').transpose()[-2]/ss)[0]
-		print(normdr/normd,norms/normdr,norms/normr)
+		#normd = (np.loadtxt(shuffdir+fn+'.dd').transpose()[-2]/dd)[1000]
+		#normdr = (np.loadtxt(shuffdir+fn+'.ds').transpose()[-2]/dr)[0]
+		#norms = (np.loadtxt(shuffdir+fn+'.ss').transpose()[-2]/ss)[0]
+		#print(normdr/normd,norms/normdr,norms/normr)
 	
 	#if subt:
 	#if rec == 'rec':
@@ -1901,7 +1904,7 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 	#	wrp = np.loadtxt(dir+'xi/wrpELG'+reg+'EZmock'+rec+str(num)+muw+'1st0.dat').transpose()
 	
 	
-	nb = (200-start)/bs
+	nb = (200-start)//bs
 	xil = np.zeros(nb)
 	xil2 = np.zeros(nb)
 	xil4 = np.zeros(nb)
@@ -1975,13 +1978,13 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 			xib += xi*dmu
 			xib2 += xi*dmu*P2(mu)*5.
 			xib4 += xi*dmu*P4(mu)*9.		
-		xil[i/bs] = xib
-		xil2[i/bs] = xib2
-		xil4[i/bs] = xib4
+		xil[i//bs] = xib
+		xil2[i//bs] = xib2
+		xil4[i//bs] = xib4
 		if rec != 'shuff':
-			wl[i/bs] = w
-			wl2[i/bs] = w2
-			wl4[i/bs] = w4
+			wl[i//bs] = w
+			wl2[i//bs] = w2
+			wl4[i//bs] = w4
 		#if rec != '':	
 		#	print(ddt/sst,drt/sst,sst/rrt,rrt)
 		#else:
@@ -1990,7 +1993,7 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 	#print xil
 	#if subt:
 	#	muw += 'subt'	
-	fo = open(dir+'xi/xi024'+samp+reg+'EZmock'+rec+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+'EZmock'+rec+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+' '+str(wl[i])+' '+str(wl2[i])+' '+str(wl4[i])+'\n')
@@ -2324,20 +2327,22 @@ def mkcov_mockELG_EZ_mu(reg,mu,samp='ELG',pcmass=False,bs=8,N=1000,start=0,mumin
 
 
 def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1,angfac=0,md='me',rec=''):
-	dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
-	if md == 'me':
-		dir += '/xi/'
-	if md == 'cz' and rec != 'rec':
-		dir += 'prerec/2PCF/'	
-	if pcmass:
-		samp += 'pCMASS'
+	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
+	#if md == 'me':
+	#	dir += '/xi/'
+	#if md == 'cz' and rec != 'rec':
+	#	dir += 'prerec/2PCF/'	
+	#if pcmass:
+	#	samp += 'pCMASS'
+	dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ver)+'/'
+	
 	muw = ''
 	if mumin != 0:
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
 	bsst = str(bs)+'st'+str(start)
-	nbin = (200-start)/bs
+	nbin = (200-start)//bs
 	xiave = np.zeros((nbin*2))
 	cov = np.zeros((nbin*2,nbin*2))
 
@@ -2351,7 +2356,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 		#print( i)
 		#try:
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2382,7 +2387,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 	for i in range(1,N+1):
 		nr = str(i)
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2402,7 +2407,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave02'+reg+samp+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('xiave02'+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin*2):
 		if i < nbin:
@@ -2412,7 +2417,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 		fo.write(str(r)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov02'+reg+samp+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('cov02'+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	
 	for i in range(0,nbin*2):
 		for j in range(0,nbin*2):
@@ -2443,9 +2448,10 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 	return True
 
 def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mumin=0,mumax=1,angfac=0,md='cz',rec=''):
-	dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
-	if md == 'me':
-		dir += '/xi/'
+	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
+	#if md == 'me':
+	#	dir += '/xi/'
+	dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ver)+'/'
 	if md == 'cz' and rec != 'rec':
 		dir += 'prerec/2PCF/'	
 	if mom == 0:
@@ -2460,7 +2466,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
 	bsst = str(bs)+'st'+str(start)
-	nbin = (200-start)/bs
+	nbin = (200-start)//bs
 	xiave = np.zeros((nbin))
 	cov = np.zeros((nbin,nbin))
 
@@ -2474,7 +2480,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 		#print( i)
 		#try:
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2504,7 +2510,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 	for i in range(1,N+1):
 		nr = str(i)
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2525,7 +2531,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave'+str(mom)+reg+samp+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('xiave'+str(mom)+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin):
 		if i < nbin:
@@ -2535,7 +2541,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 		fo.write(str(r)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov'+str(mom)+reg+samp+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('cov'+str(mom)+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	
 	for i in range(0,nbin):
 		for j in range(0,nbin):
@@ -2546,6 +2552,36 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mu
 	return True
 
 
+
+def compLRGBAOstats():
+	xl = np.arange(-5,5,.1)
+	norml = 1./sqrt(2.*np.pi)*np.exp(-1.*xl**2/2.)
+	ap_pre, dap_pre, ap_pos, dap_pos = np.loadtxt('/Users/ashleyross/Dropbox/eboss/ap-pre-post.txt', unpack=1)
+	at_pre, dat_pre, at_pos, dat_pos = np.loadtxt('/Users/ashleyross/Dropbox/eboss/at-pre-post.txt', unpack=1)
+	#fap = np.loadtxt('/Users/ashleyross/Dropbox/eboss/ap-pre-post.txt').transpose()
+	#fat = np.loadtxt('/Users/ashleyross/Dropbox/eboss/at-pre-post.txt').transpose()
+	map = np.mean(ap_pos)
+	msap = np.mean(dap_pos)
+	print(map,msap,np.std(ap_pos))
+	pnorm = (ap_pos-map)/dap_pos
+	plt.hist(pnorm,bins=30,normed=True)
+	plt.plot(xl,norml,'k--')
+	plt.show()
+	mat = np.mean(at_pos)
+	msat = np.mean(dat_pos)
+	print(mat,msat,np.std(at_pos))
+	tnorm = (at_pos-mat)/dat_pos
+	plt.hist(tnorm,bins=30,normed=True)
+	plt.plot(xl,norml,'k--')
+	plt.show()
+	w = dap_pos < 0.02#0.8*dat_pos
+	print(len(dap_pos[w]))
+	print(np.mean(ap_pos[w]),np.mean(at_pos[w]),np.mean(dap_pos[w]),np.mean(dat_pos[w]),np.std(ap_pos[w]),np.std(at_pos[w]))
+	plt.hist(pnorm[w],bins=10,normed=True)
+	plt.plot(xl,norml,'k--')
+	plt.show()
+	
+	return True
 
 def putallBAOmocks(N=1000,sig=1,sigtest=.04,reg='NScombf',samp='ELGEZ',mock1=1,nmock=1000,bs=8,start=0,version='4',mb='',Bp='0.4',mumin=0,mumax=1,rec='',damp='0.5933.058.5',chitest=20):
 	ma = 0
@@ -4706,6 +4742,604 @@ def matchbrick(ebossdir=ebossdir):
 
 
 
+
+def sigreg_2dme(file,spar=.006,spat=.003,min=.8,max=1.2):
+	#find the confidence region from the chi2 grid found in the module below
+	dir = ''
+	f = open(file+'.dat').readlines()
+	sumt = 0
+	nb1 = int((max-min)/spar)	
+	nb2 = int((max-min)/spat)
+	pl1 = []
+	pl2 = []
+	flar = []
+	flat = []
+	for i in range(0,nb1):
+		pl1.append(0)
+	for i in range(0,nb2):	
+		pl2.append(0)
+	for i in range(0,nb1):
+		flar.append(min+i*spar+spar/2.)
+	for i in range(0,nb2):
+		flat.append(min+i*spat+spat/2.)
+	pmax = 0	
+	chimin = 1000
+	corr = 0
+	for i in range(0,len(f)):
+		ln = f[i].split()
+		if len(ln) == 3:
+			chi = float(ln[2])
+			if chi < chimin:
+				chimin = chi
+			p = exp(-.5*chi)
+			a1 = float(ln[0])
+			a2 = float(ln[1])
+			if p > pmax:
+				pmax = p
+				armax = a1
+				atmax = a2
+			corr += a1*a2*p
+			ind1 = int((a1-min)/spar)
+			pl1[ind1] += p		
+			ind2 = int((a2-min)/spat)
+			pl2[ind2] += p
+			sumt += p	
+	corr = corr/sumt
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	ofn = 0
+	sumf = 0
+	sumar = 0
+	sumat = 0
+	for i in range(0,len(pl1)):
+		sumar += pl1[i]
+	for i in range(0,len(pl2)):
+		sumat += pl2[i]
+	for i in range(0,len(flar)):
+		fn = flar[i]
+		od = sum#/sumt
+		pb = pl1[i]/sumar
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flar)-1:
+		pu = pl1[imax+1]/sumar
+		pd = pl1[imax-1]/sumar
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flar[imax-1])+fmax)/2.
+		fu = (float(flar[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flar[imax])
+	a1b = sumf/sum
+	err1 = (fn1u-fn1d)/2.		
+
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	sumf = 0
+	for i in range(0,len(flat)):
+		fn = flat[i]
+		od = sum#/sumt
+		pb = pl2[i]/sumat
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flat)-1:
+		pu = pl2[imax+1]/sumat
+		pd = pl2[imax-1]/sumat
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flat[imax-1])+fmax)/2.
+		fu = (float(flat[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flat[imax])
+	a2b = sumf/sum
+	err2 = (fn1u-fn1d)/2.		
+
+
+	#print sumf/sum,am
+	corr = corr-a1b*a2b
+	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
+
+def sigreg_2dmea(arr,spar=.006,spat=.003,min=.8,max=1.2):
+	#find the confidence region from the chi2 grid found in the module below
+	sumt = 0
+	nb1 = int((max-min)/spar)	
+	nb2 = int((max-min)/spat)
+	pl1 = []
+	pl2 = []
+	flar = []
+	flat = []
+	for i in range(0,nb1):
+		pl1.append(0)
+	for i in range(0,nb2):	
+		pl2.append(0)
+	for i in range(0,nb1):
+		flar.append(min+i*spar+spar/2.)
+	for i in range(0,nb2):
+		flat.append(min+i*spat+spat/2.)
+	pmax = 0	
+	chimin = 1000
+	corr = 0
+	arrt = arr.transpose()
+	chil = arrt[2]
+	chimin = np.min(chil)
+	minind = np.argmin(chil)
+	armax = arrt[0][minind]
+	atmax = arrt[1][minind]
+	pl = np.exp(-0.5*chil)
+	corr = np.sum(arrt[0]*arrt[1]*pl)
+	sumt = np.sum(pl)
+	corr = corr/sumt
+	for i in range(0,len(arr)):
+		a1 = arrt[0][i]
+		a2 = arrt[1][i]
+		ind1 = int((a1-min)/spar)
+		pl1[ind1] += pl[i]		
+		ind2 = int((a2-min)/spat)
+		pl2[ind2] += pl[i]
+			
+	sumar = np.sum(pl1)
+	sumat = np.sum(pl2)
+	pl1 = np.array(pl1)
+	pl2 = np.array(pl2)
+	flar = np.array(flar)
+	flat = np.array(flat)
+	a1m = np.sum(flar*pl1)/np.sum(pl1)
+	a2m = np.sum(flat*pl2)/np.sum(pl2)
+	s1 = sqrt(np.sum(flar**2.*pl1)/np.sum(pl1)-a1m**2.)
+	s2 = sqrt(np.sum(flat**2.*pl2)/np.sum(pl2)-a2m**2.)
+	return a1m,a2m,s1,s2,chimin,corr-a1m*a2m,(corr-a1m*a2m)/s1/s2
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	ofn = 0
+	sumf = 0
+	sumar = 0
+	sumat = 0
+	for i in range(0,len(pl1)):
+		sumar += pl1[i]
+	for i in range(0,len(pl2)):
+		sumat += pl2[i]
+	for i in range(0,len(flar)):
+		fn = flar[i]
+		od = sum#/sumt
+		pb = pl1[i]/sumar
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flar)-1:
+		pu = pl1[imax+1]/sumar
+		pd = pl1[imax-1]/sumar
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flar[imax-1])+fmax)/2.
+		fu = (float(flar[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flar[imax])
+	a1b = sumf/sum
+	err1 = (fn1u-fn1d)/2.		
+
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	sumf = 0
+	for i in range(0,len(flat)):
+		fn = flat[i]
+		od = sum#/sumt
+		pb = pl2[i]/sumat
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flat)-1:
+		pu = pl2[imax+1]/sumat
+		pd = pl2[imax-1]/sumat
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flat[imax-1])+fmax)/2.
+		fu = (float(flat[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flat[imax])
+	a2b = sumf/sum
+	err2 = (fn1u-fn1d)/2.		
+
+
+	#print sumf/sum,am
+	corr = corr-a1b*a2b
+	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
+
+
+def sigreg_2dJB(tmin,tmax,rmin,rmax):
+	#find the confidence region from the chi2 grid found in the module below
+	dir = ''
+	file='/Users/ashleyross/Dropbox/eBOSS/eBOSS_LRGpCMASS_clustering_vDR16_COMB_rec_5mpc_shift0-rmin50.0-rmax150.0-bb-quad.at.ap.scan2d'
+	f = open(file).readlines()
+	sumt = 0
+	flar = np.linspace(rmin,rmax)
+	spar = flar[1]-flar[0]
+	flat = np.linspace(tmin,tmax)
+	spat = flat[1]-flat[0]
+	nb1 = len(flar)	
+	nb2 = len(flat)
+	pl1 = []
+	pl2 = []
+	
+	#flat = []
+	for i in range(0,nb1):
+		pl1.append(0)
+	for i in range(0,nb2):	
+		pl2.append(0)
+	#for i in range(0,nb1):
+	#	flar.append(min+i*spar+spar/2.)
+	#for i in range(0,nb2):
+	#	flat.append(min+i*spat+spat/2.)
+	pmax = 0	
+	chimin = 1000
+	corr = 0
+	for i in range(0,len(f)):
+		ln = f[i].split()
+		if len(ln) == 3:
+			chi = float(ln[2])
+			if chi < chimin:
+				chimin = chi
+			p = exp(-.5*chi)
+			a1 = float(ln[0])
+			a2 = float(ln[1])
+			if p > pmax:
+				pmax = p
+				atmax = a1
+				armax = a2
+			corr += a1*a2*p
+			ind1 = int((a1-tmin)/spat)
+			#print(a1,ind1,tmin)
+			pl1[ind1] += p		
+			ind2 = int((a2-rmin)/spar)
+			pl2[ind2] += p
+			sumt += p	
+	corr = corr/sumt
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	ofn = 0
+	sumf = 0
+	sumar = 0
+	sumat = 0
+	for i in range(0,len(pl1)):
+		sumat += pl1[i]
+	for i in range(0,len(pl2)):
+		sumar += pl2[i]
+	for i in range(0,len(flar)):
+		fn = flar[i]
+		od = sum#/sumt
+		pb = pl2[i]/sumar
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flar)-1:
+		pu = pl2[imax+1]/sumar
+		pd = pl2[imax-1]/sumar
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flar[imax-1])+fmax)/2.
+		fu = (float(flar[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flar[imax])
+	a1b = sumf/sum
+	err1 = (fn1u-fn1d)/2.		
+
+	sum = 0
+	sumc = 0
+	zero68 = 0
+	zero95 = 0
+	sumca = 0
+	zero68a = 0
+	zero95a = 0
+	thmax = 0
+	thmin = 100
+	ml = 0
+	sig1 = .682
+	sig2 = .95
+	min2 = (1.-sig2)/2.
+	min1 = (1.-sig1)/2.
+	max1 = min1+sig1
+	max2 = min2+sig2
+	pmax = 0
+	s = 0
+	#ofn = float(f[0].split()[0])
+	sumf = 0
+	for i in range(0,len(flat)):
+		fn = flat[i]
+		od = sum#/sumt
+		pb = pl1[i]/sumat
+		sum += pb
+		sumf += fn*pb
+		if pb > pmax:
+			pmax = pb
+			imax = i
+			fmax = fn
+		d = sum#/sumt	
+		if d > min2 and s == 0:
+			abs1 = abs(od-min2)
+			abs2 = abs(d-min2)
+			fn2d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =1
+		if sum > min1 and s == 1:
+			abs1 = abs(od-min1)
+			abs2 = abs(d-min1)
+			fn1d = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =2
+		if sum > max1 and s == 2:
+			abs1 = abs(od-max1)
+			abs2 = abs(d-max1)
+			fn1u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =3
+		if sum > max2 and s == 3:
+			abs1 = abs(od-max2)
+			abs2 = abs(d-max2)
+			fn2u = (ofn/abs1+fn/abs2)/(1./abs1+1./abs2)
+			#print line, sum/sumt
+			s =4
+		ofn = fn
+	if imax != 0 and imax != len(flat)-1:
+		pu = pl1[imax+1]/sumat
+		pd = pl1[imax-1]/sumat
+		dpu = pmax-pu
+		dpd = pmax-pd
+	
+		fd = (float(flat[imax-1])+fmax)/2.
+		fu = (float(flat[imax+1])+fmax)/2.	
+		am = (fu/dpu+fd/dpd)/(1./dpu+1./dpd)
+	else:
+		am = float(flat[imax])
+	a2b = sumf/sum
+	err2 = (fn1u-fn1d)/2.		
+
+
+	#print sumf/sum,am
+	corr = corr-a1b*a2b
+	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
+
+
 def sigreg_c12(file,file2='',fac=1.,md='f'):
 	#report the confidence region +/-1 for chi2
 	dir = ''
@@ -4804,6 +5438,8 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 			recf = '_rec'
 		dn = np.loadtxt(ebossdir+'xi024geboss'+sample+'_NGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
 		ds = np.loadtxt(ebossdir+'xi024geboss'+sample+'_SGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
+		print('number of rows in file:\n')
+		print(len(dn[0]))
 	if sample == 'ELGQPM':
 		dn = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_NGC_'+mockn+'.mul').transpose()
 		ds = np.loadtxt(ebossdir+'ELGmockxi_MV/qpm_mock_anymask_ELG_recon_specweights_SGC_'+mockn+'.mul').transpose()
@@ -4813,6 +5449,33 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		ds = np.loadtxt(dirsci+'/EZmockELGv4/xi/xi024ELGSGCEZmock'+rec+mockn+muw+bsst+'.dat').transpose()
 		indir = ''
 		outdir = dirsci+'EZmockELGv4/BAOfits/'
+
+	if md == 'qsomockave':
+		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+		ezver = version
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
+		outdir = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#xiave02NGCQSO_v5_EZ5st0.dat
+		
+
+		dn = np.loadtxt(dirH+'xiave0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
+		ds = np.loadtxt(dirH+'xiave0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
+
+	if md == 'qsomock':
+		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+		ezver = version
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
+		outdir = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#xiave02NGCQSO_v5_EZ5st0.dat
+		dn = np.loadtxt(dir+'xi024'+sample+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+bsst+'.dat').transpose()
+		ds = np.loadtxt(dir+'xi024'+sample+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+bsst+'.dat').transpose()
+
 
 	if md == 'mockave':
 		try:
@@ -4830,7 +5493,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		#	ds = np.loadtxt(ebossdir+'xiave_recon0SGCELG_EZ'+bsst+'.dat').transpose()
 
 	rl = dn[0]
-	##print rl
+	#print( rl)
 
 	mod = np.loadtxt('BAOtemplates/xi0'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
 	modsmooth = np.loadtxt('BAOtemplates/xi0sm'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
@@ -4871,22 +5534,29 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 	if covmd == 'QSO':
 		#covN = np.loadtxt(indir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
 		#covS = np.loadtxt(indir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
-		covN = np.loadtxt(indir+'cov0NGCQSO_EZ5st0.dat')
-		covS= np.loadtxt(indir+'cov0SGCQSO_EZ5st0.dat')
+		covN = np.loadtxt(dirH+'cov0NGCQSO_EZ5st0.dat')
+		covS= np.loadtxt(dirH+'cov0SGCQSO_EZ5st0.dat')
 		
 	if covmd == 'ELG':# and rec == '':
 		covN = np.loadtxt(indir+'cov0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
 		covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
+
+	if covmd == 'me':
+		covN = np.loadtxt(dirH+'cov0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')
+		covS = np.loadtxt(dirH+'cov0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')  
+
 					
 	covti = np.linalg.pinv(covN)+np.linalg.pinv(covS)
 	covt = np.linalg.pinv(covti)
 	dns = np.zeros(len(covN))
-	if len(dns) > len(dn[1]):
-		dns = np.zeros(len(covN)//2)
+	if len(dn[1]) < len(dns):
+		dns = np.zeros(len(dn[1]))
+	#if len(dns) > len(dn[1]):
+	#	dns = np.zeros(len(covN)//2)
 	for i in range(0,len(dns)):
 		x = (dn[1][i]/covN[i][i]+ds[1][i]/covS[i][i])/(1./covN[i][i]+1./covS[i][i])
 		dns[i] = x
-	chiln = doxi_isolike(dn[1],covN,mod,modsmooth,rl,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'NGC'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
+	chiln = doxi_isolike(dn[1],covN,mod,modsmooth,rl,bs=bs,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'NGC'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
 
 	wf = sample+mockn+version+rec+damp+mb+muw+bsst
 	fo = open(outdir+'BAOxichilNGC'+wf+'.dat','w')
@@ -4897,7 +5567,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 	an = sigreg_c12(outdir+'BAOxichilNGC'+wf)
 	#print an
 	print((an[1]+an[2])/2.,(an[2]-an[1])/2.,min(chiln))
-	chils = doxi_isolike(ds[1],covS,mod,modsmooth,rl,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'SGC'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
+	chils = doxi_isolike(ds[1],covS,mod,modsmooth,rl,bs=bs,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'SGC'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
 	fo = open(outdir+'BAOxichilSGC'+wf+'.dat','w')
 	for i in range(0,len(chils)):
 		a = .8+.001*i+.0005
@@ -4916,7 +5586,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 	
 	#print a
 	print((a[1]+a[2])/2.,(a[2]-a[1])/2.,a[-1])
-	chilns = doxi_isolike(dns,covt,mod,modsmooth,rl,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'NScombf'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
+	chilns = doxi_isolike(dns,covt,mod,modsmooth,rl,bs=bs,rmin=rmin,rmax=rmax,rmaxb=rmaxb,v=v,wo=sample+'NScombf'+version+rec+bsst+mb,diro=outdir,Bp=Bp,Nmock=Nmock)
 	fo = open(outdir+'BAOxichilNScombf'+wf+'.dat','w')
 	for i in range(0,len(chils)):
 		a = .8+.001*i+.0005
@@ -5051,13 +5721,15 @@ def xibaoNSmu(sample,mu,zmin=0.6,zmax=1.1,version='4',wm='fkp',bs=8,start=0,md='
 	return True
 
 
-def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,covf=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4):
+def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,covf=1.,mockn=0,ezver='5',ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4):
 	from baofit_pub2D import Xism_arat_1C_an
 	maxind = int(200/bs)
 	print(maxind)
 	bs = int(bs)
 	if md == 'data':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
 		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
 		rd = ''
 		if rec == 'rec':
@@ -5066,34 +5738,81 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 		d2N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
 		d0S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
 		d2S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
-	if md == 'dataJB':
+
+	if md == 'dataJH':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
 		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
 		rd = ''
 		if rec == 'rec':
 			rd = '_rec'
-		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v5_rec_5mpc_shift0.mul').transpose()[1][:maxind]
-		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v5_rec_5mpc_shift0.mul').transpose()[2][:maxind]
-		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v5_rec_5mpc_shift0.mul').transpose()[1][:maxind]
-		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v5_rec_5mpc_shift0.mul').transpose()[2][:maxind]
+		d0N = np.loadtxt(dir+'dr16_qso_obs_v7_ngc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'dr16_qso_obs_v7_ngc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
+
+	if md == 'dataN':
+		#for on NERSC
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dirH+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dirH+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+	if md == 'dataJB':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[2][:maxind]
 
 	if md == 'mockave':
-		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
-		d0N = np.loadtxt(dir+'xiave0NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2N = np.loadtxt(dir+'xiave2NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d0S = np.loadtxt(dir+'xiave0SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
-		d2S = np.loadtxt(dir+'xiave2SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#xiave02NGCQSO_v5_EZ5st0.dat
+
+		d0N = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][maxind:]
+		d0S = np.loadtxt(dirH+'xiave02SGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][maxind:]
 
 	if md == 'mockaveJB':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
 		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[1][:maxind]
 		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[2][:maxind]
 		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[1][:maxind]
 		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[2][:maxind]
 
+	if md == 'mock':
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		d0N = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+
 	if covm == 'me':
-		cN = np.loadtxt(dir+'cov02NGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')
-		cS = np.loadtxt(dir+'cov02SGC'+samp+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')  
+		cN = np.loadtxt(dirH+'cov02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')
+		cS = np.loadtxt(dirH+'cov02SGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')  
 		
 		if len(cN) != len(d0N)*2:
 			print( 'MISMATCHED data and cov matrix!')
@@ -5140,19 +5859,19 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 
 		#need to cut it to correct size
 		for i in range(0,len(cN)):
-			if i < len(d0N):
+			if i < len(cN)/2:
 				ri = i*bs+bs/2.+binc
 				indi = i-mini
 			else:
-				ri = (i-len(d0N))*bs+bs/2.+binc
-				indi = len(dvN)/2+i-mini-len(d0N)	
+				ri = (i-len(cN)/2)*bs+bs/2.+binc
+				indi = len(dvN)/2+i-mini-len(cN)/2	
 			for j in range(0,len(cN)):		
-				if j < len(d0N):
+				if j < len(cN)/2:
 					rj = j*bs+bs/2.+binc
 					indj = j-mini
 				else:
-					rj = (j-len(d0N))*bs+bs/2.+binc
-					indj = len(dvN)/2+j-mini-len(d0N)
+					rj = (j-len(cN)/2)*bs+bs/2.+binc
+					indj = len(dvN)/2+j-mini-len(cN)/2
 				if ri > min and ri < max and rj > min and rj < max:
 					#print ri,rj,i,j,indi,indj
 					indi = int(indi)
@@ -5191,6 +5910,8 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 	#if rec == '':
 	mod = 'Challenge_matterpower'+damp+'.dat'		
 	fout = samp+rec+md+ver+str(bs)+covm+'Bp'+str(Bp)
+	if md == 'mock':
+		fout += 'mn'+str(mockn)
 
 	print(len(dvN),len(invct),len(dvbN),len(invcbt))
 	#ansN = Xism_arat_1C_an(dvN,invcN,rl,mod,dvbN,invcbN,rlb,bs=bs,fout=fout+'NGC')
@@ -5218,42 +5939,256 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 		dvbS = np.array(dvbS)
 		dvt = (dvN*fsumN+dvS*fsumS)/(fsumS+fsumN)
 		dvbt = (dvbN*fsumN+dvbS*fsumS)/(fsumS+fsumN)
-	anst = Xism_arat_1C_an(dvt,invct*covf,rl,mod,dvbt,invcbt,rlb,bs=bs,fout=fout+'NScomb',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
+	anst = Xism_arat_1C_an(dvt,invct*covf,rl,mod,dvbt,invcbt,rlb,bs=bs,dirout=dirout,fout=fout+'NScomb',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
 	print(anst)
+	d = np.loadtxt(dirout+'2Dbaofits/arat'+fout+'1covchi.dat')
 	#chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchi.dat').transpose()
-	chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchigrid.dat').transpose()
-	chi2f -= np.min(chi2f)
-	ar = np.arange(.803,1.1931,.006)
-	at = np.arange(.8015,1.19751,.003)
-	#X,Y = np.meshgrid(chi2f[0],chi2f[1])
-	#Z = chi2f[2].reshape(len(chi2f[0]),len(chi2f[0]))
-	#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
-	if md == 'mockave':
-		vmax=1
-		levels = np.arange(0,vmax,vmax/10)
+# 	chi2f = np.loadtxt(dir+'2Dbaofits/arat'+fout+'NScomb1covchigrid.dat').transpose()
+# 	chi2f -= np.min(chi2f)
+# 	ar = np.arange(.803,1.1931,.006)
+# 	at = np.arange(.8015,1.19751,.003)
+# 	#X,Y = np.meshgrid(chi2f[0],chi2f[1])
+# 	#Z = chi2f[2].reshape(len(chi2f[0]),len(chi2f[0]))
+# 	#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
+# 	if md == 'mockave':
+# 		vmax=1
+# 		levels = np.arange(0,vmax,vmax/10)
+# 	if md == 'data':
+# 		vmax = 25*2.3
+# 		levels = [0,2.3,4.*2.3,9.*2.3,16*2.3]
+# 	extent = (mina, maxa,mina,maxa)
+# 	im = plt.imshow(chi2f,vmin=0,vmax=vmax,origin='lower',cmap = cm.PRGn,extent=extent,aspect='auto')
+# 	#v = plt.axis()
+# 	plt.colorbar(im)
+# 	
+# 	
+# 	ct = plt.contour(chi2f, levels, colors='k', origin='lower',extent=extent)
+# 	#plt.clabel(ct, inline=1, fontsize=12,fmt='%1.0f')
+# 	#plt.axis(v)
+# 	#ylim = plt.get(plt.gca(), 'ylim')
+# 	#plt.setp(plt.gca(), ylim=ylim[::-1])
+# 	plt.xlabel(r'$\alpha_{||}$')
+# 	plt.ylabel(r'$\alpha_{\perp}$')
+# 	plt.show()	
+# 	if md == 'mockave':
+# 		#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
+# 		plt.pcolormesh(ar,at,chi2f-np.min(chi2f),vmax=.1)
+# 		plt.xlim(.98,1.02)
+# 		plt.ylim(.98,1.02)
+# 		plt.show()
+
+
+# def mksubNERSC(start,N):
+# 	#!/bin/bash
+# 	#SBATCH --qos=shared
+# 	#SBATCH --constraint=haswell
+# 	#SBATCH --time=30
+# 	#SBATCH --ntasks=1
+# 	#SBATCH --mem=1GB
+# 
+# 	python eboss_DR16tools.py 1
+
+def xi2DBAONandS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,covf=1.,mockn=0,ezver='5',ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4):
+	from baofit_pub2D import Xism_arat_1C_an
+	maxind = int(200/bs)
+	print(maxind)
+	bs = int(bs)
 	if md == 'data':
-		vmax = 25*2.3
-		levels = [0,2.3,4.*2.3,9.*2.3,16*2.3]
-	extent = (mina, maxa,mina,maxa)
-	im = plt.imshow(chi2f,vmin=0,vmax=vmax,origin='lower',cmap = cm.PRGn,extent=extent,aspect='auto')
-	#v = plt.axis()
-	plt.colorbar(im)
-	
-	
-	ct = plt.contour(chi2f, levels, colors='k', origin='lower',extent=extent)
-	#plt.clabel(ct, inline=1, fontsize=12,fmt='%1.0f')
-	#plt.axis(v)
-	#ylim = plt.get(plt.gca(), 'ylim')
-	#plt.setp(plt.gca(), ylim=ylim[::-1])
-	plt.xlabel(r'$\alpha_{||}$')
-	plt.ylabel(r'$\alpha_{\perp}$')
-	plt.show()	
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+
+	if md == 'dataJH':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dir+'dr16_qso_obs_v7_ngc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'dr16_qso_obs_v7_ngc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
+
+	if md == 'dataN':
+		#for on NERSC
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dirH+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dirH+'xi024geboss'+samp+'_NGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+	if md == 'dataJB':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
+		rd = ''
+		if rec == 'rec':
+			rd = '_rec'
+		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[2][:maxind]
+
 	if md == 'mockave':
-		#plt.scatter(chi2f[0],chi2f[1],c=(chi2f[2]-np.min(chi2f[2])),vmax=1)
-		plt.pcolormesh(ar,at,chi2f-np.min(chi2f),vmax=.1)
-		plt.xlim(.98,1.02)
-		plt.ylim(.98,1.02)
-		plt.show()
+		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		#xiave02NGCQSO_v5_EZ5st0.dat
+
+		d0N = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][maxind:]
+		d0S = np.loadtxt(dirH+'xiave02SGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dirH+'xiave02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat').transpose()[1][maxind:]
+
+	if md == 'mockaveJB':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_5mpc_shift0.mul').transpose()[2][:maxind]
+
+	if md == 'mock':
+		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ samp+'_v'+str(ezver)+'/'
+		dirout = '/global/cscratch1/sd/ajross/'
+		dirH = ''
+		d0N = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2N = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+		d0S = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
+		d2S = np.loadtxt(dir+'xi024'+samp+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
+
+	if covm == 'me':
+		cN = np.loadtxt(dirH+'cov02NGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')
+		cS = np.loadtxt(dirH+'cov02SGC'+samp+'_v'+str(ezver)+'_EZ'+rec+af+str(bs)+'st'+str(binc)+'.dat')  
+		
+		if len(cN) != len(d0N)*2:
+			print( 'MISMATCHED data and cov matrix!')
+			print(len(cN),len(d0N))
+	dvN = [] #empty list to become data vector
+	dvbN = [] #empty list to become data vector for setting bias prior
+	dvS = [] #empty list to become data vector
+	dvbS = [] #empty list to become data vector for setting bias prior
+
+	rl = [] #empty list to become list of r values to evaluate model at	
+	rlb  = [] #empty list to become list of r values to evaluate model at for bias prior
+	mini = 0
+	for i in range(0,len(d0N)):
+		r = i*bs+bs/2.+binc
+		if r > min and r < max:
+			dvN.append(d0N[i])
+			dvS.append(d0S[i])
+			rbc = r#.75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.) #correct for pairs should have slightly larger average pair distance than the bin center
+			rl.append(rbc) 
+			if mini == 0:
+				mini = i #minimum index number to be used for covariance matrix index assignment
+			if r < maxb:
+				dvbN.append(d0N[i])
+				dvbS.append(d0S[i])
+				rlb.append(rbc)
+	for i in range(0,len(d2N)):
+		r = i*bs+bs/2.+binc
+		if r > min and r < max:
+			dvN.append(d2N[i])
+			dvS.append(d2S[i])
+			rbc = r#.75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.)
+			rl.append(rbc)
+			if r < maxb:
+				dvbN.append(d2N[i])
+				dvbS.append(d2S[i])
+				rlb.append(rbc)
+
+	dvN = np.array(dvN)
+	dvS = np.array(dvS)
+	print( len(dvN),len(dvS))
+	if covm == 'me':
+		covmS = np.zeros((len(dvS),len(dvS))) #will become covariance matrix to be used with data vector
+		covmN = np.zeros((len(dvS),len(dvS))) #will become covariance matrix to be used with data vector
+
+		#need to cut it to correct size
+		for i in range(0,len(cN)):
+			if i < len(cN)/2:
+				ri = i*bs+bs/2.+binc
+				indi = i-mini
+			else:
+				ri = (i-len(cN)/2)*bs+bs/2.+binc
+				indi = len(dvN)/2+i-mini-len(cN)/2	
+			for j in range(0,len(cN)):		
+				if j < len(cN)/2:
+					rj = j*bs+bs/2.+binc
+					indj = j-mini
+				else:
+					rj = (j-len(cN)/2)*bs+bs/2.+binc
+					indj = len(dvN)/2+j-mini-len(cN)/2
+				if ri > min and ri < max and rj > min and rj < max:
+					#print ri,rj,i,j,indi,indj
+					indi = int(indi)
+					indj = int(indj)
+					covmN[indi][indj] = cN[i][j]
+					covmS[indi][indj] = cS[i][j]
+		invcN = np.linalg.pinv(covmN) #the inverse covariance matrix to pass to the code
+		invcS = np.linalg.pinv(covmS)
+		covmbN = np.zeros((len(dvbN),len(dvbN)))
+		covmbS = np.zeros((len(dvbN),len(dvbN)))
+		for i in range(0,len(dvbN)):
+			if i < len(dvbN)/2:
+				indi = i
+			else:
+				indi = i-len(dvbN)/2+len(covmN)/2
+			for j in range(0,len(dvbN)):
+				if j < len(dvbN)/2:
+					indj = j
+				else:
+					indj = j-len(dvbN)/2+len(covmN)/2
+				indi = int(indi)
+				indj = int(indj)
+				covmbN[i][j] = covmN[indi][indj]
+				covmbS[i][j] = covmS[indi][indj]
+		invcbN = np.linalg.pinv(covmbN)
+		invcbS = np.linalg.pinv(covmbS)
+	if covm == 'JB':
+		invct = mkinvcJB(min=min,max=max)
+		if (maxb-min)/bs < 1:
+			return 'ERROR, maxb needs to be larger to have any data to fit'
+		invcbt = mkinvcJB(min=min,max=maxb)
+	#if rec == 'rec':
+	#	mod = 'Challenge_matterpower'+.dat' #BAO template used	post-recon
+	#if rec == '':
+	mod = 'Challenge_matterpower'+damp+'.dat'		
+	fout = samp+rec+md+ver+str(bs)+covm+'Bp'+str(Bp)
+	if md == 'mock':
+		fout += 'mn'+str(mockn)
+
+	print(len(dvN),len(invcN),len(dvbN),len(invcbN))
+	ansn = Xism_arat_1C_an(dvN,invcN*covf,rl,mod,dvbN,invcbN,rlb,bs=bs,dirout=dirout,fout=fout+'NGC',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
+	print(ansn)
+	anss = Xism_arat_1C_an(dvS,invcS*covf,rl,mod,dvbS,invcbS,rlb,bs=bs,dirout=dirout,fout=fout+'SGC',spat=spat,spar=spar,mina=mina,maxa=maxa,Bp=Bp,Bt=Bp)
+	print(anss)
+	ds = np.loadtxt(dirout+'2Dbaofits/arat'+fout+'SGC1covchi.dat')
+	dn = np.loadtxt(dirout+'2Dbaofits/arat'+fout+'NGC1covchi.dat')
+	dt = ds+dn
+	ans = sigreg_2dmea(dt)
+	print(ans)
+	return True
 
 
 def mkinvcJB(min=50,max=150,bs=5,shift=0,dir=ebossdir):
@@ -5338,7 +6273,57 @@ def plotallmocks(mom=0,reg='NGC',rec='',N=1000,bs=8,start=0,muw=''):
 		plt.plot(d[0],d[0]**2.*d[mom/2+1],'k-')
 	plt.show()
 	return True
-	
+
+def putall2DBAO(start,N,samp='QSOmock45meBp0.4',sigmax=0.025):
+	dir = '/global/cscratch1/sd/ajross/2Dbaofits/'
+	atl = []
+	arl = []
+	chil = []
+	atpl = []
+	arpl = []
+	atel = []
+	arel = []
+	al =[]
+	sl = []
+	nt = 0
+	ng = 0
+	fo = open('BAO2D_EZmocks_eBOSSQSODR16.dat','w')
+	fo.write('#mock_number max_lik_arad max_like_atran arad atran sig_arad sig_atran chi2\n')
+	for i in range(start,start+N):		
+		an = sigreg_c12('/global/cscratch1/sd/ajross/BAOxichilNScombfQSO'+str(i)+'50.42.04915.005st0')
+		#print(i,an)
+		#(a[2]-a[1])/2.
+		sig = (an[2]-an[1])/2.
+		if sig < sigmax and (an[0]-1.)/sig < 3.:
+			try:
+				f = np.loadtxt(dir+'arat'+samp+'mn'+str(i)+'NScomb1covchi.dat').transpose()
+				chimin = np.min(f[2])
+				ind = np.argmin(f[2])#np.where(f[2] == np.amin(f[2]))[0][0]
+				ar = f[0][ind]
+				at = f[1][ind]
+			
+				chil.append(chimin)
+				atl.append(at)
+				arl.append(ar)
+				al.append(an[0])
+				sl.append(sig)
+				ans = sigreg_2dme(dir+'arat'+samp+'mn'+str(i)+'NScomb1covchi')
+				fo.write(str(i)+' '+str(ar)+' '+str(at)+' '+str(ans[0])+' '+str(ans[2])+' '+str(ans[1])+' '+str(ans[3])+' '+str(chimin)+' '+str(an[0])+' '+str(sig)+'\n')
+				arpl.append(ans[0])
+				arel.append(ans[1])
+				atpl.append(ans[2])
+				atel.append(ans[3])
+				if ans[1] < 0.04 and ans[3] < 0.025:
+					ng += 1
+				#a1b,err1,a2b,err2
+				nt += 1
+				print(i,nt)
+			except:
+				print(str(i)+' bad')
+	print(ng)		
+	print(nt,np.mean(atl),np.std(atl),np.mean(arl),np.std(arl),np.median(atl),np.median(arl),np.mean(chil),np.mean(al),np.mean(sl),np.std(al))
+	print(nt,np.mean(atpl),np.std(atpl),np.mean(arpl),np.std(arpl),np.median(atpl),np.median(arpl),np.mean(atel),np.mean(arel))
+	return True
 
 def plotvssys_simp(xl,yl,el,sys):
 	from matplotlib import pyplot as plt
@@ -7383,6 +8368,43 @@ def BAOsigreccomp(cp='w',cd='orange'):
 	pp.close()
 	return True
 
+def BAOsigQSOraratcomp(cp='w',cd='orange'):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_pdf import PdfPages
+	
+	d = np.loadtxt('/Users/ashleyross/Dropbox/eboss/BAO2D_EZmocks_eBOSSQSODR16.dat').transpose() #pre recon
+	#dx = np.loadtxt('/Users/ashleyross/Dropbox/BAO-DES/Halogen/V2.0.0_DNF/3D_likelihoods/ximuwSM_sigt8sigr8_z0.6-1.0_bs8_rmin30/BAOchi2fitresultsz0.6-1.0_bs8_s88_rmin30.dat').transpose()
+	fig = plt.figure(figsize=(7,5))
+
+	plt.clf()
+	plt.minorticks_on()
+	pp = PdfPages('/Users/ashleyross/Dropbox/eboss/BAOQSOaratsig.pdf')
+	#plt.plot((dx[2]-dx[1])/2.,dw[2],'o',color=cp,markeredgecolor='k')
+	plt.plot(d[-3],d[-2],'o',color=cp,markeredgecolor='k')
+	#plt.plot(dezxi[0],dezpk[0],'o',color=EZcol,markeredgecolor='k')
+	#plt.plot(dq[1],dq[2],'^',color=QPMcol,markeredgecolor='k')
+	xl = [0,2]
+	yl = [0,2]
+	#plt.plot(xl,yl,'--k')
+	xl = [0.037]
+	yl = [0.022]
+	plt.plot(xl,yl,'*',color=cd,markersize=20,markeredgecolor='k',markeredgewidth=1.5)
+	#xl = [0.036]
+	#yl = [0.037]
+	#plt.plot(xl,yl,'*',color='y',markersize=20,markeredgecolor='k',markeredgewidth=1.5)
+	#xl = [0.050]
+	#yl = [0.047]
+	#plt.plot(xl,yl,'*',color='teal',markersize=20,markeredgecolor='k',markeredgewidth=1.5)
+	
+	plt.xlim( 0.0, 0.1 )
+	plt.ylim(0.0,0.1)
+	plt.xlabel (r' $\sigma(\alpha_{||})$ ', fontsize=18)
+	plt.ylabel (r' $\sigma(\alpha_{\perp})$ ', fontsize=18)
+	pp.savefig()
+	pp.close()
+	return True
+
+
 def BAOsigSGC(cp='w',cd='orange'):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -7462,15 +8484,29 @@ if __name__ == '__main__':
 	#fl = ''
 	#ind = int(sys.argv[1])
 	#LRGpCMASS post-rec 2D
-	#xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='5',min=50,max=150,Bp=0.4,af='angfac0')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
+	#xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='DR16',min=50,max=150,Bp=0.4,af='angfac0')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
 	#pre-rec
 	#xi2DBAONS(md='data',bs=5,damp='0.406.010.015.00',rec='',ver='5_1')
 	
 	#quasars
-	xibaoNS('QSO',0.8,2.2,version='5_1_alt_fibIDpSSR',wm='fkp',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
+
+	#quasar mockave on NERSC
+	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.04915.00',rmin=50,rmax=150)
+	covf = 1.
+	#print(covf)
+	xi2DBAONandS(md='mockave',covf=covf,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ezver=5,min=50,max=150,Bp=0.4,covm='me',spat=0.002,spar=0.004)
+	#print(covf)
+	
+	#data
+	#xibaoNS('QSO',0.8,2.2,version='5',wm='fkp',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
 	#2D
 	#xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4)
-	xi2DBAONS(md='data',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.04.08.015.00',rec='',ver='5_1_alt_fibIDpSSR',min=50,max=150,Bp=0.4,covm='me')
+	#xi2DBAONS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ver='7',min=50,max=150,Bp=0.4,covm='me')
+
+	#quasar mocks on NERSC
+	#xi2DBAONS(md='mock',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.04.08.015.00',rec='',mockn=int(sys.argv[1]),ezver=5,min=50,max=150,Bp=0.4,covm='me')
+	#xibaoNS('QSO',0.8,2.2,md='qsomock',version='5',wm='',bs=5,mom='024',tempmd='',mockn=int(sys.argv[1]),covmd='me',damp='0.42.04915.00',rmin=50,rmax=150)
 	#make all xi files pre and post reconstruction
 	#calcwrp_mockELGEZ(ind,reg='SGC',rec='')
 	#calcwrp_mockELGEZ(ind,reg='NGC',rec='')
@@ -7498,7 +8534,8 @@ if __name__ == '__main__':
 
 #ELG data
 #prerec
-#	xibaoNS('ELG',.6,1.1,'5',rec='',covv='',md='data',covmd='ELG',damp='0.5933.06.010.015.00',bs=8,rmin=50,rmax=150,rmaxb=58)
+#	xibaoNS('ELG',.6,1.1,'5_2_badphotAD',rec='',covv='',md='data',covmd='ELG',damp='0.5933.06.010.015.00',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	xibaoNS('ELG',.6,1.1,'5_2_badphotAD',rec='',covv='',md='data',covmd='ELG',damp='0.5933.06.010.015.00',bs=8,rmin=30,rmax=150,rmaxb=50,mb='nobao')
 #postrec
 # 	xibaoNS('ELG',.6,1.1,'4',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
 # 	print('4 done')
@@ -7514,8 +8551,18 @@ if __name__ == '__main__':
 # 	print('5_d done')
 # 	xibaoNS('ELG',.6,1.1,'5_e',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
 # 	print('5_e done')
-# 	xibaoNS('ELG',.6,1.1,'5_f',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
-# 	print('5_f done')
+#	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	print('5_1 done')
+#	xibaoNS('ELG',.6,1.1,'5_1AD',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	print('5_1AD done')
+#	xibaoNS('ELG',.6,1.1,'5_1_wAD',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	print('5_1_wAD done')
+#	xibaoNS('ELG',.6,1.1,'5_2AD',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	print('5_2AD done')
+#	xibaoNS('ELG',.6,1.1,'5_2_badphotAD',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
+#	xibaoNS('ELG',.6,1.1,'5_2_badphotAD',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50,mb='nobao')
+#	print('5_2badphotAD done')
+
 # 	xibaoNS('ELG',.6,1.1,'5',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
 # 	print('5 done')
 # 	xibaoNS('ELG',.6,1.1,'5_1',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)

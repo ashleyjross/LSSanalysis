@@ -826,7 +826,7 @@ def mkxifile_3dewig(sp=1.,a='',v='y',file='Challenge_matterpower',dir='',mun=0,b
 	if sigz != 0:
 		wsigz += 'sigz'+str(sigz)
 	#pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n')	
-	k,pl0,pl2,pl4,psm0,psm2,psm4 = pk3elldfile_dewig(file=file,beta=beta,sfog=sfog,sigz=sigz,sigt=sigt,sigr=sigr,mun=mun,sigs=sigs,dir=dir)	
+	k,pl0,pl2,pl4,psm0,psm2,psm4 = pk3elldfile_dewig(file=file,beta=beta,sfog=sfog,sigz=sigz,sigt=sigt,sigr=sigr,mun=mun,sigs=sigs,dir=dir,pw='y')	
 	f0 = open(dir+'xi0'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f2 = open(dir+'xi2'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
 	f4 = open(dir+'xi4'+file+str(beta)+str(sfog)+str(sigt)+str(sigr)+str(sigs)+wsigz+str(mun)+'.dat','w')
@@ -1061,7 +1061,7 @@ def xi3elldfile_dewig(r,file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,si
 		plt.show()
 	return xi0/(2.*pi*pi),-1.*xi2/(2.*pi*pi),xi4/(2.*pi*pi),xism0/(2.*pi*pi),-1.*xism2/(2.*pi*pi),xism4/(2.*pi*pi)
 
-def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.95,sigz=0,pw='n'):
+def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr=3.0,sfog=3.5,max=51,mun=1.,sigs=15.,ns=.963,omf=1.,ombf=1.,sigz=0,pw='y'):
 	from scipy.integrate import quad
 	from Cosmo import distance
 	#f = open('/Users/ashleyr/BOSS/spec/camb_MWcos.dat')
@@ -1069,11 +1069,11 @@ def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr
 	mult = 1.
 	dir = 'powerspectra/'
 	if file=='Challenge_matterpower' or file == 'TSPT_out':
-		om = 0.31
-		lam = 0.69
+		om = 0.31*omf
+		lam = 1-om
 		h = .676
-		nindex = .963
-		ombhh = .022
+		nindex = ns
+		ombhh = .022*ombf
 	if file == 'MICE_matterpower':
 		om = 0.25
 		lam = .75
@@ -1084,7 +1084,7 @@ def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr
 	f = np.loadtxt(dir+file+'.dat').transpose()
 	if pw == 'y':
 		fo = open('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat','w')
-		fo.write('# k P0 P2 P4 Psmooth\n')
+		fo.write('# k P0 P2 P4 Psmooth0 Psmooth2 Psmooth4 Plin Plinsmooth\n')
 	if file != 'Pk_MICEcosmology_z0_Plin_Pnowig':
 		s = simulate(omega=om,lamda=lam,h=h,nindex=nindex,ombhh=ombhh)
 	else:
@@ -1192,8 +1192,9 @@ def pk3elldfile_dewig(file='Challenge_matterpower',dir='',beta=0.4,sigt=3.0,sigr
 		from matplotlib import pyplot as plt
 		from numpy import loadtxt as load
 		d = load('P02'+file+'beta'+str(beta)+'sigs'+str(sfog)+'sigxy'+str(sigt)+'sigz'+str(sigr)+'Sk'+str(sigs)+'.dat').transpose()
-		plt.xlim(0,.3)
+		plt.xlim(0,.5)
 		plt.plot(d[0],d[-2]/d[-1])
+		plt.plot(d[0],np.ones(len(d[0])),'--')
 		plt.show()
 	p0l = np.array(p0l)
 	p2l = np.array(p2l)
