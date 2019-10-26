@@ -1826,13 +1826,9 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 
 
 
-def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec=''):
+def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec=''):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
 	dir = '/global/cscratch1/sd/ajross/ebossxi/'
-	#predir = '/project/projectdirs/eboss/czhao/EZmock/'+samp+'_v'+ver+'/clustering/2PCF/'
-	predir = dir + samp+'_v'+str(ver)+'/2PCF/'
-	#recdir = '/project/projectdirs/eboss/czhao/EZmock/'+samp+'_v'+ver+rec+'/clustering/2PCF/'
-	#shuffdir = dir + 'prerec_shuf/2PCF/'
 	dirout = dir+ samp+'_v'+str(ver)+'/'
 	muw = ''
 	if mumin != 0:
@@ -1848,6 +1844,11 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 	if samp == 'QSO':
 		zmin = 0.8
 		zmax = 2.2
+	predir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
+	#predir = dir + samp+'_v'+str(ver)+'/2PCF/'
+	recdir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+rec+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
+	#shuffdir = dir + 'prerec_shuf/2PCF/'
+
 	#if pcmass:
 	#	samp += 'pCMASS'	
 	#ddnorm = af['ddnorm'][0][num]/2.
@@ -1869,22 +1870,24 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 	#	af = fitsio.read(dir+'2PCF_ELGv4_'+reg+'_merge.fits')
 	#	dd = af['dd'].transpose()[num]*ddnorm
 	#	dr = af['dr'].transpose()[num]*drnorm
-	rr = np.loadtxt(predir+'2PCF_EZmock_eBOSS_'+samp+'_'+reg+'_v'+str(ver)+'_z'+str(zmin)+'z'+str(zmax)+'.rr').transpose()[-1]#*rrnorm
-	normr = (np.loadtxt(predir+'2PCF_EZmock_eBOSS_'+samp+'_'+reg+'_v'+str(ver)+'_z'+str(zmin)+'z'+str(zmax)+'.rr').transpose()[-2]/rr)[0]
+	#*rrnorm
+	#normr = (np.loadtxt(predir+'2PCF_EZmock_eBOSS_'+samp+'_'+reg+'_v'+str(ver)+'_z'+str(zmin)+'z'+str(zmax)+'.rr').transpose()[-2]/rr)[0]
 	if rec == '':
 		
 		dd = np.loadtxt(predir+fn+'.dd').transpose()[-1]#*ddnorm
 		dr = np.loadtxt(predir+fn+'.dr').transpose()[-1]#*drnorm
+		rr = np.loadtxt(predir+fn+'.rr').transpose()[-1]
 		#normd = (np.loadtxt(predir+fn+'.dd').transpose()[-2]/dd)[1000]
 		#normdr = (np.loadtxt(predir+fn+'.dr').transpose()[-2]/dr)[0]
 		#print(normdr/normd,normr/normdr)
 
-	if rec == 'rec':
+	if rec == '_rec':
 		
-		fn += '_rec'
+		#fn += '_rec'
 		dd = np.loadtxt(recdir+fn+'.dd').transpose()[-1]#*ddnorm
 		dr = np.loadtxt(recdir+fn+'.ds').transpose()[-1]#*drnorm
-		ss = np.loadtxt(recdir+fn+'.ss').transpose()[-1]#*rrnorm		
+		ss = np.loadtxt(recdir+fn+'.ss').transpose()[-1]#*rrnorm	
+		rr = np.loadtxt(predir+fn+'.rr').transpose()[-1]	
 
 	if rec == 'shuff':		
 		fn += '_rec'
@@ -1946,13 +1949,13 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver=5,pcmass=False,bs=8,mom=0,mumin=0
 					ddb += dd[bin]
 					drb += dr[bin]
 					rrb += rr[bin]
-					if rec == 'rec' or rec == 'shuff':
+					if rec == '_rec' or rec == 'shuff':
 						ssb += ss[bin]
 						sst += ss[bin]
 				ddt += dd[bin]
 				drt += dr[bin]
 				rrt += rr[bin]
-			if rec == 'rec' or rec == 'shuff':
+			if rec == '_rec' or rec == 'shuff':
 				xi = (ddb-2.*drb+ssb)/rrb
 			else:		
 				xi = (ddb-2.*drb+rrb)/rrb
@@ -2447,7 +2450,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,
 		
 	return True
 
-def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mumin=0,mumax=1,angfac=0,md='cz',rec=''):
+def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,start=0,mumin=0,mumax=1,angfac=0,md='me',rec=''):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
 	#if md == 'me':
 	#	dir += '/xi/'
@@ -5450,21 +5453,23 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		indir = ''
 		outdir = dirsci+'EZmockELGv4/BAOfits/'
 
-	if md == 'qsomockave':
-		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
-		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
-		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+
+
+	if md == 'EZmockave':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
 		ezver = version
-		dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
-		outdir = '/global/cscratch1/sd/ajross/'
-		dirH = ''
+		#dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
+		#outdir = '/global/cscratch1/sd/ajross/'
+		#dirH = ''
 		#xiave02NGCQSO_v5_EZ5st0.dat
 		
 
 		dn = np.loadtxt(dirH+'xiave0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
 		ds = np.loadtxt(dirH+'xiave0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
 
-	if md == 'qsomock':
+	if md == 'EZmock':
 		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
 		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
 		#dirH = '/Users/ashleyross/Dropbox/eboss/'
@@ -5491,7 +5496,23 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		#if rec == 'rec':
 		#	dn = np.loadtxt(ebossdir+'xiave_recon0NGCELG_EZ'+bsst+'.dat').transpose()
 		#	ds = np.loadtxt(ebossdir+'xiave_recon0SGCELG_EZ'+bsst+'.dat').transpose()
+	if md == 'qsozel':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		ezver = version
 
+		from scipy.interpolate import interp1d
+		nb = 200//bs
+		dn = np.zeros((2,nb))
+		zelf = np.loadtxt('/Users/ashleyross/Dropbox/eboss/2PCF_QSO_Zeldovich.dat').transpose()
+		fz = interp1d(zelf[0], zelf[1], kind='cubic')
+		for i in range(0,nb):
+			r = bs/2.+bs*i
+			xi = fz(r)
+			dn[0][i] = r
+			dn[1][i] = xi
+		ds = dn
 	rl = dn[0]
 	#print( rl)
 
@@ -6324,6 +6345,39 @@ def putall2DBAO(start,N,samp='QSOmock45meBp0.4',sigmax=0.025):
 	print(nt,np.mean(atl),np.std(atl),np.mean(arl),np.std(arl),np.median(atl),np.median(arl),np.mean(chil),np.mean(al),np.mean(sl),np.std(al))
 	print(nt,np.mean(atpl),np.std(atpl),np.mean(arpl),np.std(arpl),np.median(atpl),np.median(arpl),np.mean(atel),np.mean(arel))
 	return True
+
+def putall1DBAO(start=1,N=1000,samp='ELG',md='7_rec0.59304.07.015.01.08st0'):
+	dir = '/global/cscratch1/sd/ajross/baofits/'
+	ng = 0
+	am = 0
+	sm = 0
+	ss = 0
+	fo = open('BAO1D_EZmocks_'+samp+md+'.dat','w')
+	fo.write('#mock_number a_ngc sigma_ngc chi2 a_sgc sigma_sgc chi2 a_sgcngcl sigma_sgcngcl chi2 a_sgcngcx sigma_sgcngcx chi2\n')
+	regl = ['NGC','SGC','NScomb','NScombf']
+	for i in range(start,start+N):		
+		for reg in regl:
+			an = sigreg_c12('/global/cscratch1/sd/ajross/baofits/BAOxichil'+reg+samp+str(i)+md)
+		#print(i,an)
+		#(a[2]-a[1])/2.
+			sig = (an[2]-an[1])/2.
+			al = (an[2]+an[1])/2.
+			chi = an[-1]
+			fo.write(str(al)+' '+str(sig)+' '+str(chi)+' ')
+			if reg == 'NScombf':
+				if sig < 0.2:
+					ng += 1.
+					am += al
+					sm += sig
+					ss += al*al
+		fo.write('\n')	
+		print(i)
+	fo.close()
+	am = am/ng
+	sm = sm/ng
+	ss = ss/ng	
+	return ng,am,sm,sqrt(ss-am*am)
+
 
 def plotvssys_simp(xl,yl,el,sys):
 	from matplotlib import pyplot as plt
@@ -8378,7 +8432,7 @@ def BAOsigQSOraratcomp(cp='w',cd='orange'):
 
 	plt.clf()
 	plt.minorticks_on()
-	pp = PdfPages('/Users/ashleyross/Dropbox/eboss/BAOQSOaratsig.pdf')
+	pp = PdfPages('/Users/ashleyross/Dropbox/eboss/BAOQSOarat.pdf')
 	#plt.plot((dx[2]-dx[1])/2.,dw[2],'o',color=cp,markeredgecolor='k')
 	plt.plot(d[-3],d[-2],'o',color=cp,markeredgecolor='k')
 	#plt.plot(dezxi[0],dezpk[0],'o',color=EZcol,markeredgecolor='k')
@@ -8400,6 +8454,7 @@ def BAOsigQSOraratcomp(cp='w',cd='orange'):
 	plt.ylim(0.0,0.1)
 	plt.xlabel (r' $\sigma(\alpha_{||})$ ', fontsize=18)
 	plt.ylabel (r' $\sigma(\alpha_{\perp})$ ', fontsize=18)
+	plt.title('fiducial mock uncertainties')
 	pp.savefig()
 	pp.close()
 	return True
@@ -8493,9 +8548,13 @@ if __name__ == '__main__':
 	#quasar mockave on NERSC
 	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='QSO',tempmd='iso',rmin=50,rmax=150)
 	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.04915.00',rmin=50,rmax=150)
-	covf = 1.
+	#covf = 1.
+	#test result for mockave on my computer and assuming zel'dovic
+	#xibaoNS('QSO',0.8,2.2,md='qsozel',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.03615.00',rmin=50,rmax=150)
+
+	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.03615.00',rmin=50,rmax=150)
 	#print(covf)
-	xi2DBAONandS(md='mockave',covf=covf,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ezver=5,min=50,max=150,Bp=0.4,covm='me',spat=0.002,spar=0.004)
+	#xi2DBAONandS(md='mockave',covf=covf,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ezver=5,min=50,max=150,Bp=0.4,covm='me',spat=0.002,spar=0.004)
 	#print(covf)
 	
 	#data
@@ -8598,9 +8657,24 @@ if __name__ == '__main__':
 # 	xibaoNSmu('ELG',0.95,.6,1.1,'5',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=50,rmax=150,rmaxb=58,mb='')
 
 #ELG mocks
+# for i in range(int(sys.argv[1]),1001):
+# 	calcxi_mockEZ(i,ver='7',rec='_rec')
+# 	calcxi_mockEZ(i,ver='7',rec='')
+# 	calcxi_mockEZ(i,ver='7',rec='',reg='NGC')
+# 	calcxi_mockEZ(i,ver='7',rec='_rec',reg='NGC')
+# 	print(i)
+
+# mockave rec and no rec:
+	#xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=8,rmin=50,rmax=150,rmaxb=58)
+	#xibaoNS('ELG',.6,1.1,'7',rec='',covv='',covmd='me',md = 'EZmockave',damp='0.5933.06.010.015.00',bs=8,rmin=50,rmax=150,rmaxb=58)
 #pre-recon BAO fit	
 	#xibaoNS('ELGEZ',.6,1.1,'4',rec='',covv='',covmd='ELG',mockn=str(ind),damp='0.5933.06.010.015.00',bs=5,rmin=50,rmax=150,rmaxb=55)
-	#xibaoNS('ELGEZ',.6,1.1,'4',rec='',covv='',covmd='ELG',mockn=str(ind),damp='0.5933.06.010.015.00',bs=8,rmin=50,rmax=150,rmaxb=58)
+	sind = int(sys.argv[1])
+	max = int(sys.argv[2])
+	for ind in range(sind,max):
+		xibaoNS('ELG',.6,1.1,'7',rec='',md='EZmock',covv='',covmd='me',mockn=str(ind),damp='0.5933.06.010.015.00',bs=8,rmin=50,rmax=150,rmaxb=58)
+		xibaoNS('ELG',.6,1.1,'7',rec='_rec',md='EZmock',covv='',covmd='me',mockn=str(ind),damp='0.59304.07.015.01.0',bs=8,start=0,rmin=49.9,rmax=150,rmaxb=58)
+		print('MOCK '+str(ind)+ 'DONE')
 #different starts
 #	xibaoNS('ELGEZ',.6,1.1,'4',rec='rec',covv='',covmd='ELG',mockn=str(ind),damp='0.59304.07.015.01.0',bs=8,start=2,rmin=49.9,rmax=150,rmaxb=58)
 #	xibaoNS('ELGEZ',.6,1.1,'4',rec='rec',covv='',covmd='ELG',mockn=str(ind),damp='0.59304.07.015.01.0',bs=8,start=4,rmin=49.9,rmax=150,rmaxb=58)
