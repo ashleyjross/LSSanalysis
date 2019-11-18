@@ -1826,17 +1826,22 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 
 
 
-def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec=''):
+def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec='',mupow=0,zmin=0.6):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
 	dir = '/global/cscratch1/sd/ajross/ebossxi/'
 	dirout = dir+ samp+'_v'+str(ver)+'/'
 	muw = ''
+	zw = ''
 	if mumin != 0:
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
+	if mupow != 0:
+		muw += 'mup'+str(mupow)		
 	if samp == 'ELG':
-		zmin = 0.6
+	
+		if zmin != 0.6:
+			zw += 'zmin'+str(zmin)
 		zmax = 1.1
 	if samp == 'LRG' or samp == 'LRGpCMASS':
 		zmin = 0.6
@@ -1919,10 +1924,11 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 	dmu = 1./float(nmub)
 	mubm = 0
 	if mumin != 0:
-		mubm = mumin*nmub
+		mubm = int(mumin*nmub)
 	mubx = nmub
 	if mumax != 1:
-		mubx = mumax*nmub
+		mubx = int(mumax*nmub)
+		print(mubx,mubx/nmub)
 	for i in range(start,nb*bs+start,bs):
 		xib = 0
 		xib2 = 0
@@ -1978,7 +1984,7 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 # 				w2 += xip*dmu*P2(mu)*5.
 # 				w4 += xip*dmu*P4(mu)*9.
 
-			xib += xi*dmu
+			xib += xi*dmu*(mu**mupow)
 			xib2 += xi*dmu*P2(mu)*5.
 			xib4 += xi*dmu*P4(mu)*9.		
 		xil[i//bs] = xib
@@ -1996,22 +2002,48 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 	#print xil
 	#if subt:
 	#	muw += 'subt'	
-	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+'EZmock'+rec+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+zw+'EZmock'+rec+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+' '+str(wl[i])+' '+str(wl2[i])+' '+str(wl4[i])+'\n')
 	fo.close()
 	return True
 
-def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec=''):
+def putallOR(reg,rec,bs=5,samp='ELG',start=0):
+	dir = '/global/cscratch1/sd/ajross/ebossxi/ELG_v7/'
+	losl = ['x','y','z']
+	indl = []
+	for i in range(11,65):
+		for los in losl:
+			try:
+				calcxi_mockOR(i,los=los,bs=bs,rec=rec,reg=reg)
+				indl.append(i)
+				print(i,los)
+			except:
+				pass
+	print(len(indl))
+	avel = np.loadtxt(dir+'xi024ELG_v7'+reg+'ORmock'+rec+losl[0]+str(indl[0])+str(bs)+'st'+str(start)+'.dat')
+	avel += np.loadtxt(dir+'xi024ELG_v7'+reg+'ORmock'+rec+losl[1]+str(indl[0])+str(bs)+'st'+str(start)+'.dat')
+	avel += np.loadtxt(dir+'xi024ELG_v7'+reg+'ORmock'+rec+losl[2]+str(indl[0])+str(bs)+'st'+str(start)+'.dat')
+	for i in range(1,len(indl)):
+		for los in losl:
+			avel += np.loadtxt(dir+'xi024ELG_v7'+reg+'ORmock'+rec+los+str(indl[i])+str(bs)+'st'+str(start)+'.dat')
+	avel = avel/(3.*len(indl))
+	np.savetxt('xiave024ELGORmock'+reg+rec+str(bs)+'st'+str(start)+'.dat',avel)
+	#fo = open('xiave024ELGORmock'+reg+rec+str(bs+'st'+str(start)+'.dat','w')	
+	return True	
+
+def calcxi_mockOR(num,los='x',reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec='',mupow=0):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
 	dir = '/global/cscratch1/sd/ajross/ebossxi/'
-	dirout = ''#dir+ samp+'_v'+str(ver)+'/'
+	dirout = dir+ samp+'_v'+str(ver)+'/'
 	muw = ''
 	if mumin != 0:
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
+	if mupow != 0:
+		muw += 'mup'+str(mupow)		
 	if samp == 'ELG':
 		zmin = 0.6
 		zmax = 1.1
@@ -2021,8 +2053,114 @@ def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,m
 	if samp == 'QSO':
 		zmin = 0.8
 		zmax = 2.2
+	predir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/OuterRim_cutsky/2PCF/OuterRimCutsky_mocks_vAvila_4/glos-'+los+'/'
+	recdir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/OuterRim_cutsky/2PCF/OuterRimCutsky_mocks_vAvila_4_rec/glos-'+los+'/'
+	print(samp,zmin,zmax)
+	fn = 'OuterRim_ELG_clustering_'+reg+'_vAvila_4'+rec+'_b132_n2410_f0.14_vb0.00.'+str(num)
+	fnp = 'OuterRim_ELG_clustering_'+reg+'_vAvila_4'+'_b132_n2410_f0.14_vb0.00.'+str(num)
+	if rec == '':
+		
+		dd = np.loadtxt(predir+fn+'.dd').transpose()[-1]#*ddnorm
+		dr = np.loadtxt(predir+fn+'.dr').transpose()[-1]#*drnorm
+		rr = np.loadtxt(predir+fn+'.rr').transpose()[-1]
+
+	if rec == '_rec':
+		
+		dd = np.loadtxt(recdir+fn+'.dd').transpose()[-1]#*ddnorm
+		dr = np.loadtxt(recdir+fn+'.ds').transpose()[-1]#*drnorm
+		ss = np.loadtxt(recdir+fn+'.ss').transpose()[-1]#*rrnorm	
+		rr = np.loadtxt(predir+fnp+'.rr').transpose()[-1]	
+
+	
+	
+	nb = (200-start)//bs
+	xil = np.zeros(nb)
+	xil2 = np.zeros(nb)
+	xil4 = np.zeros(nb)
+
+	nmub = 120
+	dmu = 1./float(nmub)
+	mubm = 0
+	if mumin != 0:
+		mubm = int(mumin*nmub)
+	mubx = nmub
+	if mumax != 1:
+		mubx = int(mumax*nmub)
+		print(mubx,mubx/nmub)
+	for i in range(start,nb*bs+start,bs):
+		xib = 0
+		xib2 = 0
+		xib4 = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+		sst = 0
+		mut = 0
+		rmin = i
+		rmax = rmin+bs
+		for m in range(mubm,mubx):
+			ddb = 0
+			drb = 0
+			rrb = 0
+			ssb = 0
+			mu = m/float(nmub) + 0.5/float(nmub)
+			for b in range(0,bs):
+				bin = nmub*(i+b)+m
+				if bin < 24000:
+					ddb += dd[bin]
+					drb += dr[bin]
+					rrb += rr[bin]
+					if rec == '_rec' or rec == 'shuff':
+						ssb += ss[bin]
+						sst += ss[bin]
+				ddt += dd[bin]
+				drt += dr[bin]
+				rrt += rr[bin]
+			if rec == '_rec' or rec == 'shuff':
+				xi = (ddb-2.*drb+ssb)/rrb
+			else:		
+				xi = (ddb-2.*drb+rrb)/rrb
+
+			xib += xi*dmu*(mu**mupow)
+			xib2 += xi*dmu*P2(mu)*5.
+			xib4 += xi*dmu*P4(mu)*9.		
+		xil[i//bs] = xib
+		xil2[i//bs] = xib2
+		xil4[i//bs] = xib4
+
+	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+'ORmock'+rec+los+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	for i in range(0,len(xil)):
+		r = bs/2.+i*bs+start
+		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
+	fo.close()
+	return True
+
+
+def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mupow=0,mumin=0,mumax=1,start=0,rec='',zmin=0.6):
+	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
+	dir = '/global/cscratch1/sd/ajross/ebossxi/'
+	dirout = ''#dir+ samp+'_v'+str(ver)+'/'
+	muw = ''
+	zw = ''
+	if mumin != 0:
+		muw += 'mumin'+str(mumin)
+	if mumax != 1:
+		muw += 'mumax'+str(mumax)
+	if mupow != 0:
+		muw += 'mup'+str(mupow)		
+	if samp == 'ELG':
+		#zmin = 0.6
+		if zmin != 0.6:
+			zw += 'zmin'+str(zmin)
+		zmax = 1.1
+	if samp == 'LRG' or samp == 'LRGpCMASS':
+		zmin = 0.6
+		zmax = 1.0
+	if samp == 'QSO':
+		zmin = 0.8
+		zmax = 2.2
 	if samp == 'ELG':	
-		indir = '/global/homes/z/zhaoc/cscratch/EZmock/ELG/data/clustering/z0.6z1.1/'	
+		indir = '/global/homes/z/zhaoc/cscratch/EZmock/ELG/data/clustering/z'+str(zmin)+'z1.1/'	
 
 	#if pcmass:
 	#	samp += 'pCMASS'	
@@ -2088,10 +2226,10 @@ def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,m
 	dmu = 1./float(nmub)
 	mubm = 0
 	if mumin != 0:
-		mubm = mumin*nmub
+		mubm = int(mumin*nmub)
 	mubx = nmub
 	if mumax != 1:
-		mubx = mumax*nmub
+		mubx = int(mumax*nmub)
 	for i in range(start,nb*bs+start,bs):
 		xib = 0
 		xib2 = 0
@@ -2147,7 +2285,7 @@ def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,m
 # 				w2 += xip*dmu*P2(mu)*5.
 # 				w4 += xip*dmu*P4(mu)*9.
 
-			xib += xi*dmu
+			xib += xi*dmu*(mu**mupow)
 			xib2 += xi*dmu*P2(mu)*5.
 			xib4 += xi*dmu*P4(mu)*9.		
 		xil[i//bs] = xib
@@ -2165,7 +2303,7 @@ def calcxi_dataCZ(reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,m
 	#print xil
 	#if subt:
 	#	muw += 'subt'	
-	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+'CZdata'+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+zw+'CZdata'+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+' '+str(wl[i])+' '+str(wl2[i])+' '+str(wl4[i])+'\n')
@@ -2351,7 +2489,7 @@ def calcwrp_mockELGEZ(num,reg='SGC',bs=1,mom=0,mumin=0,mumax=1,start=0,rec=''):
 	return True
 
 
-def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1,angfac=0,rec=''):
+def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin=0,mumax=1,angfac=0,rec='',zmin=0.6):
 	dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v4/xi/'
 	if pcmass:
 		samp += 'pCMASS'
@@ -2360,6 +2498,9 @@ def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
+	zw = ''
+	if samp == 'ELG' and zmin != 0.6:
+		zw += 'zmin'+str(zmin)	
 	bsst = str(bs)+'st'+str(start)
 	nbin = (200-start)/bs
 	xiave = np.zeros((nbin))
@@ -2372,7 +2513,7 @@ def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin
 		#print( i)
 		#try:
 		if mom != 'rp':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 			xiave += xii[mom/2+1]-angfac*xii[mom/2+4]
 		else:
 			xii = np.loadtxt(dir+'wrpELG'+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
@@ -2392,8 +2533,8 @@ def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin
 	for i in range(1,N+1):
 		nr = str(i)
 		if mom != 'rp':
-			xii = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()[mom/2+1]
-			xiit = np.loadtxt(dir+'xi024'+samp+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()[mom/2+4]
+			xii = np.loadtxt(dir+'xi024'+samp+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()[mom/2+1]
+			xiit = np.loadtxt(dir+'xi024'+samp+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()[mom/2+4]
 		else:
 			xii = np.loadtxt(dir+'wrpELG'+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()[1]
 			xiit = xii
@@ -2405,13 +2546,13 @@ def mkcov_mockELG_EZ(reg,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,start=0,mumin
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave'+str(mom)+reg+samp+'_EZ'+rec+muw+'angfac'+str(angfac)+bsst+'.dat','w')
+	fo = open('xiave'+str(mom)+reg+zw+samp+'_EZ'+rec+muw+'angfac'+str(angfac)+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin):
 		fo.write(str(bs/2.+bs*i+start)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov'+str(mom)+reg+samp+'_EZ'+rec+muw+'angfac'+str(angfac)+bsst+'.dat','w')
+	fo = open('cov'+str(mom)+reg+zw+samp+'_EZ'+rec+muw+'angfac'+str(angfac)+bsst+'.dat','w')
 	
 	for i in range(0,nbin):
 		for j in range(0,nbin):
@@ -2645,7 +2786,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,rmax=200
 		
 	return True
 
-def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,start=0,mumin=0,mumax=1,angfac=0,md='me',rec=''):
+def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,start=0,mupow=0,mumin=0,mumax=1,angfac=0,md='me',rec='',zmin=0.6):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
 	#if md == 'me':
 	#	dir += '/xi/'
@@ -2660,9 +2801,14 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 		samp += 'pCMASS'
 	muw = ''
 	if mumin != 0:
-		muw += 'mumin'+str(mumin)
+		muw += 'mumin'+str(round(mumin,2))
 	if mumax != 1:
-		muw += 'mumax'+str(mumax)
+		muw += 'mumax'+str(round(mumax,2))
+	if mupow != 0:
+		muw += 'mup'+str(mupow)		
+	zw = ''
+	if samp == 'ELG' and zmin != 0.6:
+		zw += 'zmin'+str(zmin)	
 	bsst = str(bs)+'st'+str(start)
 	nbin = (maxr-start)//bs
 	xiave = np.zeros((nbin))
@@ -2678,7 +2824,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 		#print( i)
 		#try:
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2730,7 +2876,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 	for i in range(1,N+1):
 		nr = str(i)
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2775,7 +2921,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave'+str(mom)+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('xiave'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin):
 		if i < nbin:
@@ -2785,7 +2931,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 		fo.write(str(r)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov'+str(mom)+reg+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('cov'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
 	
 	for i in range(0,nbin):
 		for j in range(0,nbin):
@@ -5718,7 +5864,7 @@ def sigreg_comb5(file,fac=1.,md='f'):
 	return am,a1d,a1u,a2d,a2u,chim	
 
 
-def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',covmd='QSO',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',tempmd='',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1):
+def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',covmd='QSO',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',tempmd='',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1,mupow=0,covfac=1.):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -5728,15 +5874,22 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		muw += 'mumin'+str(mumin)
 	if mumax != 1:
 		muw += 'mumax'+str(mumax)
+	if mupow != 0:
+		muw += 'mup'+str(mupow)		
+
 	outdir = ebossdir
 	indir = ebossdir
 	bsst = str(bs)+'st'+str(start)
 	print(bsst)
 	#if sample == 'ELG' or sample == 'LRGpCMASS':
+	zw = ''
 	if md == 'data':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
 		dirout = '/Users/ashleyross/Dropbox/eboss/' 
 		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		
+		if zmin != 0.6:
+			zw += 'zmin'+str(zmin)
 
 		recf =''
 		if rec == 'rec' or rec == '_rec':
@@ -5744,8 +5897,8 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		if version == '7':
 			#dn = np.loadtxt(ebossdir+'2PCF_eBOSS_ELG_clustering_NGC_v7'+rec+'_z0.6z1.1.dat').transpose()
 			#ds = np.loadtxt(ebossdir+'2PCF_eBOSS_ELG_clustering_SGC_v7'+rec+'_z0.6z1.1.dat').transpose()
-			dn = np.loadtxt(ebossdir+'xi024ELG_v7NGCCZdata'+rec+bsst+'.dat').transpose()
-			ds = np.loadtxt(ebossdir+'xi024ELG_v7SGCCZdata'+rec+bsst+'.dat').transpose()
+			dn = np.loadtxt(ebossdir+'xi024ELG_v7NGC'+zw+'CZdata'+rec+muw+bsst+'.dat').transpose()
+			ds = np.loadtxt(ebossdir+'xi024ELG_v7SGC'+zw+'CZdata'+rec+muw+bsst+'.dat').transpose()
 
 		else:	
 			dn = np.loadtxt(ebossdir+'xi024geboss'+sample+'_NGC'+version+recf+'_'+wz+wm+bsst+'.dat').transpose()
@@ -5774,10 +5927,26 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		#outdir = '/global/cscratch1/sd/ajross/'
 		#dirH = ''
 		#xiave02NGCQSO_v5_EZ5st0.dat
+		if zmin != 0.6:
+			zw += 'zmin'+str(zmin)
 		
 
-		dn = np.loadtxt(dirH+'xiave0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
-		ds = np.loadtxt(dirH+'xiave0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat').transpose()#[1][:maxind]
+		dn = np.loadtxt(dirH+'xiave0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
+		ds = np.loadtxt(dirH+'xiave0SGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
+
+	if md == 'ORmockave':
+		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		dirH = '/Users/ashleyross/Dropbox/eboss/'
+		ezver = version
+		#dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
+		#outdir = '/global/cscratch1/sd/ajross/'
+		#dirH = ''
+		#xiave02NGCQSO_v5_EZ5st0.dat
+		
+
+		dn = np.loadtxt(dirH+'xiave024'+sample+'ORmockNGC'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
+		ds = np.loadtxt(dirH+'xiave024'+sample+'ORmockSGC'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
 
 	if md == 'EZmock':
 		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
@@ -5790,6 +5959,28 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		#xiave02NGCQSO_v5_EZ5st0.dat
 		dn = np.loadtxt(dir+'xi024'+sample+'_v'+str(ezver)+'NGCEZmock'+rec+str(mockn)+bsst+'.dat').transpose()
 		ds = np.loadtxt(dir+'xi024'+sample+'_v'+str(ezver)+'SGCEZmock'+rec+str(mockn)+bsst+'.dat').transpose()
+
+	if md == 'EZmockjh':
+		#dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		#dirout = '/Users/ashleyross/Dropbox/eboss/' 
+		#dirH = '/Users/ashleyross/Dropbox/eboss/'
+		ezver = version
+		#dir = '/global/cscratch1/sd/ajross/ebossxi/'+ sample+'_v'+str(ezver)+'/'
+		dir = '/global/project/projectdirs/eboss/octobers/twopcf/ezmock/qso_v7_sys/'
+		outdir = '/global/cscratch1/sd/ajross/baofits/'
+		dirH = ''
+		zer = ''
+		if mockn < 10:
+			zer += '0'
+		if mockn < 100:
+			zer += '0'
+		if mockn < 1000:
+			zer += 	'0'
+		mockstr = zer+str(mockn)	
+		print(mockn,mockstr)
+		mockn = str(mockn)
+		dn = np.loadtxt(dir+'ez_qsov7_0.31_ngc_xi4m_wsys_ds5_'+mockstr+'.dat').transpose()
+		ds = np.loadtxt(dir+'ez_qsov7_0.31_sgc_xi4m_wsys_ds5_'+mockstr+'.dat').transpose()
 
 
 	if md == 'mockave':
@@ -5825,10 +6016,14 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		ds = dn
 	rl = dn[0]
 	#print( rl)
+	if mumax == 1 and mumin == 0 and mupow == 0:
 
-	mod = np.loadtxt('BAOtemplates/xi0'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
-	modsmooth = np.loadtxt('BAOtemplates/xi0sm'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
-
+		mod = np.loadtxt('BAOtemplates/xi0'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
+		modsmooth = np.loadtxt('BAOtemplates/xi0sm'+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
+	else:
+		mod = np.loadtxt('BAOtemplates/xi'+muw+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
+		modsmooth = np.loadtxt('BAOtemplates/xism'+muw+tempmd+'Challenge_matterpower'+damp+'.dat').transpose()[1]
+		
 
 	if mb == 'nobao':		
 		mod = modsmooth
@@ -5863,23 +6058,25 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		cov = np.loadtxt(ebossdir+'cov0'+csample+version+'NScomb'+str(bs)+'st'+str(start)+'.dat')
 	cov2 = ''
 	if covmd == 'QSO':
-		#covN = np.loadtxt(indir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
-		#covS = np.loadtxt(indir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
-		covN = np.loadtxt(dirH+'cov0NGCQSO_EZ5st0.dat')
-		covS= np.loadtxt(dirH+'cov0SGCQSO_EZ5st0.dat')
+		covN = np.loadtxt(indir+'cov0EZmockv1.8ngc'+bsst+'.dat')*fn
+		covS = np.loadtxt(indir+'cov0EZmockv1.8sgc'+bsst+'.dat')*fs
+		#covN = np.loadtxt(dirH+'cov0NGCQSO_EZ5st0.dat')
+		#covS= np.loadtxt(dirH+'cov0SGCQSO_EZ5st0.dat')
 		
 	if covmd == 'ELG':# and rec == '':
 		covN = np.loadtxt(indir+'cov0NGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fn
 		covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
 
 	if covmd == 'me':
-		covN = np.loadtxt(dirH+'cov0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')
-		print('open NGC cov '+dirH+'cov0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')
-		covS = np.loadtxt(dirH+'cov0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')  
+		covN = np.loadtxt(dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')
+		print('open NGC cov '+dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')
+		covS = np.loadtxt(dirH+'cov0SGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')  
 
-					
+	covS *= covfac
+	covN *= covfac				
 	covti = np.linalg.pinv(covN)+np.linalg.pinv(covS)
 	covt = np.linalg.pinv(covti)
+	
 	dns = np.zeros(len(covN))
 	if len(dn[1]) < len(dns):
 		dns = np.zeros(len(dn[1]))
@@ -8954,7 +9151,9 @@ if __name__ == '__main__':
 	#test result for mockave on my computer and assuming zel'dovic
 	#xibaoNS('QSO',0.8,2.2,md='qsozel',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.03615.00',rmin=50,rmax=150)
 
-	#xibaoNS('QSO',0.8,2.2,md='qsomockave',version='5',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.03615.00',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,md='EZmockave',version='7',wm='',bs=5,mom='024',covmd='me',tempmd='',damp='0.42.04915.00',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,md='EZmockave',version='7',wm='',bs=5,mom='024',covmd='QSO',tempmd='iso',damp='6.0',rmin=50,rmax=150)
+
 	#print(covf)
 	#xi2DBAONandS(md='mockave',covf=covf,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ezver=5,min=50,max=150,Bp=0.4,covm='me',spat=0.002,spar=0.004)
 	#print(covf)
@@ -8964,6 +9163,7 @@ if __name__ == '__main__':
 	#2D
 	#xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4)
 	#xi2DBAONS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ver='7',ezver='7',min=50,max=150,Bp=0.4,covm='me')
+	#xi2DBAONandS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ver='7',ezver='7',min=50,max=150,Bp=0.4,covm='me')
 
 	#quasar mocks on NERSC
 	#xi2DBAONS(md='mock',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.04.08.015.00',rec='',mockn=int(sys.argv[1]),ezver=5,min=50,max=150,Bp=0.4,covm='me')
@@ -8995,10 +9195,10 @@ if __name__ == '__main__':
 
 #ELG data
 #prerec
-	print('PRE RECON data, rmin = 50')
-	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',md='data',covmd='me',damp='0.5933.06.010.015.00',bs=5,rmin=50,rmax=150,rmaxb=58)
-	print('PRE RECON data, rmin = 30')
-	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',md='data',covmd='me',damp='0.5933.06.010.015.00',bs=5,rmin=30,rmax=150,rmaxb=50)
+#	print('PRE RECON data, rmin = 50')
+#	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',md='data',covmd='me',damp='0.5933.06.010.015.00',bs=5,rmin=50,rmax=150,rmaxb=58)
+#	print('PRE RECON data, rmin = 30')
+#	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',md='data',covmd='me',damp='0.5933.06.010.015.00',bs=5,rmin=30,rmax=150,rmaxb=50)
 #	xibaoNS('ELG',.6,1.1,'5_2_badphotAD',rec='',covv='',md='data',covmd='ELG',damp='0.5933.06.010.015.00',bs=8,rmin=30,rmax=150,rmaxb=50,mb='nobao')
 #postrec
 # 	xibaoNS('ELG',.6,1.1,'4',rec='rec',covv='',md='data',covmd='ELG',damp='0.59304.07.015.01.0',bs=8,rmin=30,rmax=150,rmaxb=50)
@@ -9026,8 +9226,19 @@ if __name__ == '__main__':
 # 	print('POST RECON data, rmin = 50, bs = 8')
 # 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=8,rmin=50,rmax=150,rmaxb=58)
 
-#	print('POST RECON data, rmin = 50, bs = 5, start=0')
-#	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
+	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin 0.6,damp 47')
+	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
+	print('POST RECON data, rmin = 50, bs = 5, start=0 zmin 0.7, damp 47')
+	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
+
+# 	print('POST RECON data, rmin = 50, bs = 5, start=0,mup=1')
+# 	xibaoNS('ELG',.6,1.1,'7',mupow=1,rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
+	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.7, damp = 35')
+	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
+	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35')
+	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
+
+
 
 #	print('POST RECON data, rmin = 50, bs = 5, start=1')
 #	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=1)
@@ -9086,16 +9297,44 @@ if __name__ == '__main__':
 # 	calcxi_mockEZ(i,ver='7',rec='_rec',reg='NGC')
 # 	print(i)
 
+# mockave rec as function of mu:
+# 	bs = 5
+# 	print('mock ave POST RECON, rmin =50, mu 0,0.2, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=0.2,mumin=0,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1,Bp=100)
+# 	print('mock ave POST RECON, rmin =50, mu 0.2,0.4, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=0.4,mumin=0.2,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1,Bp=100)
+# 	print('mock ave POST RECON, rmin =50, mu 0.4,0.6, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=0.6,mumin=0.4,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1,Bp=100)
+# 	print('mock ave POST RECON, rmin =50, mu 0.6,0.8, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=0.8,mumin=0.6,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1,Bp=100)
+# 	print('mock ave POST RECON, rmin =50, mu 0.8,1, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=1,mumin=0.8,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1,Bp=100)
+#mockave mupow 1
+# 	bs = 5
+# 	print('mock ave POST RECON, rmin =50, mupow = 1, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mupow=1,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=0.1)
+# 	bs = 5
+# 	print('mock ave POST RECON, rmin =50, mupow = 0, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mupow=0,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=0.1)
+
 # mockave rec and no rec:
-# 	bs = 8
-# 	print('POST RECON, rmin =50, bin size'+str(bs))
-# 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=58)
-# 	print('POST RECON, rmin =30, bin size'+str(bs))
-# 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=20,rmax=150,rmaxb=50)
+	bs = 5
+	print('mockave POST RECON, rmin =50, zmin 0.6, damp 47 bin size'+str(bs))
+	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+	print('mockave POST RECON, rmin =50, zmin 0.7, damp 47 bin size'+str(bs))
+	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+
+# 	print('mock ave POST RECON, rmin =50, mumax=0.7, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',mumax=0.7,rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=.1)
 # 	print('PRE RECON, rmin =50, bin size'+str(bs))
 # 	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',covmd='me',md = 'EZmockave',damp='0.5933.06.010.015.00',bs=bs,rmin=50,rmax=150,rmaxb=58)
 # 	print('PRE RECON, rmin =30, bin size'+str(bs))
 # 	xibaoNS('ELG',.6,1.1,'7',rec='',covv='',covmd='me',md = 'EZmockave',damp='0.5933.06.010.015.00',bs=bs,rmin=30,rmax=150,rmaxb=50)
+
+# 	bs = 5
+# 	print('OR mockave POST RECON, rmin =50, bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'ORmockave',damp='0.59303.05.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+
 
 #pre-recon BAO fit	
 	#xibaoNS('ELGEZ',.6,1.1,'4',rec='',covv='',covmd='ELG',mockn=str(ind),damp='0.5933.06.010.015.00',bs=5,rmin=50,rmax=150,rmaxb=55)
