@@ -8983,6 +8983,74 @@ def plotELGbaolikeprepost(v='4',reg='NScombf',bs='8st0',damppre='0.5933.06.010.0
 	pp.close()
 	return True
 
+def plotObsdata(reg='NGC',mjdmin=56659,ver='7',elgper=0.05):
+	lrgf = fitsio.read('/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'+ver+'/eBOSS_LRG_full_noveto_ALL_v'+ver+'.dat.fits')
+	wlobs = ((lrgf['IMATCH'] == 1) | (lrgf['IMATCH'] == 4) | (lrgf['IMATCH'] == 7) | (lrgf['IMATCH'] == 9) ) & (lrgf['MJD'] > 56659)
+	chunkl = ['boss214','boss217','eboss1','eboss16','eboss17','eboss18','eboss2','eboss20','eboss24','eboss26','eboss27','eboss3','eboss4','eboss5','eboss6','eboss7','eboss9']
+	wlobs &= np.in1d(lrgf['CHUNKspec'],chunkl)
+	print(len(lrgf[wlobs]))
+	wlnobs = (lrgf['IMATCH'] == 0) & (lrgf['MJD'] > 56659)
+	ral = lrgf['RA']
+	#if reg == 'SGC':
+	ral[ral > 300] -=360
+	plt.plot(ral[wlnobs],lrgf[wlnobs]['DEC'],'k,')
+	qsof = fitsio.read('/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'+ver+'/eBOSS_QSO_full_noveto_ALL_v'+ver+'.dat.fits')
+	wqobs = ((qsof['IMATCH'] == 1) | (qsof['IMATCH'] == 4) | (qsof['IMATCH'] == 7) | (qsof['IMATCH'] == 9) ) & (qsof['MJD'] > 56659)
+	chunkl = ['boss214','boss217','eboss1','eboss16','eboss17','eboss18','eboss2','eboss20','eboss24','eboss26','eboss27','eboss3','eboss4','eboss5','eboss6','eboss7','eboss9']
+	wqobs &= np.in1d(qsof['CHUNK_DR16Q'],chunkl)
+	print(len(qsof[wqobs]))
+	wqnobs = (qsof['IMATCH'] == 0) & (qsof['MJD'] > 56659)
+	raq = qsof['RA']
+	#if reg == 'SGC':
+	raq[raq > 300] -=360
+	plt.plot(raq[wqnobs],qsof[wqnobs]['DEC'],'k,')
+	plt.plot(ral[wlobs],lrgf[wlobs]['DEC'],'r,')	
+	plt.plot(raq[wqobs],qsof[wqobs]['DEC'],'y,')
+	#elgf = fitsio.read('/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/'+ver+'/eBOSS_ELG_full_ALL_v'+ver+'.dat.fits')
+	elgf = fitsio.read('/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/sandbox/lss/catalogs/versions/7/input/ELG/ELG.v5_13_0.rrv3bis.all.fits')
+	rae = elgf['ra']
+	#if reg == 'SGC':
+	rae[rae > 300] -=360
+	#weobs = ((elgf['IMATCH'] == 1) | (elgf['IMATCH'] == 4) | (elgf['IMATCH'] == 7) | (elgf['IMATCH'] == 9) ) 
+	weobs = elgf['hasfiber'] == 1
+	print(len(elgf[weobs]))
+	randl = np.random.rand(len(elgf))
+	weobs &= (randl < elgper)
+	print(len(elgf[weobs]))
+	plt.plot(rae[weobs],elgf[weobs]['dec'],'b,')
+	plt.ylim(-12,65)
+	plt.xlabel('right ascension (J2000)')
+	plt.ylabel('declination (J2000)')
+	plt.savefig('DR16obstarg.png')
+	plt.show()
+	return True
+
+def getchunkstats():	
+	chunkl = ['boss214','boss217','eboss1','eboss16','eboss17','eboss18','eboss2','eboss20','eboss21','eboss22','eboss23','eboss24','eboss25','eboss26','eboss27','eboss3','eboss4','eboss5','eboss6','eboss7','eboss9']
+	chunklp = ['boss214       ','boss217       ','eboss1        ','eboss16       ','eboss17       ','eboss18       ','eboss2        ','eboss20       ','eboss21       ','eboss22       ','eboss23       ','eboss24       ','eboss25       ','eboss26       ','eboss27       ','eboss3        ','eboss4        ','eboss5        ','eboss6        ','eboss7        ','eboss9        ']
+
+	fp = fitsio.read('/uufs/chpc.utah.edu/common/home/sdss/ebosswork/eboss/spectro/redux/v5_13_0/platelist.fits')
+	wp = fp['PLATEQUALITY'] == 'good'
+	fp = fp[wp]
+	for i in range(0,len(chunkl)):
+		chunk = chunkl[i]
+		if chunk == 'boss214' or chunk == 'boss217':
+			dir = '/uufs/chpc.utah.edu/common/home/sdss05/software/svn.sdss.org/repo/eboss/ebosstilelist/trunk/outputs/eboss0'
+		else:
+			dir = '/uufs/chpc.utah.edu/common/home/sdss05/software/svn.sdss.org/repo/eboss/ebosstilelist/trunk/outputs/'+chunk
+		f = fitsio.read(dir+'/final-'+chunk+'.fits')
+		ntiletot = np.unique(f['TILE'])
+		wt = ntiletot > 0
+		
+		chunkp = chunklp[i]
+		wc = fp['CHUNK'] == chunkp
+		ntileobs = np.unique(fp[wc]['TILEID'])
+		print(chunk,len(ntiletot[wt]),len(ntileobs))
+	return True
+	
+		
+			
+		
 
 def BAOsigreccompELG(cp='w',cd='orange'):
 	import matplotlib.pyplot as plt
