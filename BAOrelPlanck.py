@@ -36,6 +36,31 @@ def plotBAOrelBOSSfid_dv(labels):
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o')
 	plt.show()	
 
+def plotBAOrelBOSSfid_H():
+	#reads in c/H/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	meas = open('BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		dH = float(ln[-6])
+		if dH != -1:
+			sdH = float(ln[-5])
+			EH = int(ln[-1].strip('\n'))
+			if EH:
+				dHrsfid = dcosfid.cHz(z)/rsfidEH
+			else:
+				dHrsfid = dcosfid.cHz(z)/rsfidcamb
+			plt.errorbar(z,dH/dHrsfid,sdH/dHrsfid,fmt='o')
+	plt.show()	
+
+
 def BAOrelPlanckCurrent(wo='current',xmax=2.5,Lya=True,BOSS=False,BOSSDR12=True,MGS=True,wz=True,sdss=False,df6=True,QSODR14=True,LRGDR14=True,des=False,desy1=True,eboss=False,desi=False):
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
