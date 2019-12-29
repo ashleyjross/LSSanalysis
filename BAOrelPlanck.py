@@ -8,47 +8,142 @@ from pylab import *
 from numpy import loadtxt as load
 import matplotlib.cm as cm
 from Cosmo import *
+from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 
 rcParams['font.family'] = 'serif'
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif', size=14)
 
-def plotBAOrelBOSSfid_dv(labels):
+def plotBAOrelBOSSfid_dv():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
 	dcosfid = distance(.31,.69,.676,obhh=0.022)
 	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
 	rsfidEH =  dcosfid.rs
-	meas = open('BAOcomp.txt').readlines()
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
 	#columns in meas are
 	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	pdvfidl = []
 	for i in range(4,len(meas)):
 		ln = meas[i].split(',')
 		lab = ln[2]
-		if np.isin(lab,labels):
-			z = float(ln[3])
-			dv = float(ln[4])
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		dv = float(ln[4])
+		if dv != -1:
+			zl.append(z)
 			sdv = float(ln[5])
 			EH = int(ln[-1].strip('\n'))
+			dvrsfidc = dcosfid.dV(z)/rsfidcamb
 			if EH:
 				dvrsfid = dcosfid.dV(z)/rsfidEH
 			else:
-				dvrsfid = dcosfid.dV(z)/rsfidcamb
+				dvrsfid = dvrsfidc
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o')
+	zls = zl.sort()
+	for z in zl:
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
+	plt.plot(zl,pdvfidl,'k-')
+
+
 	plt.show()	
+
+def plotBAOrelBOSSfid_dv_aniYear():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	szl = []
+	pdvfidl = []
+	dvdvl = []
+	sdvdvl = []
+	yearl = []
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		dv = float(ln[4])
+		if dv != -1:
+			zl.append(z)
+			szl.append(z) 
+			sdv = float(ln[5])
+			EH = int(ln[-1].strip('\n'))
+			dvrsfidc = dcosfid.dV(z)/rsfidcamb
+			if EH:
+				dvrsfid = dcosfid.dV(z)/rsfidEH
+			else:
+				dvrsfid = dvrsfidc
+			#plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o')
+			dvdvl.append(dv/dvrsfid)
+			sdvdvl.append(sdv/dvrsfid)
+			yearl.append(int(ln[0]))
+	zls = szl.sort()
+	for z in szl:
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
+	fig, ax = plt.subplots()
+	fig.set_tight_layout(True)
+	ax.plot(szl,pdvfidl,'k-',label='Plack 2018 best-fit prediction')
+	ax.legend()
+	zl = np.array(zl)
+	dvdvl = np.array(dvdvl)
+	sdvdvl = np.array(sdvdvl)
+	yearl = np.array(yearl)
+	def plotyear(year):
+		w = yearl == year
+		ax.errorbar(zl[w],dvdvl[w],sdvdvl[w],fmt='o',label=str(year))
+		ax.legend()
+		#ax.title(str(year))
+	#writer = ImageMagickFileWriter()	
+	anim = FuncAnimation(fig,plotyear, frames=np.unique(yearl), interval=500)	
+	anim.save('baoyear.gif',writer='imagemagick')#, fps=10,writer='imagemagick',bitrate=-1)
+	#plt.savefig('baoyear.gif')
+	#plt.show()
+	#plt.plot(zl,pdvfidl,'k-')
+
+
+	plt.show()	
+
 
 def plotBAOrelBOSSfid_H():
 	#reads in c/H/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
 	dcosfid = distance(.31,.69,.676,obhh=0.022)
 	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
 	rsfidEH =  dcosfid.rs
-	meas = open('BAOcomp.txt').readlines()
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
 	#columns in meas are
 	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
 	for i in range(4,len(meas)):
 		ln = meas[i].split(',')
 		lab = ln[2]
 		#if np.isin(lab,labels):
 		z = float(ln[3])
+		zl.append(z)
 		dH = float(ln[-6])
 		if dH != -1:
 			sdH = float(ln[-5])
@@ -58,6 +153,15 @@ def plotBAOrelBOSSfid_H():
 			else:
 				dHrsfid = dcosfid.cHz(z)/rsfidcamb
 			plt.errorbar(z,dH/dHrsfid,sdH/dHrsfid,fmt='o')
+	zl = np.array(zl)
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+	pdvrs = dpcos.cHz(zl)/prs
+	plt.plot(zl,pdvrs,'k-')
 	plt.show()	
 
 def plotBAOrelBOSSfid_DM():
@@ -65,7 +169,8 @@ def plotBAOrelBOSSfid_DM():
 	dcosfid = distance(.31,.69,.676,obhh=0.022)
 	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
 	rsfidEH =  dcosfid.rs
-	meas = open('BAOcomp.txt').readlines()
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
 	#columns in meas are
 	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
 	for i in range(4,len(meas)):
