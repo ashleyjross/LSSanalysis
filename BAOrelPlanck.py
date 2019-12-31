@@ -56,6 +56,147 @@ def plotBAOrelBOSSfid_dv():
 	plt.plot(zl,pdvfidl,'k-')
 	plt.show()	
 
+def plotBAOrelBOSSfid_dv_preboss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	#pom = 0.3147
+	#pobh = 0.02233
+	#ph = 0.6737
+	#prs = 147.18
+	#use WMAP7
+	pom = 0.271
+	pobh = 0.02227
+	ph = 0.703
+	prs = 152.76
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+	print(dpcos.rs)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	pdvfidl = []
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[4])
+			
+		sdv = float(ln[5])
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		if EH:
+			dvrsfid = dcosfid.dV(z)/rsfidEH
+		else:
+			dvrsfid = dvrsfidc
+		if lab == 'DR7Per':
+			plt.text(0.2,.945,'SDSS DR7',fontsize=14,color='steelblue')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='<',color='steelblue',markeredgecolor='k',markersize=7)
+		if lab == '6dFGS':
+			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
+		if lab == 'Wznorec':
+			plt.text(0.65,1.05,'WiggleZ',fontsize=14,color='.5')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='>',color='.5',markeredgecolor='k',markersize=7)
+		if lab == 'DR7rec':
+			plt.text(0.4,.99,'SDSS DR7',fontsize=14,color='firebrick')	
+			plt.text(0.4,.98,'LRGs rec',fontsize=14,color='firebrick')
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='h',color='firebrick',markeredgecolor='k',markersize=7)
+		
+
+	zls = zl.sort()
+	for z in zl:
+		dvrsfidc = dcosfid.dV(z)/rsfidEH
+		pdvfidl.append(dpcos.dV(z)/dpcos.rs/dvrsfidc)
+	plt.plot(zl,pdvfidl,'k-',label='WMAP7')
+	plt.legend(loc='lower right')
+	plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel('distance/eBOSS fiducial')
+	plt.title('Spherically averaged, before BOSS')
+	plt.show()	
+
+def plotBAOrelBOSSfid_dv_boss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2015 best LCDM
+	pom = 0.315
+	pobh = 0.02205
+	ph = 0.673
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	pdvfidl = []
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[4])
+			
+		sdv = float(ln[5])
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		if EH:
+			dvrsfid = dcosfid.dV(z)/rsfidEH
+		else:
+			dvrsfid = dvrsfidc
+		if lab == '6dFGS':
+			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
+		if lab == 'Wzrec1':
+			plt.text(0.45,1.082,'WiggleZ (rec)',fontsize=14,color='.8')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
+		if lab == 'Wzrec3' or lab == 'Wzrec2':	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
+		if lab == 'MGS':
+			plt.text(0.1,1.095,'SDSS',fontsize=14,color='purple')
+			plt.text(0.1,1.084,'MGS',fontsize=14,color='purple')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='^',markeredgecolor='k',markersize=7,elinewidth=1.75,color='purple')
+		if lab == 'BOSSDR12_1':
+			plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		if lab == 'BOSSDR12_2' or lab == 'BOSSDR12_3':
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		#if lab == 'LyADR14':
+		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
+		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		#if lab == 'LyADR14X':
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if lab == 'LyADR12C':
+			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
+			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='H',markersize=7,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		
+
+	zls = zl.sort()
+	for z in zl:
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
+	plt.plot(zl,pdvfidl,'k-',label='Planck 2015')
+	plt.legend(loc='lower right')
+	plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel('distance/eBOSS fiducial')
+	plt.title('Spherically averaged or best constrained, after BOSS')
+	plt.show()	
+
+
 def plotBAOrelBOSSfid_dv_eboss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
 	dcosfid = distance(.31,.69,.676,obhh=0.022)
@@ -93,7 +234,7 @@ def plotBAOrelBOSSfid_dv_eboss():
 			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
 		if lab == 'Wzrec1':
-			plt.text(0.45,1.082,'WiggleZ',fontsize=14,color='.8')	
+			plt.text(0.45,1.082,'WiggleZ (rec)',fontsize=14,color='.8')	
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
 		if lab == 'Wzrec3' or lab == 'Wzrec2':	
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
@@ -128,7 +269,7 @@ def plotBAOrelBOSSfid_dv_eboss():
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
 		#if lab == 'LyADR14X':
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR14C':
+		if lab == 'LyADR16C':
 			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
 			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
@@ -143,7 +284,7 @@ def plotBAOrelBOSSfid_dv_eboss():
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
 	plt.ylabel('distance/eBOSS fiducial')
-	plt.title('Spherically averaged or best constrained, after DR16')
+	plt.title('Spherically averaged or best constrained, after eBOSS')
 	plt.show()	
 
 def plotBAOrelBOSSfid_dm_eboss():
@@ -202,7 +343,7 @@ def plotBAOrelBOSSfid_dm_eboss():
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
 		#if lab == 'LyADR14X':
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR14C':
+		if lab == 'LyADR16C':
 			plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
 			plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
@@ -273,7 +414,7 @@ def plotBAOrelBOSSfid_Hz_eboss():
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
 		#if lab == 'LyADR14X':
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR14C':
+		if lab == 'LyADR16C':
 			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
 			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
