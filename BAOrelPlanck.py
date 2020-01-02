@@ -118,9 +118,11 @@ def plotBAOrelBOSSfid_dv_preboss():
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('distance/eBOSS fiducial')
+	plt.ylabel('BAO distance/eBOSS fiducial')
 	plt.title('Spherically averaged, before BOSS')
-	plt.show()	
+		
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAObeforeBOSS.png')
+	plt.show()
 
 def plotBAOrelBOSSfid_dv_boss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -179,7 +181,7 @@ def plotBAOrelBOSSfid_dv_boss():
 		#if lab == 'LyADR14X':
 		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
 		if lab == 'LyADR12C':
-			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
+			plt.text(2.,1.02,'BOSS',fontsize=14,color='k')	
 			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='H',markersize=7,elinewidth=1.75,color='magenta',markeredgecolor='k')
 		
@@ -192,9 +194,11 @@ def plotBAOrelBOSSfid_dv_boss():
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('distance/eBOSS fiducial')
+	plt.ylabel('BAO distance/eBOSS fiducial')
 	plt.title('Spherically averaged or best constrained, after BOSS')
-	plt.show()	
+		
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOafterBOSS.png')
+	plt.show()
 
 
 def plotBAOrelBOSSfid_dv_eboss():
@@ -283,9 +287,11 @@ def plotBAOrelBOSSfid_dv_eboss():
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('distance/eBOSS fiducial')
+	plt.ylabel('BAO distance/eBOSS fiducial')
 	plt.title('Spherically averaged or best constrained, after eBOSS')
-	plt.show()	
+	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOaftereBOSS.png')	
+	plt.show()
 
 def plotBAOrelBOSSfid_dm_eboss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -357,9 +363,77 @@ def plotBAOrelBOSSfid_dm_eboss():
 	plt.legend(loc='lower left')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('distance/eBOSS fiducial')
+	plt.ylabel('BAO distance/eBOSS fiducial')
 	plt.title('Co-moving angular-diameter, after DR16')
-	plt.show()	
+		
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAO_DMaftereBOSS.png')
+	plt.show()
+
+def plotBAOrelBOSSfid_dm_boss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	pdvfidl = []
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[6])
+			
+		sdv = float(ln[7])
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.dc(z)/rsfidcamb
+		if EH:
+			dvrsfid = dcosfid.dc(z)/rsfidEH
+		else:
+			dvrsfid = dvrsfidc
+		if lab == 'BOSSDR12_1':
+			plt.text(0.34,.965,'BOSS',fontsize=14,color='r')
+			plt.text(0.34,.955,'galaxies',fontsize=14,color='r')	
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		if lab == 'BOSSDR12_2' or lab == 'BOSSDR12_3':
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		#if lab == 'LyADR14':
+		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
+		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		#if lab == 'LyADR14X':
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if lab == 'LyADR12C':
+			plt.text(2.,.985,'BOSS',fontsize=14,color='k')	
+			plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='H',markersize=7,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		
+
+	zls = zl.sort()
+	for z in zl:
+		dvrsfidc = dcosfid.dc(z)/rsfidcamb
+		pdvfidl.append(dpcos.dc(z)/prs/dvrsfidc)
+	plt.plot(zl,pdvfidl,'k-',label='Planck 2018')
+	plt.legend(loc='lower left')
+	plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.title('Co-moving angular-diameter, after DR12')
+		
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAO_DMafterBOSS.png')
+	plt.show()
+
 
 def plotBAOrelBOSSfid_Hz_eboss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -428,9 +502,76 @@ def plotBAOrelBOSSfid_Hz_eboss():
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('distance/eBOSS fiducial')
+	plt.ylabel('BAO distance/eBOSS fiducial')
 	plt.title('Expansion rate, after DR16')
-	plt.show()	
+	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOHzaftereBOSS.png')	
+	plt.show()
+
+def plotBAOrelBOSSfid_Hz_boss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	pdvfidl = []
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[8])
+			
+		sdv = float(ln[9])
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.cHz(z)/rsfidcamb
+		if EH:
+			dvrsfid = dcosfid.cHz(z)/rsfidEH
+		else:
+			dvrsfid = dvrsfidc
+		if lab == 'BOSSDR12_1':
+			plt.text(0.12,.975,'BOSS',fontsize=14,color='r')	
+			plt.text(0.12,.965,'galaxies',fontsize=14,color='r')
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		if lab == 'BOSSDR12_2' or lab == 'BOSSDR12_3':
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+		#if lab == 'LyADR14':
+		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
+		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		#if lab == 'LyADR14X':
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if lab == 'LyADR12C':
+			plt.text(2.,1.02,'BOSS',fontsize=14,color='k')	
+			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
+			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='H',markersize=7,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		
+
+	zls = zl.sort()
+	for z in zl:
+		dvrsfidc = dcosfid.cHz(z)/rsfidcamb
+		pdvfidl.append(dpcos.cHz(z)/prs/dvrsfidc)
+	plt.plot(zl,pdvfidl,'k-',label='Planck 2018')
+	plt.legend(loc='lower right')
+	plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.title('Expansion rate, after DR12')
+	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOHzafterBOSS.png')	
+	plt.show()
 
 
 def plotBAOrelBOSSfid_dv_aniYear():
