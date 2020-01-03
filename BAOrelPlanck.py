@@ -15,6 +15,34 @@ rcParams['font.family'] = 'serif'
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif', size=14)
 
+key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02],
+			  '6dFGS'  :['Brown', 'BlanchedAlmond', 'o', '6dFGS', 0.06,.943],
+			  'Wznorec'  :['tomato', 'salmon', 'D', 'WiggleZ', 0.65,1.05],
+			  'DR7rec':['Crimson', 'salmon', 'p', 'DR7-recon', 0.3,1.001],
+			  'Wzrec1'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
+			  'Wzrec2'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
+			  'Wzrec3'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
+			  'BOSSCMDR11':['tomato', 'MintCream', '<', 'DR11-CMASS', 0.34,.975],
+			  'BOSSLZDR11':['tomato', 'MintCream', '<', 'DR11-LowZ', 0.34,.975],
+			  'LyaXDR11'   :['Dodgerblue', 'lightblue', 'o', r'DR11-Ly$\alpha$', 2.,1.02],
+			  'MGS'        :['hotpink', 'salmon', '>', 'SDSS-MGS', 0.093,1.084],
+			  'BOSSDR12_1' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
+			  'BOSSDR12_2' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
+			  'BOSSDR12_3' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
+			  'LyADR12':['DarkTurquoise', 'skyblue', 'd', r'DR12-Ly$\alpha$', 2.2,1.06],
+			  'LyADR12C':['DarkTurquoise', 'skyblue', 'd', r'DR12-Ly$\alpha$', 2.2,1.06],
+			  'QSODR14'     :['tomato', 'salmon', 'H', 'DR14-QSO', 1.4,1.06],
+			  'LRGDR14':['tomato', 'salmon', 'H', 'DR14-LRG',0.6,1.025],
+			  'DESY1'     :['purple', 'plum', '>', 'DES-y1',0.59,.955],
+			  'LyADR14':['Dodgerblue', 'powderblue', 'o', r'DR14-Ly$\alpha-{\rm auto}$',2.,1.02],
+			  'LyADR14X':['DarkTurquoise', 'powderblue', 'd', r'DR14-Ly$\alpha-{\rm cross}$',2.,1.02],
+			  'LyADR14C':['Dodgerblue', 'powderblue', 'o', r'DR14-Ly$\alpha-{\rm comb}$',2.,1.02],
+			  'QSODR16'   :['orange', 'gold', '*', 'eBOSS-QSO', 1.4,1.06],
+			  'ELGDR16'   :['forestgreen', 'mediumseagreen', '*', 'eBOSS-ELG', 0.86,.97],
+			  'LRGDR16'   :['firebrick', 'indianred', '*', 'DR16-LRG', 0.6,1.025],
+			  'LyADR16C'   :['DarkTurquoise', 'powderblue', '*', r'eBOSS-Ly$\alpha$',2.26,1.01]}
+
+
 def plotBAOrelBOSSfid_dv():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
 	dcosfid = distance(.31,.69,.676,obhh=0.022)
@@ -248,6 +276,7 @@ def plotBAOrelBOSSfid_dv_eboss():
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='^',markeredgecolor='k',markersize=7,elinewidth=1.75,color='purple')
 		if lab == 'BOSSDR12_1':
 			plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
+			plt.text(0.34,.965,'galaxies',fontsize=14,color='r')
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
 		if lab == 'BOSSDR12_2':
 			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
@@ -292,6 +321,232 @@ def plotBAOrelBOSSfid_dv_eboss():
 	
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOaftereBOSS.png')	
 	plt.show()
+
+def plotBAOrelBOSSfid_dvmh_eboss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[4])
+			
+		sdv = float(ln[5])
+		dm = float(ln[6])			
+		sdm = float(ln[7])
+		dh = float(ln[8])			
+		sdh = float(ln[9])
+
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		mrs = 1.
+		if EH:
+			dvrsfid = dcosfid.dV(z)/rsfidEH
+			mrs = rsfidEH/rsfidcamb
+		else:
+			dvrsfid = dvrsfidc
+		if lab == '6dFGS':
+			#plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
+			plt.errorbar(z,dv/np.sqrt(z)*mrs,sdv/np.sqrt(z)*mrs,fmt='k>',markeredgecolor='k',markersize=7)
+		if lab == 'MGS':
+			#plt.text(0.1,1.095,'SDSS',fontsize=14,color='purple')
+			#plt.text(0.1,1.084,'MGS',fontsize=14,color='purple')	
+			plt.errorbar(z,dv/np.sqrt(z)*mrs,sdv/np.sqrt(z)*mrs,fmt='k^',markeredgecolor='k',markersize=7)
+		if lab == 'BOSSDR12_1':
+			#plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
+			#plt.text(0.34,.965,'galaxies',fontsize=14,color='r')
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='D',markersize=7,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*np.sqrt(z)*mrs,sdh*np.sqrt(z)*mrs,fmt='D',markersize=7,color='steelblue',markeredgecolor='k')
+		if lab == 'BOSSDR12_2':
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='D',markersize=7,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*np.sqrt(z)*mrs,sdh*np.sqrt(z)*mrs,fmt='D',markersize=7,color='steelblue',markeredgecolor='k')
+		if lab == 'LRGDR16':
+			#plt.text(0.6,1.025,'eBOSS',fontsize=14,color='orange')	
+			#plt.text(0.61,1.015,'LRGs',fontsize=14,color='orange')
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='*',markersize=14,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*np.sqrt(z)*mrs,sdh*np.sqrt(z)*mrs,fmt='*',markersize=14,color='steelblue',markeredgecolor='k')
+		if lab == 'DESY1':
+			#plt.text(0.5,.955,'DESY1',fontsize=14,color='lightblue')	
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='o',markersize=7,color='firebrick',markeredgecolor='k')
+
+		if lab == 'ELGDR16':
+			#plt.text(0.86,.97,'eBOSS',fontsize=14,color='b')	
+			#plt.text(0.87,.96,'ELGs',fontsize=14,color='b')
+			plt.errorbar(z,dv/np.sqrt(z)*mrs,sdv/np.sqrt(z)*mrs,fmt='*',markersize=14,color='k',markeredgecolor='k')
+		if lab == 'QSODR16':
+			#plt.text(1.4,1.06,'eBOSS',fontsize=14,color='k')	
+			#plt.text(1.4,1.05,'quasars',fontsize=14,color='k')
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='*',markersize=14,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*np.sqrt(z)*mrs,sdh*np.sqrt(z)*mrs,fmt='*',markersize=14,color='steelblue',markeredgecolor='k')
+		#if lab == 'LyADR14':
+		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
+		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		#if lab == 'LyADR14X':
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if lab == 'LyADR16C':
+			#plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
+			#plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
+			plt.errorbar(z,dm/np.sqrt(z)*mrs,sdm/np.sqrt(z)*mrs,fmt='*',markersize=14,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*np.sqrt(z)*mrs,sdh*np.sqrt(z)*mrs,fmt='*',markersize=14,color='steelblue',markeredgecolor='k')
+		
+
+	zls = zl.sort()
+	pdvfidl = []
+	pdmfidl = []
+	pdhfidl = []
+	for z in zl:
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		dmrsfidc = dcosfid.dc(z)/rsfidcamb
+		dhrsfidc = dcosfid.cHz(z)/rsfidcamb
+		pdvfidl.append(dvrsfidc/np.sqrt(z))
+		pdmfidl.append(dmrsfidc/np.sqrt(z))
+		pdhfidl.append(dhrsfidc*np.sqrt(z))
+	plt.plot(zl,pdvfidl,'k-',label=r' $D_V$')
+	plt.plot(zl,pdmfidl,'-',color='firebrick',label=r' $D_M$')
+	plt.plot(zl,pdhfidl,'-',color='steelblue',label=r' $zD_H$')
+	plt.legend(loc='lower right')
+	#plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel(r'BAO distance/($\sqrt{z}r_s(z_{\rm drag})$')
+	plt.ylabel(r'BAO distance/$D_V(\rm{eBOSS fid})$')
+	#plt.title('Spherically averaged or best constrained, after eBOSS')
+	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOVMHaftereBOSS.png')	
+	plt.show()
+
+def plotBAOrelBOSSfid_dvmhdv_eboss():
+	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
+	dcosfid = distance(.31,.69,.676,obhh=0.022)
+	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+	rsfidEH =  dcosfid.rs
+	#planck 2018 best LCDM
+	pom = 0.3147
+	pobh = 0.02233
+	ph = 0.6737
+	prs = 147.18
+	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+
+	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+	meas = open(dir+'BAOcomp.txt').readlines()
+	#columns in meas are
+	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+	zl = []
+	
+	for i in range(4,len(meas)):
+		ln = meas[i].split(',')
+		lab = ln[2]
+		#if np.isin(lab,labels):
+		z = float(ln[3])
+		zl.append(z)
+		dv = float(ln[4])
+			
+		sdv = float(ln[5])
+		dm = float(ln[6])			
+		sdm = float(ln[7])
+		dh = float(ln[8])			
+		sdh = float(ln[9])
+
+		EH = int(ln[-1].strip('\n'))
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		mrs = 1.
+		if EH:
+			dvrsfid = dcosfid.dV(z)/rsfidEH
+			mrs = rsfidEH/rsfidcamb
+		else:
+			dvrsfid = dvrsfidc
+		if lab == '6dFGS':
+			#plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
+			df = plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='k>',markeredgecolor='k',markersize=4,label='6dFGS')
+		if lab == 'MGS':
+			#plt.text(0.1,1.095,'SDSS',fontsize=14,color='purple')
+			#plt.text(0.1,1.084,'MGS',fontsize=14,color='purple')	
+			mg = plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='k^',markeredgecolor='k',markersize=4,label='SDSS MGS')
+		if lab == 'BOSSDR12_1':
+			#plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
+			#plt.text(0.34,.965,'galaxies',fontsize=14,color='r')
+			bs = plt.errorbar(2.5,1,.01,fmt='Dk',markersize=4,label='BOSS')
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='D',markersize=4,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*z/dvrsfid,sdh*z/dvrsfid,fmt='D',markersize=4,color='steelblue',markeredgecolor='k')
+		if lab == 'BOSSDR12_2':
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='D',markersize=4,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*z/dvrsfid,sdh*z/dvrsfid,fmt='D',markersize=4,color='steelblue',markeredgecolor='k')
+		if lab == 'LRGDR16':
+			#plt.text(0.6,1.025,'eBOSS',fontsize=14,color='orange')	
+			#plt.text(0.61,1.015,'LRGs',fontsize=14,color='orange')
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='*',markersize=10,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*z/dvrsfid,sdh*z/dvrsfid,fmt='*',markersize=10,color='steelblue',markeredgecolor='k')
+		if lab == 'DESY1':
+			#plt.text(0.5,.955,'DESY1',fontsize=14,color='lightblue')	
+			ds = plt.errorbar(2.5,1,.01,fmt='ko',markersize=4,label='DES')
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='o',markersize=4,color='firebrick',markeredgecolor='k')
+
+		if lab == 'ELGDR16':
+			#plt.text(0.86,.97,'eBOSS',fontsize=14,color='b')	
+			#plt.text(0.87,.96,'ELGs',fontsize=14,color='b')
+			eb = plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=10,color='k',markeredgecolor='k',label='eBOSS')
+		if lab == 'QSODR16':
+			#plt.text(1.4,1.06,'eBOSS',fontsize=14,color='k')	
+			#plt.text(1.4,1.05,'quasars',fontsize=14,color='k')
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='*',markersize=10,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*z/dvrsfid,sdh*z/dvrsfid,fmt='*',markersize=10,color='steelblue',markeredgecolor='k')
+		#if lab == 'LyADR14':
+		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
+		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		#if lab == 'LyADR14X':
+		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if lab == 'LyADR16C':
+			#plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
+			#plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
+			plt.errorbar(z,dm/dvrsfid,sdm/dvrsfid,fmt='*',markersize=10,color='firebrick',markeredgecolor='k')
+			plt.errorbar(z,dh*z/dvrsfid,sdh*z/dvrsfid,fmt='*',markersize=5,color='steelblue',markeredgecolor='k')
+		
+	first_legend = plt.legend(handles=[df,mg,eb,bs,ds],loc='center right',facecolor='w',framealpha=1)
+	ax = plt.gca().add_artist(first_legend)
+	zls = zl.sort()
+	pdvfidl = []
+	pdmfidl = []
+	pdhfidl = []
+	for z in zl:
+		dvrsfidc = dcosfid.dV(z)/rsfidcamb
+		dvrspc = dpcos.dV(z)/prs
+		dmrspc = dpcos.dc(z)/prs
+		dhrspc = dpcos.cHz(z)/prs
+		pdvfidl.append(dvrspc/dvrsfidc)
+		pdmfidl.append(dmrspc/dvrsfidc)
+		pdhfidl.append(dhrspc*z/dvrsfidc)
+	dv, = plt.plot(zl,pdvfidl,'k-',label=r' $D_V$')
+	dm, = plt.plot(zl,pdmfidl,'-',color='firebrick',label=r' $D_M$')
+	dh, = plt.plot(zl,pdhfidl,'-',color='steelblue',label=r' $zD_H$')
+	#plt.legend(loc='lower left')
+	plt.legend(handles=[dv,dm,dh],loc='lower left')
+	#plt.ylim(.901,1.109)
+	plt.xlim(0,2.4)
+	plt.xlabel('redshift')
+	plt.ylabel(r'BAO distance/eBOSS fiducial $D_V$')
+	#plt.title('Spherically averaged or best constrained, after eBOSS')
+	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOVMHdVftereBOSS.png')	
+	plt.show()
+
 
 def plotBAOrelBOSSfid_dm_eboss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -596,6 +851,7 @@ def plotBAOrelBOSSfid_dv_aniYear():
 	dvdvl = []
 	sdvdvl = []
 	yearl = []
+	keyl = []
 	for i in range(4,len(meas)):
 		ln = meas[i].split(',')
 		lab = ln[2]
@@ -616,7 +872,9 @@ def plotBAOrelBOSSfid_dv_aniYear():
 			dvdvl.append(dv/dvrsfid)
 			sdvdvl.append(sdv/dvrsfid)
 			yearl.append(int(ln[0]))
+			keyl.append(ln[2])
 	zls = szl.sort()
+	keyl = np.array(keyl)
 	for z in szl:
 		dvrsfidc = dcosfid.dV(z)/rsfidcamb
 		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
@@ -630,12 +888,20 @@ def plotBAOrelBOSSfid_dv_aniYear():
 	yearl = np.array(yearl)
 	def plotyear(year):
 		w = yearl == year
-		ax.errorbar(zl[w],dvdvl[w],sdvdvl[w],fmt='o',label=str(year))
-		ax.legend()
+		#for key in keyl[w]:
+		for i in range(0,len(keyl[w])):
+			key = keyl[w][i]
+			ax.errorbar(zl[w][i],dvdvl[w][i],sdvdvl[w][i],fmt=key_dict[key][2],ms=8,elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
+
+			plt.text(key_dict[key][4], key_dict[key][5], key_dict[key][3], color=key_dict[key][0])
+		#ax.errorbar(zl[w],dvdvl[w],sdvdvl[w],fmt='o',label=str(year))
+		#ax.legend()
 		#ax.title(str(year))
 	#writer = ImageMagickFileWriter()	
 	anim = FuncAnimation(fig,plotyear, frames=np.unique(yearl), interval=500)	
-	anim.save('baoyear.gif',writer='imagemagick')#, fps=10,writer='imagemagick',bitrate=-1)
+	#anim.save('baoyear.gif',writer='imagemagick')#, fps=10,writer='imagemagick',bitrate=-1)
 	#plt.savefig('baoyear.gif')
 	#plt.show()
 	#plt.plot(zl,pdvfidl,'k-')
