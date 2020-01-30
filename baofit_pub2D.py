@@ -249,13 +249,13 @@ class baofit3D_ellFull_1cov:
 		from time import time
 		t = time()
 		BB = list[0]
-		if BB < 0:
+		if BB <= 0:
 			return 1000
 		#A0 = list[1]
 		#A1 = list[2]
 		#A2 = list[3]
 		Beta = list[1]
-		if Beta < 0:
+		if Beta <= 0:
 			return 1000
 		#A02 = list[5]
 		#A12 = list[6]
@@ -714,6 +714,26 @@ def sigreg_2dme(file,spar=.006,spat=.003,min=.8,max=1.2):
 	corr = corr-a1b*a2b
 	return a1b,err1,a2b,err2,chimin,corr,corr/(err1*err2)
 
+def sigreg_2dEZ(file):
+	import numpy as np
+	d = np.loadtxt(file).transpose()
+	chi2 = d[-1]
+	prob = np.exp(-0.5*chi2)
+	pnorm = np.sum(prob)
+	mar = np.sum(prob*d[0])/pnorm
+	map = np.sum(prob*d[1])/pnorm
+	sr = np.sum(prob*d[0]**2.)/pnorm
+	sp = np.sum(prob*d[1]**2.)/pnorm
+	sigr = sqrt(sr-mar**2.)
+	sigp = sqrt(sp-map**2.)
+	crp = np.sum(prob*d[0]*d[1])/pnorm-mar*map
+	w = (chi2-np.min(chi2)) < 1
+	indmin = np.argmin(chi2)
+	print(d[0][indmin],d[1][indmin])
+	print(np.max(abs(d[0][w]-d[0][indmin])),np.max(d[0][indmin]-abs(d[0][w])))
+	print(np.max(abs(d[1][w]-d[1][indmin])),np.max(d[1][indmin]-abs(d[1][w])))
+	return mar,sigr,map,sigp,np.min(chi2),crp,crp/(sigr*sigp)
+	
 
 def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=.8,maxa=1.2,nobao='n',Bp=.4,Bt=.4,meth='Powell',bs=8,fout='',dirout=''):
 	from time import time
@@ -721,7 +741,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	#from optimize import fmin
 	from random import gauss, random
 	from scipy.optimize import minimize 
-	print('try meth = "Nelder-Mead" if does not work or answer is weird')
+	#print('try meth = "Nelder-Mead" if does not work or answer is weird')
 	bb = baofit3D_ellFull_1cov(dvb,icovb,mod,rlb,dirout=dirout) #initialize for bias prior
 	b = baofit3D_ellFull_1cov(dv,icov,mod,rl,dirout=dirout) #initialize for fitting
 	b.B0 = B0
@@ -800,7 +820,7 @@ def Xism_arat_1C_an(dv,icov,rl,mod,dvb,icovb,rlb,B0=1.,spat=.003,spar=.006,mina=
 	#print chi
 	fo.close()
 	fg.close()
-	ans = sigreg_2dme(dirout+'2Dbaofits/arat'+fout+'1covchi',spar=spar,spat=spat)
+	ans = sigreg_2dEZ(dirout+'2Dbaofits/arat'+fout+'1covchi.dat')#sigreg_2dme(dirout+'2Dbaofits/arat'+fout+'1covchi',spar=spar,spat=spat)
 	return ans
 
 
@@ -888,4 +908,4 @@ if __name__ == '__main__':
 	mina = .8
 	maxa = 1.2
 	Xism_arat_1C_an(dv,invc,rl,mod,dvb,invcb,rlb)
-	#cl = doxi_isolike(d,ct,mod,r,spa=spa,mina=mina,maxa=maxa)
+	

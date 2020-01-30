@@ -3,14 +3,14 @@ import numpy.linalg as linalg
 from math import *
 
 class baofit_iso:
-	def __init__(self,xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,sp=1.,cov2 = '',facc=1.):
+	def __init__(self,xid,covd,modl,modsmoothl,rl,bs=8,rmin=50,rmax=150,sp=1.,cov2 = '',facc=1.):
 		#xid and covd are the data vector and the covariance matrix and should be matched in length
 		#modl is the BAO template, assumed to have spacing sp between 10 and 300 mpc/h
 		#rl is the list of r values matching xid and covd
 		self.xim = [] #these lists will be filled based on the r limits
 		self.rl = []
 		self.sp = sp
-		bs = rl[1]-rl[0] #assumes linear bins
+		bs = float(bs)#rl[1]-rl[0] #assumes linear bins
 		s = 0
 		nxib = len(xid)
 		rsw = 0
@@ -22,8 +22,10 @@ class baofit_iso:
 				if s == 0:
 					mini = i
 					s = 1
-				rbc = .75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.)
-				#print rbc
+				#rbc = .75*((r+bs/2.)**4.-(r-bs/2.)**4.)/((r+bs/2.)**3.-(r-bs/2.)**3.)
+				rbc = r
+				#rbc = i*bs+bs/2.
+				#print(rbc,r,bs)
 				#this is the properly weighted bin center assume spherical symmetry
 				self.rl.append(rbc)
 				self.xim.append(xid[i])
@@ -1011,12 +1013,12 @@ def doPk_isolike_noconv(pkd,kl,cov,snl=6.,kmin=0.02,kmax=.3,npar=3,sp=1.,spa=.00
 	return chil
 
 
-def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=50.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,Nmock=1000,v='n',wo='',diro='',cov2=''):
+def doxi_isolike(xid,covd,modl,modsmoothl,rl,Bmd='nb',bs=8,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4,rminb=50.,rmaxb=50.,spa=.001,mina=.8,maxa=1.2,chi2fac=1.,Nmock=1000,v='n',wo='',diro='',cov2=''):
 	#chi2fac should be hartlap factor
 	from time import time
 	from optimize import fmin
 	print (np)
-	b = baofit_iso(xid,covd,modl,modsmoothl,rl,rmin=rmin,rmax=rmax,sp=sp,cov2=cov2)
+	b = baofit_iso(xid,covd,modl,modsmoothl,rl,rmin=rmin,rmax=rmax,sp=sp,cov2=cov2,bs=bs)
 	b.Bp = Bp
 	b.np = npar
 	b.H = np.zeros((npar,b.nbin))
@@ -1027,7 +1029,7 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 			b.H[j][i] = 1./b.rl[i]**j
 	if rmin == rmaxb:
 		rmaxb += (b.rl[1]-b.rl[0])*1.1 #increase rmaxb by one bin size if set poorly
-	bb = baofit_iso(xid,covd,modl,modsmoothl,rl,rmin=rmin,rmax=rmaxb,sp=sp,cov2=cov2)
+	bb = baofit_iso(xid,covd,modl,modsmoothl,rl,rmin=rmin,rmax=rmaxb,sp=sp,cov2=cov2,bs=bs)
 	#bb is to set bias prior
 	bb.np = npar
 	bb.H = np.zeros((npar,bb.nbin))
@@ -1053,7 +1055,10 @@ def doxi_isolike(xid,covd,modl,modsmoothl,rl,rmin=50,rmax=150,npar=3,sp=1.,Bp=.4
 	Bmax = 10.
 	while B < Bmax:
 		bl = [B]
+		#if Bmd == 'nb': #no broadband
 		chiB = bb.chi_templ_alphfXXn(bl)*chi2fac
+		#else:
+			
 		if chiB < chiBmin:
 			chiBmin = chiB
 			BB = B

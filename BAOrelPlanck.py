@@ -15,214 +15,238 @@ rcParams['font.family'] = 'serif'
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif', size=14)
 
-key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02],
-			  '6dFGS'  :['Brown', 'BlanchedAlmond', 'o', '6dFGS', 0.06,.943],
-			  'Wznorec'  :['tomato', 'salmon', 'D', 'WiggleZ', 0.65,1.05],
-			  'DR7rec':['Crimson', 'salmon', 'p', 'DR7-recon', 0.3,1.001],
-			  'Wzrec1'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
-			  'Wzrec2'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
-			  'Wzrec3'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082],
-			  'BOSSCMDR11':['tomato', 'MintCream', '<', 'DR11-CMASS', 0.34,.975],
-			  'BOSSLZDR11':['tomato', 'MintCream', '<', 'DR11-LowZ', 0.34,.975],
-			  'LyaXDR11'   :['Dodgerblue', 'lightblue', 'o', r'DR11-Ly$\alpha$', 2.,1.02],
-			  'MGS'        :['hotpink', 'salmon', '>', 'SDSS-MGS', 0.093,1.084],
-			  'BOSSDR12_1' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
-			  'BOSSDR12_2' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
-			  'BOSSDR12_3' :['k', 'grey', 's', 'BOSS-LRG', 0.34,.975],
-			  'LyADR12':['DarkTurquoise', 'skyblue', 'd', r'DR12-Ly$\alpha$', 2.2,1.06],
-			  'LyADR12C':['DarkTurquoise', 'skyblue', 'd', r'DR12-Ly$\alpha$', 2.2,1.06],
-			  'QSODR14'     :['tomato', 'salmon', 'H', 'DR14-QSO', 1.4,1.06],
-			  'LRGDR14':['tomato', 'salmon', 'H', 'DR14-LRG',0.6,1.025],
-			  'DESY1'     :['purple', 'plum', '>', 'DES-y1',0.59,.955],
-			  'LyADR14':['Dodgerblue', 'powderblue', 'o', r'DR14-Ly$\alpha-{\rm auto}$',2.,1.02],
-			  'LyADR14X':['DarkTurquoise', 'powderblue', 'd', r'DR14-Ly$\alpha-{\rm cross}$',2.,1.02],
-			  'LyADR14C':['Dodgerblue', 'powderblue', 'o', r'DR14-Ly$\alpha-{\rm comb}$',2.,1.02],
-			  'QSODR16'   :['orange', 'gold', '*', 'eBOSS-QSO', 1.4,1.06],
-			  'ELGDR16'   :['forestgreen', 'mediumseagreen', '*', 'eBOSS-ELG', 0.86,.97],
-			  'LRGDR16'   :['firebrick', 'indianred', '*', 'DR16-LRG', 0.6,1.025],
-			  'LyADR16C'   :['DarkTurquoise', 'powderblue', '*', r'eBOSS-Ly$\alpha$',2.26,1.01]}
+key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02,8],
+			  '6dFGS'  :['Brown', 'BlanchedAlmond', 'o', '6dFGS', 0.05,.938,8],
+			  'Wznorec'  :['tomato', 'salmon', 'D', 'WiggleZ', 0.55,1.07,8],
+			  'DR7rec':['Crimson', 'salmon', 'p', 'SDSS DR7\nLRG-recon', 0.28,.935,8],
+			  'Wzrec1'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082,8],
+			  'Wzrec2'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082,8],
+			  'Wzrec3'   :['thistle', 'Linen', 'h', 'Wz-recon', 0.45,1.082,8],
+			  'BOSSCMDR9':['tomato', 'MintCream', '<', 'BOSS\nDR9 CMASS', 0.62,.99,8],
+			  'BOSSCMDR11':['tomato', 'MintCream', '<', 'BOSS\nDR11 CMASS', 0.45,.95,8],
+			  'BOSSLZDR11':['tomato', 'MintCream', '<', 'BOSS\nDR11 LowZ', 0.2,.93,8],
+			  'LyaXDR11'   :['Dodgerblue', 'lightblue', 'o', 'BOSS\nDR11-Ly$\\alpha$X\n($D_H$)', 1.85,1.05,8],
+			  'LyADR11'   :['DarkTurquoise', 'powderblue', 'd', 'BOSS\nDR11-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
+			  'MGS'        :['hotpink', 'salmon', '>', 'SDSS-MGS', 0.08,1.09,8],
+			  'BOSSDR12_1' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'BOSSDR12_2' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'BOSSDR12_3' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'LyADR12':['DarkTurquoise', 'skyblue', 'd', 'BOSS\nDR12-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
+			  'LyADR12C':['DarkTurquoise', 'skyblue', 'd', 'BOSS\nDR12-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
+			  'QSODR14'     :['g', 'gold', '^', 'eBOSS\nDR14-QSO', 1.4,1.04,8],
+			  'LRGDR14':['firebrick', 'firebrick', 'H', 'eBOSS\nDR14 LRG',0.6,.907,8],
+			  'DESY1'     :['purple', 'plum', '>', 'DESY1\n($D_M$)',0.8,1.035,8],
+			  'LyADR14':['Dodgerblue', 'powderblue', 'o', 'DR14-Ly$\\alpha-{\\rm auto}$',2.,1.02,8],
+			  'LyADR14X':['DarkTurquoise', 'powderblue', 'd', 'DR14-Ly$\\alpha-{\\rm cross}$',2.,1.02,8],
+			  'LyADR14C':['Dodgerblue', 'powderblue', 'o', 'eBOSS\nDR14 Ly$\\alpha$\n($D_H$)',1.85,1.05,8],
+			  'QSODR16'   :['orange', 'gold', '*', 'eBOSS\nDR16 QSO', 1.35,1.05,14],
+			  'ELGDR16'   :['steelblue', 'w', '*', 'eBOSS\n DR16 ELG', 0.8,.93,14],
+			  'LRGDR16'   :['firebrick', 'indianred', '*', 'eBOSS+BOSS\n DR16 LRG', 0.6,1.04,14],
+			  'LyADR16C'   :['DarkTurquoise', 'powderblue', '*', 'eBOSS\nDR16 Ly$\\alpha$\n($D_H$)',1.85,1.05,14]}
+
+#set up fiducial cosmology and different CMB cosmologies
+
+#eboss fiducial
+dcosfid = distance(.31,.69,.676,obhh=0.022)
+rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
+rsfidEH =  dcosfid.rs
+
+#planck 2018 best LCDM
+pom = 0.3147
+pobh = 0.02233
+ph = 0.6737
+prs = 147.18
+dpcos = distance(pom,1-pom,ph,obhh=pobh)
+rspEH = dpcos.rs
+
+#planck 2015 best LCDM
+p15om = 0.315
+p15obh = 0.02205
+p15h = 0.673
+p15rs = 147.18 #didn't find this, so still 2018; use rsfidEH/rsp15EH
+dp15cos = distance(p15om,1-p15om,p15h,obhh=p15obh)
+rsp15EH = dp15cos.rs
+
+#planck 2013+WP best LCDM
+p13om = 0.3183
+p13obh = 0.02203
+p13h = 0.6704
+p13rs = 147.36 #didn't find this, so still 2018; use rsfidEH/rsp15EH
+dp13cos = distance(p13om,1-p13om,p13h,obhh=p13obh)
+rsp13EH = dp13cos.rs
+
+
+#WMAP7
+wom = 0.271
+wobh = 0.02227
+wh = 0.703
+wrs = 152.76
+dwcos = distance(wom,1-wom,wh,obhh=wobh)
+rswEH = dwcos.rs
+
+
+#read in compilation of data
+dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
+meas = open(dir+'BAOcomp.txt').readlines()
+#columns in meas are
+#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
+zl = []
+szl = []
+
+dvdvl = []
+sdvdvl = []
+dHl = []
+sdHl = []
+dMl = []
+sdMl = []
+
+yearl = []
+keyl = []
+
+for i in range(4,len(meas)):
+	ln = meas[i].split(',')
+	lab = ln[2]
+	z = float(ln[3])
+	dv = float(ln[4])
+	zl.append(z)
+	szl.append(z) 
+	sdv = float(ln[5])
+	EH = int(ln[-1].strip('\n'))
+	dvrsfidc = dcosfid.dV(z)/rsfidcamb
+	if EH:
+		dvrsfid = dcosfid.dV(z)/rsfidEH
+	else:
+		dvrsfid = dvrsfidc
+	dvdvl.append(dv/dvrsfid)
+	sdvdvl.append(sdv/dvrsfid)
+	dHvrsfidc = dcosfid.cHz(z)/rsfidcamb
+	dH = float(ln[8])	
+	sdH = float(ln[9])
+	dHl.append(dH/dHvrsfidc)
+	sdHl.append(sdH/dHvrsfidc)
+	dMvrsfidc = dcosfid.dc(z)/rsfidcamb
+	dM = float(ln[6])	
+	sdM = float(ln[7])
+	dMl.append(dM/dMvrsfidc)
+	sdMl.append(sdM/dMvrsfidc)
+
+	yearl.append(int(ln[0]))
+	keyl.append(ln[2])
+zls = szl.sort()
+keyl = np.array(keyl)
+
+pdvfidl = []
+p15dvfidl = []
+p13dvfidl = []
+wdvfidl = []
+for z in szl:
+	#dvrsfidc = dcosfid.dV(z)/rsfidcamb
+	dvrsfidc = dcosfid.dV(z)/rsfidEH
+	pdvfidl.append(dpcos.dV(z)/dpcos.rs/dvrsfidc)
+	wdvfidl.append(dwcos.dV(z)/dwcos.rs/dvrsfidc)
+	p15dvfidl.append(dp15cos.dV(z)/dp15cos.rs/dvrsfidc)
+	p13dvfidl.append(dp13cos.dV(z)/dp13cos.rs/dvrsfidc)
+zl = np.array(zl)
+dvdvl = np.array(dvdvl)
+sdvdvl = np.array(sdvdvl)
+yearl = np.array(yearl)
+dHl = np.array(dHl)
+sdHl = np.array(sdHl)
 
 
 def plotBAOrelBOSSfid_dv():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2018 best LCDM
-	pom = 0.3147
-	pobh = 0.02233
-	ph = 0.6737
-	prs = 147.18
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
-
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
-		#if np.isin(lab,labels):
-		z = float(ln[3])
-		dv = float(ln[4])
+	#just plot all the dv
+	for i in range(0,len(dvdvl)):
+		dv = dvdvl[i]
+		sdv = sdvdvl[i]
+		z = zl[i]
 		if dv != -1:
-			zl.append(z)
-			sdv = float(ln[5])
-			EH = int(ln[-1].strip('\n'))
-			dvrsfidc = dcosfid.dV(z)/rsfidcamb
-			if EH:
-				dvrsfid = dcosfid.dV(z)/rsfidEH
-			else:
-				dvrsfid = dvrsfidc
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o')
-	zls = zl.sort()
-	for z in zl:
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-')
+			plt.errorbar(z,dv,sdv,fmt='o')
+	plt.plot(szl,pdvfidl,'k-')
 	plt.show()	
 
 def plotBAOrelBOSSfid_dv_preboss():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2018 best LCDM
-	#pom = 0.3147
-	#pobh = 0.02233
-	#ph = 0.6737
-	#prs = 147.18
-	#use WMAP7
-	pom = 0.271
-	pobh = 0.02227
-	ph = 0.703
-	prs = 152.76
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
-	print(dpcos.rs)
-
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
-		#if np.isin(lab,labels):
-		z = float(ln[3])
-		zl.append(z)
-		dv = float(ln[4])
-			
-		sdv = float(ln[5])
-		EH = int(ln[-1].strip('\n'))
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		if EH:
-			dvrsfid = dcosfid.dV(z)/rsfidEH
-		else:
-			dvrsfid = dvrsfidc
+	#plot dv points from before BOSS
+	for i in range(0,len(dvdvl)):
+		lab = keyl[i]
+		z = zl[i]
+		dv = dvdvl[i]			
+		sdv = sdvdvl[i]
 		if lab == 'DR7Per':
-			plt.text(0.2,.945,'SDSS DR7',fontsize=14,color='steelblue')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='<',color='steelblue',markeredgecolor='k',markersize=7)
+			plt.text(0.2,.945,'SDSS DR7',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(z,dv,sdv,fmt=key_dict[lab][2],color=key_dict[lab][0],markeredgecolor='k',markersize=7)
 		if lab == '6dFGS':
-			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
+			plt.text(0.06,.935,'6dFGS',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(z,dv,sdv,fmt=key_dict[lab][2],color=key_dict[lab][0],markeredgecolor='k',markersize=7)
 		if lab == 'Wznorec':
-			plt.text(0.65,1.05,'WiggleZ',fontsize=14,color='.5')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='>',color='.5',markeredgecolor='k',markersize=7)
+			plt.text(0.65,1.05,'WiggleZ',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(z,dv,sdv,fmt=key_dict[lab][2],color=key_dict[lab][0],markeredgecolor='k',markersize=7)
 		if lab == 'DR7rec':
-			plt.text(0.4,.99,'SDSS DR7',fontsize=14,color='firebrick')	
-			plt.text(0.4,.98,'LRGs rec',fontsize=14,color='firebrick')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='h',color='firebrick',markeredgecolor='k',markersize=7)
+			plt.text(0.4,.99,'SDSS DR7',fontsize=14,color=key_dict[lab][0])	
+			plt.text(0.4,.98,'LRGs rec',fontsize=14,color=key_dict[lab][0])
+			plt.errorbar(z,dv,sdv,fmt=key_dict[lab][2],color=key_dict[lab][0],markeredgecolor='k',markersize=7)
 		
 
-	zls = zl.sort()
-	for z in zl:
-		dvrsfidc = dcosfid.dV(z)/rsfidEH
-		pdvfidl.append(dpcos.dV(z)/dpcos.rs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-',label='WMAP7')
+	plt.plot(szl,wdvfidl,'k-',label='WMAP7')
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.ylabel('BAO Measurement/$\Lambda$CDM reference')
 	plt.title('Spherically averaged, before BOSS')
 		
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAObeforeBOSS.png')
 	plt.show()
 
 def plotBAOrelBOSSfid_dv_boss():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2015 best LCDM
-	pom = 0.315
-	pobh = 0.02205
-	ph = 0.673
-	prs = 147.18
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
-
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
+	for i in range(0,len(dvdvl)):
+		lab = keyl[i]
+		key = lab
 		#if np.isin(lab,labels):
-		z = float(ln[3])
-		zl.append(z)
-		dv = float(ln[4])
-			
-		sdv = float(ln[5])
-		EH = int(ln[-1].strip('\n'))
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		if EH:
-			dvrsfid = dcosfid.dV(z)/rsfidEH
-		else:
-			dvrsfid = dvrsfidc
+		z = zl[i]
+		dv = dvdvl[i]			
+		sdv = sdvdvl[i]
 		if lab == '6dFGS':
-			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
+			plt.text(0.06,.935,'6dFGS',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'Wzrec1':
-			plt.text(0.45,1.082,'WiggleZ (rec)',fontsize=14,color='.8')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
+			plt.text(0.45,1.082,'WiggleZ (rec)',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'Wzrec3' or lab == 'Wzrec2':	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'MGS':
-			plt.text(0.1,1.095,'SDSS',fontsize=14,color='purple')
-			plt.text(0.1,1.084,'MGS',fontsize=14,color='purple')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='^',markeredgecolor='k',markersize=7,elinewidth=1.75,color='purple')
+			plt.text(0.1,1.095,'SDSS',fontsize=14,color=key_dict[lab][0])
+			plt.text(0.1,1.084,'MGS',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'BOSSDR12_1':
-			plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
+			plt.text(0.34,.955,'BOSS\nLRGs',fontsize=14,color=key_dict[lab][0])	
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'BOSSDR12_2' or lab == 'BOSSDR12_3':
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		#if lab == 'LyADR14':
-		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
-		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		#if lab == 'LyADR14X':
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		if lab == 'LyADR12C':
-			plt.text(2.,1.02,'BOSS',fontsize=14,color='k')	
-			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='H',markersize=7,elinewidth=1.75,color='magenta',markeredgecolor='k')
+			#plt.text(2.,1.02,'BOSS',fontsize=14,color='k')	
+			plt.text(1.95,1.05,'BOSS\nLyman-$\\alpha$\n($D_H$)',fontsize=14,color=key_dict[lab][0])
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
 		
 
-	zls = zl.sort()
-	for z in zl:
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-',label='Planck 2015')
+	plt.plot(szl,p15dvfidl,'k-',label='Planck 2015')
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.ylabel('BAO Measurement/$\Lambda$CDM reference')
 	plt.title('Spherically averaged or best constrained, after BOSS')
 		
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOafterBOSS.png')
@@ -230,97 +254,30 @@ def plotBAOrelBOSSfid_dv_boss():
 
 
 def plotBAOrelBOSSfid_dv_eboss():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2018 best LCDM
-	pom = 0.3147
-	pobh = 0.02233
-	ph = 0.6737
-	prs = 147.18
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
-
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
-		#if np.isin(lab,labels):
-		z = float(ln[3])
-		zl.append(z)
-		dv = float(ln[4])
-			
-		sdv = float(ln[5])
-		EH = int(ln[-1].strip('\n'))
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		if EH:
-			dvrsfid = dcosfid.dV(z)/rsfidEH
-		else:
-			dvrsfid = dvrsfidc
-		if lab == '6dFGS':
-			plt.text(0.06,.935,'6dFGS',fontsize=14,color='green')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='gs',markeredgecolor='k',markersize=7)
-		if lab == 'Wzrec1':
-			plt.text(0.45,1.082,'WiggleZ (rec)',fontsize=14,color='.8')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
-		if lab == 'Wzrec3' or lab == 'Wzrec2':	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='v',markersize=6,elinewidth=.5,color='.8',markeredgecolor='k')
-		if lab == 'MGS':
-			plt.text(0.1,1.095,'SDSS',fontsize=14,color='purple')
-			plt.text(0.1,1.084,'MGS',fontsize=14,color='purple')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='^',markeredgecolor='k',markersize=7,elinewidth=1.75,color='purple')
-		if lab == 'BOSSDR12_1':
-			plt.text(0.34,.975,'BOSS',fontsize=14,color='r')	
-			plt.text(0.34,.965,'galaxies',fontsize=14,color='r')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'BOSSDR12_2':
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'LRGDR16':
-			plt.text(0.6,1.025,'eBOSS',fontsize=14,color='orange')	
-			plt.text(0.61,1.015,'LRGs',fontsize=14,color='orange')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='orange',markeredgecolor='k')
-		if lab == 'DESY1':
-			plt.text(0.5,.955,'DESY1',fontsize=14,color='lightblue')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o',markersize=7,elinewidth=1.,color='lightblue',markeredgecolor='k')
-
-		if lab == 'ELGDR16':
-			plt.text(0.86,.97,'eBOSS',fontsize=14,color='b')	
-			plt.text(0.87,.96,'ELGs',fontsize=14,color='b')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='b',markeredgecolor='k')
-		if lab == 'QSODR16':
-			plt.text(1.4,1.06,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.4,1.05,'quasars',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='cyan',markeredgecolor='k')
-		#if lab == 'LyADR14':
-		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
-		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		#if lab == 'LyADR14X':
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR16C':
-			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		
-
-	zls = zl.sort()
-	for z in zl:
-		dvrsfidc = dcosfid.dV(z)/rsfidcamb
-		pdvfidl.append(dpcos.dV(z)/prs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-',label='Planck 2018')
+	labels = ['6dFGS','MGS','BOSSDR12_1','BOSSDR12_2','LRGDR16','DESY1','ELGDR16','QSODR16','LyADR16C']
+	for i in range(0,len(dvdvl)):
+		key = keyl[i]
+		if np.isin(key,labels):
+			plt.errorbar(zl[i],dvdvl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
+			if key != 'BOSSDR12_1' and key != 'BOSSDR12_2' and key != 'LRGDR16':
+				plt.text(key_dict[key][4], key_dict[key][5], key_dict[key][3], color=key_dict[key][0])
+			if key == 'BOSSDR12_1':
+				plt.text(.3, .96, key_dict[key][3], color=key_dict[key][0])	
+			if key == 'LRGDR16':
+				plt.text(.33, 1.02, 'eBOSS\n+BOSS\n DR16 LRG', color=key_dict[key][0])	
+	plt.plot(szl,pdvfidl,'k-',label='Planck 2018')
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.ylabel('BAO Measurement/$\\Lambda$CDM reference')
 	plt.title('Spherically averaged or best constrained, after eBOSS')
 	
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOaftereBOSS.png')	
 	plt.show()
+	return True		
+		
 
 def plotBAOrelBOSSfid_dvmh_eboss():
 	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -549,76 +506,53 @@ def plotBAOrelBOSSfid_dvmhdv_eboss():
 
 
 def plotBAOrelBOSSfid_dm_eboss():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2018 best LCDM
-	pom = 0.3147
-	pobh = 0.02233
-	ph = 0.6737
-	prs = 147.18
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+	for i in range(0,len(dvdvl)):
+		key = keyl[i]
 
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
-		#if np.isin(lab,labels):
-		z = float(ln[3])
-		zl.append(z)
-		dv = float(ln[6])
-			
-		sdv = float(ln[7])
-		EH = int(ln[-1].strip('\n'))
-		dvrsfidc = dcosfid.dc(z)/rsfidcamb
-		if EH:
-			dvrsfid = dcosfid.dc(z)/rsfidEH
-		else:
-			dvrsfid = dvrsfidc
-		if lab == 'BOSSDR12_1':
-			plt.text(0.12,.975,'BOSS',fontsize=14,color='r')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'BOSSDR12_2':
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'LRGDR16':
-			plt.text(0.35,1.025,'eBOSS',fontsize=14,color='orange')	
-			plt.text(0.36,1.015,'LRGs',fontsize=14,color='orange')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='orange',markeredgecolor='k')
-		if lab == 'DESY1':
-			plt.text(0.85,.955,'DESY1',fontsize=14,color='lightblue')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='o',markersize=7,elinewidth=1.,color='lightblue',markeredgecolor='k')
+		if key == 'BOSSDR12_1':
+			plt.text(0.1,.96,'BOSS\nDR12 LRGs',fontsize=14,color=key_dict[key][0])	
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'BOSSDR12_2':
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'LRGDR16':
+			plt.text(0.36,1.06,'eBOSS+BOSS',fontsize=14,color=key_dict[key][0])	
+			plt.text(0.36,1.05,'DR16 LRGs',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'DESY1':
+			plt.text(0.85,.955,'DESY1',fontsize=14,color=key_dict[key][0])	
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
 
-		if lab == 'QSODR16':
-			plt.text(1.4,1.07,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.4,1.06,'quasars',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='cyan',markeredgecolor='k')
-		#if lab == 'LyADR14':
-		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
-		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		#if lab == 'LyADR14X':
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR16C':
-			plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if key == 'QSODR16':
+			plt.text(1.4,1.07,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
+			plt.text(1.4,1.06,'Quasars',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'LyADR16C':
+			plt.text(1.75,.97,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
+			plt.text(1.75,.96,r'Lyman-$\alpha$',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
 		
 
-	zls = zl.sort()
-	for z in zl:
+	pdmfidl = []
+	for z in szl:
 		dvrsfidc = dcosfid.dc(z)/rsfidcamb
-		pdvfidl.append(dpcos.dc(z)/prs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-',label='Planck 2018')
+		pdmfidl.append(dpcos.dc(z)/prs/dvrsfidc)
+	plt.plot(szl,pdmfidl,'k-',label='Planck 2018')
 	plt.legend(loc='lower left')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.ylabel('BAO Measurement/$\\Lambda$CDM reference')
 	plt.title('Co-moving angular-diameter, after DR16')
 		
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAO_DMaftereBOSS.png')
@@ -691,73 +625,48 @@ def plotBAOrelBOSSfid_dm_boss():
 
 
 def plotBAOrelBOSSfid_Hz_eboss():
-	#reads in dv/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
-	dcosfid = distance(.31,.69,.676,obhh=0.022)
-	rsfidcamb = 147.77 #r_s(z_drag) from camb and fiducial cosmology
-	rsfidEH =  dcosfid.rs
-	#planck 2018 best LCDM
-	pom = 0.3147
-	pobh = 0.02233
-	ph = 0.6737
-	prs = 147.18
-	dpcos = distance(pom,1-pom,ph,obhh=pobh)
+	for i in range(0,len(dvdvl)):
+		key = keyl[i]
 
-	dir = '/Users/ashleyross/Dropbox/BAOwebossDR16/'	
-	meas = open(dir+'BAOcomp.txt').readlines()
-	#columns in meas are
-	#year, ref, label, zeff, dvrs, sigdv, dmrs, sigdm, hrs, sigh, omfid, hfid, omb2fid, rsEH
-	zl = []
-	pdvfidl = []
-	for i in range(4,len(meas)):
-		ln = meas[i].split(',')
-		lab = ln[2]
-		#if np.isin(lab,labels):
-		z = float(ln[3])
-		zl.append(z)
-		dv = float(ln[8])
-			
-		sdv = float(ln[9])
-		EH = int(ln[-1].strip('\n'))
-		dvrsfidc = dcosfid.cHz(z)/rsfidcamb
-		if EH:
-			dvrsfid = dcosfid.cHz(z)/rsfidEH
-		else:
-			dvrsfid = dvrsfidc
-		if lab == 'BOSSDR12_1':
-			plt.text(0.15,.975,'BOSS',fontsize=14,color='r')	
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'BOSSDR12_2':
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='D',markersize=7,elinewidth=1.75,color='r',markeredgecolor='k')
-		if lab == 'LRGDR16':
-			plt.text(0.8,.955,'eBOSS',fontsize=14,color='orange')	
-			plt.text(0.81,.945,'LRGs',fontsize=14,color='orange')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='orange',markeredgecolor='k')
+		if key == 'BOSSDR12_1':
+			plt.text(0.02,.95,'BOSS\nDR12 LRGs',fontsize=14,color=key_dict[key][0])	
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'BOSSDR12_2':
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'LRGDR16':
+			plt.text(0.75,.96,'eBOSS+BOSS',fontsize=14,color=key_dict[key][0])	
+			plt.text(0.75,.95,'DR16 LRGs',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
 
-		if lab == 'QSODR16':
-			plt.text(1.4,1.07,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.4,1.06,'quasars',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='cyan',markeredgecolor='k')
-		#if lab == 'LyADR14':
-		#	plt.text(2.,.985,'eBOSS',fontsize=14,color='k')	
-		#	plt.text(1.95,.975,r'Lyman-$\alpha$',fontsize=14,color='k')
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		#if lab == 'LyADR14X':
-		#	plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
-		if lab == 'LyADR16C':
-			plt.text(2.,1.02,'eBOSS',fontsize=14,color='k')	
-			plt.text(1.95,1.01,r'Lyman-$\alpha$',fontsize=14,color='k')
-			plt.errorbar(z,dv/dvrsfid,sdv/dvrsfid,fmt='*',markersize=20,elinewidth=1.75,color='magenta',markeredgecolor='k')
+		if key == 'QSODR16':
+			plt.text(1.4,1.075,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
+			plt.text(1.4,1.065,'Quasars',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'LyADR16C':
+			plt.text(1.75,1.02,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
+			plt.text(1.75,1.01,r'Lyman-$\alpha$',fontsize=14,color=key_dict[key][0])
+			plt.errorbar(zl[i],dHl[i],sdHl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
 		
 
-	zls = zl.sort()
-	for z in zl:
+	pdHfidl = []
+	for z in szl:
 		dvrsfidc = dcosfid.cHz(z)/rsfidcamb
-		pdvfidl.append(dpcos.cHz(z)/prs/dvrsfidc)
-	plt.plot(zl,pdvfidl,'k-',label='Planck 2018')
+		pdHfidl.append(dpcos.cHz(z)/prs/dvrsfidc)
+	plt.plot(szl,pdHfidl,'k-',label='Planck 2018')
 	plt.legend(loc='lower right')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
-	plt.ylabel('BAO distance/eBOSS fiducial')
+	plt.ylabel('BAO Measurement/$\\Lambda$CDM reference')
 	plt.title('Expansion rate, after DR16')
 	
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOHzaftereBOSS.png')	
@@ -909,6 +818,64 @@ def plotBAOrelBOSSfid_dv_aniYear():
 
 	plt.show()	
 
+
+def plotyear4gif(year):
+	#save figures in directory for gif
+	w = yearl < year
+	for i in range(0,len(keyl[w])):
+		key = keyl[w][i]
+		if key != 'LyADR12C' and key != 'LyADR14' and key != 'LyADR12' and key != 'LyADR14X' and key != 'LyADR14C' and key != 'LyADR11':
+			plt.errorbar(zl[w][i],dvdvl[w][i],sdvdvl[w][i],fmt='o',color='.6') #plot previous results with gray circles	
+		if key == 'LyADR14C' or key == 'LyADR12C' or key == 'LyADR11':
+			plt.errorbar(zl[w][i],dHl[w][i],sdHl[w][i],fmt='o',color='.6')
+	w = yearl == year
+	#for key in keyl[w]:
+	for i in range(0,len(keyl[w])):
+		key = keyl[w][i]
+		print(key)
+		if key != 'LyADR12C' and key != 'LyADR14' and key != 'LyADR11' and key != 'LyADR12' and key != 'LyADR14X' and key != 'LyADR14C':
+			plt.errorbar(zl[w][i],dvdvl[w][i],sdvdvl[w][i],fmt=key_dict[key][2],ms=8,elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
+
+			plt.text(key_dict[key][4], key_dict[key][5], key_dict[key][3], color=key_dict[key][0])
+		if key == 'LyADR14C' or key == 'LyADR12C' or key == 'LyADR11':	
+			plt.errorbar(zl[w][i],dHl[w][i],sdHl[w][i],fmt=key_dict[key][2],ms=8,elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
+
+			plt.text(key_dict[key][4], key_dict[key][5], key_dict[key][3], color=key_dict[key][0])
+
+		#ax.errorbar(zl[w],dvdvl[w],sdvdvl[w],fmt='o',label=str(year))
+		#ax.legend()
+		
+	#writer = ImageMagickFileWriter()	
+	#anim = FuncAnimation(fig,plotyear, frames=np.unique(yearl), interval=500)	
+	#anim.save('baoyear.gif',writer='imagemagick')#, fps=10,writer='imagemagick',bitrate=-1)
+	#plt.savefig('baoyear.gif')
+	#plt.show()
+	#plt.plot(zl,pdvfidl,'k-')
+	if year < 2013:
+		plt.plot(szl,wdvfidl,'k-',label='WMAP 7')
+	if year >=2013 and year < 2015:
+		plt.plot(szl,p13dvfidl,'k-',label='Planck 2013')
+	if year >= 2015 and year < 2018:	
+		plt.plot(szl,p15dvfidl,'k-',label='Planck 2015')
+	if year >= 2018:	
+		plt.plot(szl,pdvfidl,'k-',label='Planck 2018')	
+	plt.legend(loc='lower right')
+	plt.plot(szl,np.ones(len(szl)),':',color='.5')
+	plt.ylim(.901,1.109)
+	plt.xlabel('redshift')
+	plt.ylabel('BAO Measurement/$\Lambda$CDM reference')
+	#plt.title('Spherically averaged or best constrained, after BOSS')
+	plt.title(str(year))	
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/plots4gif/'+'dv'+str(year)+'.png')
+	plt.show()
+
+def allyears():
+	for year in np.unique(yearl):
+		plotyear4gif(year)
 
 def plotBAOrelBOSSfid_H():
 	#reads in c/H/rs measurements, plots them relative to the expectation in the BOSS fiducial cosmology
@@ -1409,5 +1376,3 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 	return True
 
 	
-if __name__ == "__main__":
-	 BAOrelPlanckNear()		
