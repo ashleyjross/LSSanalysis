@@ -1833,7 +1833,7 @@ def nzELG_splitSNR(chunk,ver='v5_10_7',sp=0.01,zmin=0.1,zmax=1.5,P0=5000.,compl=
 
 
 
-def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec='',mupow=0,zmin=0.6):
+def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin=0,mumax=1,start=0,rec='',mupow=0,zmin=0.6,sys=''):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/' #sciama
 	dir = '/global/cscratch1/sd/ajross/ebossxi/'
 	dirout = dir+ samp+'_v'+str(ver)+'/'
@@ -1856,9 +1856,9 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 	if samp == 'QSO':
 		zmin = 0.8
 		zmax = 2.2
-	predir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
+	predir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+sys+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
 	#predir = dir + samp+'_v'+str(ver)+'/2PCF/'
-	recdir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+rec+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
+	recdir = '/global/homes/z/zhaoc/cscratch/EZmock/2PCF/'+samp+'v'+ver+rec+sys+'_rmu/z'+str(zmin)+'z'+str(zmax)+'/2PCF/'
 	#shuffdir = dir + 'prerec_shuf/2PCF/'
 
 	#if pcmass:
@@ -1893,7 +1893,7 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 		#normdr = (np.loadtxt(predir+fn+'.dr').transpose()[-2]/dr)[0]
 		#print(normdr/normd,normr/normdr)
 
-	if rec == '_rec':
+	if rec == '_rec' or rec == '_rec':
 		
 		#fn += '_rec'
 		dd = np.loadtxt(recdir+fn+'.dd').transpose()[-1]#*ddnorm
@@ -2009,7 +2009,7 @@ def calcxi_mockEZ(num,reg='SGC',samp='ELG',ver='7',pcmass=False,bs=8,mom=0,mumin
 	#print xil
 	#if subt:
 	#	muw += 'subt'	
-	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+zw+'EZmock'+rec+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirout+'xi024'+samp+'_v'+ver+reg+zw+'EZmock'+rec+sys+str(num)+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+' '+str(wl[i])+' '+str(wl2[i])+' '+str(wl4[i])+'\n')
@@ -2793,7 +2793,7 @@ def mkcov_mock02_EZ(reg,ver=5,samp='ELG',pcmass=False,bs=8,mom=0,N=1000,rmax=200
 		
 	return True
 
-def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,start=0,mupow=0,mumin=0,mumax=1,angfac=0,md='me',rec='',zmin=0.6):
+def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,start=0,mupow=0,mumin=0,mumax=1,angfac=0,md='me',rec='',zmin=0.6,sys=''):
 	#dir = '/mnt/lustre/ashleyr/eboss/EZmock'+samp+'v'+str(ver)+'/'
 	#if md == 'me':
 	#	dir += '/xi/'
@@ -2831,7 +2831,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 		#print( i)
 		#try:
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+sys+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2883,7 +2883,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 	for i in range(1,N+1):
 		nr = str(i)
 		if md == 'me':
-			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
+			xii = np.loadtxt(dir+'xi024'+samp+'_v'+str(ver)+reg+zw+'EZmock'+rec+sys+nr+muw+str(bs)+'st'+str(start)+'.dat').transpose()
 		if md == 'cz':
 			zer = ''
 			if i < 10:
@@ -2928,7 +2928,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 #		except:
 #			print i
 	cov = cov/float(Ntot)					
-	fo = open('xiave'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('xiave'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+sys+muw+bsst+'.dat','w')
 	errl = []
 	for i in range(0,nbin):
 		if i < nbin:
@@ -2938,7 +2938,7 @@ def mkcov_mock_EZ(reg,mom=0,ver=5,samp='QSO',pcmass=False,bs=5,N=1000,maxr=200,s
 		fo.write(str(r)+ ' '+str(xiave[i])+ ' '+str(sqrt(cov[i][i]))+'\n')
 		errl.append(sqrt(cov[i][i]))
 	fo.close()	
-	fo = open('cov'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+muw+bsst+'.dat','w')
+	fo = open('cov'+str(mom)+reg+zw+samp+'_v'+str(ver)+'_EZ'+rec+sys+muw+bsst+'.dat','w')
 	
 	for i in range(0,nbin):
 		for j in range(0,nbin):
@@ -5955,6 +5955,7 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		#d2N = np.loadtxt(dir+'dr16_qso_obs_v7_ngc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
 		#d0S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[1][:maxind]
 		#d2S = np.loadtxt(dir+'dr16_qso_obs_v7_sgc_0.31_z0.8x2.2_xi4m_dwfiber_rwfull_ds5[1].dat').transpose()[2][:maxind]
+		
 		dn = np.loadtxt(dir+'dr16_qso_v'+version+'_N_0.31_z0.8x2.2_dwfiber_rwfull_covEZv7wsys_3mds5_ximulti_mean.dat').transpose()
 		ds = np.loadtxt(dir+'dr16_qso_v'+version+'_S_0.31_z0.8x2.2_dwfiber_rwfull_covEZv7wsys_3mds5_ximulti_mean.dat').transpose()
 		ezver = '7'
@@ -6123,9 +6124,11 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 		covS = np.loadtxt(indir+'cov0SGC'+sample+'_EZ'+rec+'angfac'+str(angfac)+covv+bsst+'.dat')#*fs
 
 	if covmd == 'me':
-		covN = np.loadtxt(dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')
-		print(('open NGC cov '+dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat'))
-		covS = np.loadtxt(dirH+'cov0SGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')  
+		#covN = np.loadtxt(dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')
+		#print(('open NGC cov '+dirH+'cov0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat'))
+		#covS = np.loadtxt(dirH+'cov0SGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat')  
+		covN = np.loadtxt(dirH+'cov0NGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')
+		covS = np.loadtxt(dirH+'cov0SGC'+sample+'_v'+str(ezver)+'_EZ'+rec+bsst+'.dat')  
 
 	covS *= covfac
 	covN *= covfac				
@@ -10306,6 +10309,58 @@ def plotELGNSbaolike(v='7',p='3',Bp='0.59303.05.015.01.0',rec='_rec',bs='5st0',r
 	pp.close()
 	return True
 
+def plotQSObaolike(v='7_2',p='3',Bp='0.44.03.08.015.00',rec='',bs='5st0',reg='NScombf'):
+	#plot bao likelihood for QSOs
+	from matplotlib import pyplot as plt
+	from matplotlib import rc
+	from matplotlib.backends.backend_pdf import PdfPages
+	pp = PdfPages(ebossdir+'xiELG'+reg+'baolik'+v+rec+bs+'.pdf')
+	plt.clf()
+	plt.minorticks_on()
+	db = np.loadtxt(ebossdir+'BAOxichil'+reg+'QSOdataJH'+v+rec+Bp+bs+'.dat').transpose()
+	a = db[0]
+	ax = sigreg_c12(ebossdir+'BAOxichil'+reg+'QSOdataJH'+v+rec+Bp+bs)
+	print (ax)
+	alph = (ax[2]+ax[1])/2.
+	err = (ax[2]-ax[1])/2.
+	dnb = np.loadtxt(ebossdir+'BAOxichil'+reg+'QSOdataJH'+v+rec+Bp+'noBAO'+bs+'.dat').transpose()[1]
+	chim = min(db[1])
+	ol = np.ones((len(db[0])))
+	plt.plot(db[0],db[1]-chim,'-',color='k',linewidth=2)
+	plt.plot(db[0],dnb-chim,'--',color='k',linewidth=1)
+	plt.plot(db[0],ol,'k:',linewidth=1)
+	plt.text(0.825,1.1,r'$1\sigma$')
+	#plt.plot(db[0],ol*4,'k:',linewidth=1)
+	#plt.text(0.825,4.1,r'$2\sigma$')
+	plt.plot(db[0],ol*9,'k:',linewidth=1)
+	plt.text(0.825,9.1,r'$3\sigma$')
+	plt.plot(db[0],ol*25,'k:',linewidth=1)
+	plt.text(0.825,25.1,r'$5\sigma$')
+
+	plt.ylim(0,50)
+	plt.xlabel(r'$\alpha_{\rm iso,BAO}$',size=18)
+	plt.ylabel(r'$\Delta\chi^2$',size=18)
+	#plt.text(.9,10,r'$\alpha=$'+str(round(alph,3))+r'$\pm$'+str(round(err,3)))
+	#plt.text(30,120,r'$\alpha=0.941\pm0.018$',color='k',size=16)
+	#plt.title(r'BAO likelihood for '+title)
+	if reg == 'NScomb':
+		lab = 'NGC + SGC chi2'
+	if reg == 'NScombf':
+		lab = 'NGC + SGC xi'
+	if reg == 'NGC':
+		lab = 'NGC only'
+	if reg == 'SGC':
+		lab = 'SGC only'
+
+	#if rec == '_rec':
+	#	plt.title(r'ELGs, $\xi$, post-recon '+lab)
+	#if rec == '':
+	#	plt.title(r'ELGs, $\xi$, pre-recon')
+	pp.savefig()
+	pp.close()
+	return True
+
+
 def plotELGNSbaolikexiP(v='7',p='3',Bp='0.59303.05.015.01.0',rec='_rec',bs='5st0',reg='NScomb'):
 	#plot bao likelihood for QSOs
 	from matplotlib import pyplot as plt
@@ -10563,6 +10618,99 @@ def plotnzQSO(smooth=4):
 	#pp.close()
 	return True
 
+def getnzMockLRG(reg='SGC',nbin = 55,zmin=0,zmax=1.1):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	vl = []
+	sp = (zmax-zmin)/float(nbin)
+	if reg == 'SGC':
+		area = 1627.
+	if reg == 'NGC':
+		area = 2476.	
+	zl = []	
+	for i in range(0,nbin):
+		zlo = i*sp
+		zh = (i+1)*sp
+		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)
+		zl.append(i*sp+sp/2.)
+	vl = np.array(vl)
+	zt = np.zeros(nbin)    
+	for i in range(1,1001):
+		zer = ''
+		if i < 10:
+			zer += '0'
+		if i < 100:
+			zer += 	'0'
+		if i < 1000:
+			zer += 	'0'
+		di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
+		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax))
+		zt += zh[0]
+	zt = zt/1000./vl
+	print(zt)
+	#print(zl)
+	#print(zh[1])
+	cov = np.zeros((nbin,nbin))	
+	for i in range(1,1001):
+		zer = ''
+		if i < 10:
+			zer += '0'
+		if i < 100:
+			zer += 	'0'
+		if i < 1000:
+			zer += 	'0'
+		di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
+		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax))
+		zi = zh[0]/vl
+		for j in range(0,nbin):
+			for k in range(0,nbin):
+				cov[j][k] += (zt[j]-zi[j])*(zt[k]-zi[k])
+		print(i)
+	cov = cov/999.
+	fo = open('nzLRGEZ'+reg+'ave.dat','w')
+	for i in range(0,nbin):
+		fo.write(str(zl[i])+' '+str(zt[i])+' '+str(sqrt(cov[i][i]))+'\n')
+	fo.close()
+	fo = open('covnzLRGEZ'+reg+'.dat','w')
+	for i in range(0,nbin):
+		for j in range(0,nbin):
+			fo.write(str(cov[i][j])+' ')
+		fo.write('\n')				
+	fo.close()
+	return True
+
+def getnzdataLRG(nbin = 30,zmin=.5,zmax=1.1):
+	from Cosmo import distance
+	d = distance(.31,.69)
+	vl = []
+	sp = (zmax-zmin)/float(nbin)
+	#if reg == 'SGC':
+	areas = 1627.
+	#if reg == 'NGC':
+	arean = 2476.	
+	zl = []	
+	for i in range(0,nbin):
+		zlo = zmin+i*sp
+		zh = zmin+(i+1)*sp
+		v = 1./(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		vl.append(v)
+		zl.append(zmin+i*sp+sp/2.)
+	vl = np.array(vl)
+	dn = fitsio.read(ebossdir+'/eBOSS_LRG_full_NGC_v7_2.dat.fits')
+	wn = dn['IMATCH'] == 1
+	wnall = dn[wn]['WEIGHT_CP']*dn[wn]['WEIGHT_NOZ']*dn[wn]['WEIGHT_SYSTOT']
+	zn = np.histogram(dn[wn]['Z'],bins=nbin,range=(zmin,zmax),weights=wnall)
+	nzn = zn[0]/vl/arean
+	ds = fitsio.read(ebossdir+'/eBOSS_LRG_full_SGC_v7_2.dat.fits')
+	ws = ds['IMATCH'] == 1
+	wsall = ds[ws]['WEIGHT_CP']*ds[ws]['WEIGHT_NOZ']*ds[ws]['WEIGHT_SYSTOT']
+	zs = np.histogram(ds[ws]['Z'],bins=nbin,range=(zmin,zmax),weights=wsall)
+	nzs = zs[0]/vl/areas
+	plt.plot(zl,nzn,zl,nzs)
+	plt.show()
+
+
 def plotnzLRG(smooth=2):
 	ds = np.loadtxt(ebossdir+'nbar_eBOSS_LRG_SGC_v7.dat').transpose()
 	dn = np.loadtxt(ebossdir+'nbar_eBOSS_LRG_NGC_v7.dat').transpose()
@@ -10579,6 +10727,7 @@ def plotnzLRG(smooth=2):
 	eln = []
 	els = []
 	colors = ['firebrick','salmon']
+	ntots = 0
 	for i in range(0,len(ds[0]),smooth):
 		z = 0
 		ns = 0
@@ -10589,6 +10738,7 @@ def plotnzLRG(smooth=2):
 		ntn = 0
 		vs = 0
 		vn = 0
+		
 		if i+smooth < len(ds[0]):
 			for j in range(0,smooth):
 				z += ds[0][i+j]
@@ -10598,24 +10748,27 @@ def plotnzLRG(smooth=2):
 				vs += ds[-2][i+j]
 				ntn += dn[-1][i+j]
 				vn += dn[-2][i+j]
+				ntots += ds[-1][i+j]
 			
 				#ns4 += ds4[3][i+j]
 				#nn4 += dn4[3][i+j]
 			z = z/float(smooth)
 			ns = ns/float(smooth)
 			nn = nn/float(smooth)
-			print(ns,nts/vs)
+			
 			es = sqrt(nts)/vs
 			en = sqrt(ntn)/vn
+			print(ns,nts/vs,es,es/(nts/vs),nts,sqrt(nts)/nts)
 			#ns4 = ns4/float(smooth)
 			#nn4 = nn4/float(smooth)
 			zl.append(z)
-			nsl.append(ns)
-			nnl.append(nn)
+			nsl.append(nts/vs)
+			nnl.append(ntn/vn)
 			eln.append(en)
 			els.append(es)
 			#nsl4.append(ns4)
 			#nnl4.append(nn4)
+	print('total in SGC '+str(ntots))
 	zl = np.array(zl)
 	nsl = np.array(nsl)
 	nnl = np.array(nnl)
@@ -10623,9 +10776,12 @@ def plotnzLRG(smooth=2):
 	els = np.array(els)
 	#nsl4 = np.array(nsl4)
 	#nnl4 = np.array(nnl4)
+	elsm = np.loadtxt(ebossdir+'nzLRGEZSGCave.dat').transpose()[2]
+	elnm = np.loadtxt(ebossdir+'nzLRGEZNGCave.dat').transpose()[2]
 	plt.plot(zl,nsl*1e4,'-',color=colors[1],linewidth=2,label='SGC')
-	plt.errorbar(zl,nsl*1e4,els*1e4,fmt='.',color=colors[1])
+	plt.errorbar(zl[:len(elsm)],nsl[:len(elsm)]*1e4,elsm*1e4,fmt=',',color=colors[1])
 	plt.plot(zl,nnl*1e4,'--',color=colors[0],linewidth=2,label='NGC')
+	plt.errorbar(zl[:len(elsm)],nnl[:len(elsm)]*1e4,elnm*1e4,fmt=',',color=colors[0])
 	#plt.plot(zl,nsl4*1e5,'--',color='paleturquoise',linewidth=2)
 	#plt.plot(zl,nnl4*1e5,'--',color='lightcoral',linewidth=2)
 	plt.xlim(0.5,1.1)
@@ -10649,7 +10805,24 @@ def plotnzLRG(smooth=2):
 	plt.xlabel('LRG redshift',size=16)
 
 	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nzLRGDR16werr.png')
+	plt.show()
 	#pp.close()
+	covs = np.loadtxt(ebossdir+'covnzLRGEZSGC.dat')[30:50,30:50]
+	covn = np.loadtxt(ebossdir+'covnzLRGEZNGC.dat')[30:50,30:50]
+	covt = covs+covn
+	icov = np.linalg.inv(covt)
+	dns = (nsl-nnl)[30:50]
+	chi2 = np.dot(dns,(np.dot(dns,icov)))
+	print(chi2)
+	chi2d = 0
+	for i in range(0,20):
+		chi2d += dns[i]**2./covt[i][i]
+	print(chi2d)
+	plt.plot(zl[:len(elsm)],elsm)
+	plt.plot(zl,els)
+	plt.xlim(0.5,1.1)
+	plt.ylim(0,1e-5)
+	plt.show()	
 	return True
 
 def plotnzLRGpCMASS(smooth=2):
@@ -10795,6 +10968,221 @@ def plotfootsizevscomp(sp=0.02):
 	#pp.close()
 	return True
 
+def getebpcstats(ver='7_2'):
+	samp = 'LRGpCMASS'
+	f = fitsio.read(ebossdir+'eBOSS_'+samp+'_clustering_NGC_v'+ver+'.dat.fits')
+	fs = fitsio.read(ebossdir+'eBOSS_'+samp+'_clustering_SGC_v'+ver+'.dat.fits')
+	#statistics for eboss galaxies
+	w = f['ISCMASS'] == 0
+	ws = fs['ISCMASS'] == 0
+	print('total number of eBOSS redshifts, SGC, NGC, combined:')
+	print(len(fs[ws]),len(f[w]),len(f[w])+len(fs[ws]))
+	print('effective number of eBOSS galaxies, SGC, NGC, combined:')
+	nn = np.sum(f[w]['WEIGHT_CP']*f[w]['WEIGHT_NOZ'])
+	ns = np.sum(fs[ws]['WEIGHT_CP']*fs[ws]['WEIGHT_NOZ'])
+	print(ns,nn,ns+nn)
+	w = f['ISCMASS'] == 1
+	ws = fs['ISCMASS'] == 1
+	print('total number of CMASS redshifts, SGC, NGC, combined:')
+	print(len(fs[ws]),len(f[w]),len(f[w])+len(fs[ws]))
+	print('effective number of CMASS galaxies, SGC, NGC, combined:')
+	nn = np.sum(f[w]['WEIGHT_CP']+f[w]['WEIGHT_NOZ']-1)
+	ns = np.sum(fs[ws]['WEIGHT_CP']+fs[ws]['WEIGHT_NOZ']-1)
+	print(ns,nn,ns+nn)
+
+	w &= f['IN_EBOSS_FOOT'] == 1
+	ws &= fs['IN_EBOSS_FOOT'] == 1
+	print('total number of CMASS redshifts in eboss footprint, SGC, NGC, combined:')
+	print(len(fs[ws]),len(f[w]),len(f[w])+len(fs[ws]))
+	print('effective number of CMASS galaxies in eboss footprint, SGC, NGC, combined:')
+	nn = np.sum(f[w]['WEIGHT_CP']+f[w]['WEIGHT_NOZ']-1)
+	ns = np.sum(fs[ws]['WEIGHT_CP']+fs[ws]['WEIGHT_NOZ']-1)
+	print(ns,nn,ns+nn)
+
+	w = f['ISCMASS'] == 1
+	ws = fs['ISCMASS'] == 1
+	w &= f['IN_EBOSS_FOOT'] == 0
+	ws &= fs['IN_EBOSS_FOOT'] == 0
+	print('total number of CMASS redshifts not in eboss footprint, SGC, NGC, combined:')
+	print(len(fs[ws]),len(f[w]),len(f[w])+len(fs[ws]))
+	print('effective number of CMASS galaxies not eboss footprint, SGC, NGC, combined:')
+	nn = np.sum(f[w]['WEIGHT_CP']+f[w]['WEIGHT_NOZ']-1)
+	ns = np.sum(fs[ws]['WEIGHT_CP']+fs[ws]['WEIGHT_NOZ']-1)
+	print(ns,nn,ns+nn)
+
+	
+
+def getstats(samp,ver='7_2'):
+	if samp == 'QSO':
+		zmin = 0.8
+		zmax = 2.2
+	if samp == 	'LRG':
+		zmin = 0.6
+		zmax = 1.
+	f = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_NGC_v'+ver+'.dat.fits')
+	fs = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_SGC_v'+ver+'.dat.fits')
+	w = f['IMATCH'] == 1
+	ws = fs['IMATCH'] == 1
+	print('NGC eboss redshifts: '+str(len(f[w])))
+	print('SGC eboss redshifts: '+str(len(fs[ws])))
+	w = f['IMATCH'] == 2
+	ws = fs['IMATCH'] == 2
+	print('NGC legacy redshifts: '+str(len(f[w])))
+	print('SGC legacy redshifts: '+str(len(fs[ws])))
+	w = (f['IMATCH'] == 1) | (f['IMATCH'] == 2)
+	ws = (fs['IMATCH'] == 1) | (fs['IMATCH'] == 2)
+	print('NGC Neff: '+str(np.sum(f[w]['WEIGHT_NOZ']*f[w]['WEIGHT_CP'])))
+	print('SGC Neff: '+str(np.sum(fs[ws]['WEIGHT_NOZ']*fs[ws]['WEIGHT_CP'])))
+	w &= (f['COMP_BOSS'] > 0.5) & (f['sector_SSR'] > 0.5)
+	ws &= (fs['COMP_BOSS'] > 0.5) & (fs['sector_SSR'] > 0.5)
+	print('NGC Neff after completeness cuts: '+str(np.sum(f[w]['WEIGHT_NOZ']*f[w]['WEIGHT_CP'])))
+	print('SGC Neff after completeness cuts: '+str(np.sum(fs[ws]['WEIGHT_NOZ']*fs[ws]['WEIGHT_CP'])))
+	print('NGC Nztot after completeness cuts: '+str(len(f[w])))
+	print('SGC Nztot after completeness cuts: '+str(len(fs[ws])))
+
+	w &= (f['Z'] > zmin) & (f['Z'] < zmax)
+	ws &= (fs['Z'] > zmin) & (fs['Z'] < zmax)
+	print('NGC Neff after redshift cuts: '+str(np.sum(f[w]['WEIGHT_NOZ']*f[w]['WEIGHT_CP'])))
+	print('SGC Neff after redshift cuts: '+str(np.sum(fs[ws]['WEIGHT_NOZ']*fs[ws]['WEIGHT_CP'])))
+	print('NGC Nztot after redshift cuts: '+str(len(f[w])))
+	print('SGC Nztot after redshift cuts: '+str(len(fs[ws])))
+
+	w &= f['IMATCH'] == 2
+	ws &= fs['IMATCH'] == 2
+	print('NGC Neff legacy after redshift cuts: '+str(np.sum(f[w]['WEIGHT_NOZ']*f[w]['WEIGHT_CP'])))
+	print('SGC Neff legacy after redshift cuts: '+str(np.sum(fs[ws]['WEIGHT_NOZ']*fs[ws]['WEIGHT_CP'])))
+	print('NGC Nztot legacy after redshift cuts: '+str(len(f[w])))
+	print('SGC Nztot legacy after redshift cuts: '+str(len(fs[ws])))
+
+
+	w = f['IMATCH'] == 4
+	ws = fs['IMATCH'] == 4
+	print('NGC stars: '+str(len(f[w])))
+	print('SGC stars: '+str(len(fs[ws])))
+	w = f['IMATCH'] == 7
+	ws = fs['IMATCH'] == 7
+	print('NGC z fail: '+str(len(f[w])))
+	print('SGC z fail: '+str(len(fs[ws])))
+	w = f['IMATCH'] == 3
+	ws = fs['IMATCH'] == 3
+	print('NGC close pairs: '+str(len(f[w])))
+	print('SGC close pairs: '+str(len(fs[ws])))
+	w = f['IMATCH'] == 9
+	ws = fs['IMATCH'] == 9
+	print('NGC bad type: '+str(len(f[w])))
+	print('SGC bad type: '+str(len(fs[ws])))
+	w = f['IMATCH'] == 13
+	ws = fs['IMATCH'] == 13
+	print('NGC legacy stars: '+str(len(f[w])))
+	print('SGC legacy stars: '+str(len(fs[ws])))
+
+
+
+def catzqso(ver='7_2',zmin=.8,zmax=2.2):
+	samp = 'QSO'
+	f = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_NGC_v'+ver+'.dat.fits')
+	fs = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_SGC_v'+ver+'.dat.fits')
+	wl = (f['IMATCH'] == 2) & (f['RANDOM_SELECT'] == 1)
+	print(len(f[wl]))
+	w = ((f['IMATCH'] == 1) | (f['IMATCH'] == 2)) & (f['Z'] > zmin) & (f['Z'] < zmax) & (f['RANDOM_SELECT'] == 1)
+	ws = ((fs['IMATCH'] == 1) | (fs['IMATCH'] == 2)) & (fs['Z'] > zmin) & (fs['Z'] < zmax) & (fs['RANDOM_SELECT'] == 1)
+	print(len(f[w]),len(fs[ws]))
+	wnq = w & (f['IS_QSO_10K'] != 1)
+	wnqs = ws & (fs['IS_QSO_10K'] != 1)
+	wbz = w & (abs(f['Z']-f['Z_10K'])>0.01*(1+f['Z']))
+	wbzs = ws & (abs(fs['Z']-fs['Z_10K'])>0.01*(1+fs['Z']))
+	wbt = wnq | wbz
+	wbts = wnqs | wbzs
+	print(len(f[wnq]),len(fs[wnqs]))
+	print(len(f[wbt]),len(fs[wbts]))
+	print('total inspections '+str(len(f[w])+len(fs[ws])))
+	print('total catastrophic failures '+str(len(f[wbt])+len(fs[wbts])))
+	
+
+
+def zgoodvsxy(samp,ver,nbin=20,ylim=(0.9,1.05)):
+	if samp == 'QSO':
+		pt = '^'
+		pc = 'forestgreen'
+		frac = 0.05
+		ylab = r'quasar spectra:  $N_{\rm good}/N_{\rm total}$ '
+	if samp == 'LRG':
+		pt = 'o'
+		pc = 'firebrick'
+		frac = 0.02
+		ylab = r'LRG spectra:  $N_{\rm good}/N_{\rm total}$ '
+	f = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_NGC_v'+ver+'.dat.fits')
+	fs = fitsio.read(ebossdir+'eBOSS_'+samp+'_full_SGC_v'+ver+'.dat.fits')
+	#print(f.dtype.names)
+	wgood = (f['IMATCH'] == 1) | (f['IMATCH'] == 4) | (f['IMATCH'] == 9)
+	wgoods = (fs['IMATCH'] == 1) | (fs['IMATCH'] == 4) | (fs['IMATCH'] == 9)	
+	wall = (f['IMATCH'] == 1) | (f['IMATCH'] == 4) | (f['IMATCH'] == 9) | (f['IMATCH'] == 7)
+	walls = (fs['IMATCH'] == 1) | (fs['IMATCH'] == 4) | (fs['IMATCH'] == 9) | (fs['IMATCH'] == 7)
+	
+	hg = np.histogram(f[wgood]['XFOCAL'],bins=nbin)
+	ha = np.histogram(f[wall]['XFOCAL'],bins=hg[1])	
+	hgw = np.histogram(f[wgood]['XFOCAL'],bins=hg[1],weights=f[wgood]['WEIGHT_NOZ'])
+	
+	#print(f.dtype.names)
+	hgs = np.histogram(fs[wgoods]['XFOCAL'],bins=hg[1])
+	has = np.histogram(fs[walls]['XFOCAL'],bins=hg[1])	
+	hgws = np.histogram(fs[wgoods]['XFOCAL'],bins=hg[1],weights=fs[wgoods]['WEIGHT_NOZ'])
+
+	xl = np.zeros(nbin)
+	for i in range(0,len(xl)):
+		xl[i] = (hg[1][i]+hg[1][i+1])/2.
+	
+	#plt.plot(xl,(hg[0]+hgs[0])/(ha[0]+has[0]))
+	nt = (ha[0]+has[0])
+	err = (nt*frac)**.5/nt
+	plt.errorbar(xl,(hgw[0]+hgws[0])/nt,err,fmt=pt,color=pc,label=r'with $w_{\rm noz}$')
+	plt.plot(xl,(hg[0]+hgs[0])/(ha[0]+has[0]),'--',color='gray',label=r'without $w_{\rm noz}$')
+	plt.legend()
+	plt.plot(xl,np.ones(len(xl)),'k:')
+	plt.ylim(ylim[0],ylim[1])
+	plt.xlabel('focal plane x position (mm)')
+	plt.ylabel(ylab)
+	
+	chi2x = np.sum(((hgw[0]+hgws[0])/nt-1.)**2./err**2.)
+	print('chi2 for x focal null is '+str(chi2x))
+
+	#plt.plot(xl,(hgw[0]+hgws[0])/(ha[0]+has[0]))
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/n'+samp+'vsxfoc.png')
+
+	plt.show()
+
+	hgy = np.histogram(f[wgood]['YFOCAL'],bins=nbin)
+	hay = np.histogram(f[wall]['YFOCAL'],bins=hgy[1])	
+	hgwy = np.histogram(f[wgood]['YFOCAL'],bins=hgy[1],weights=f[wgood]['WEIGHT_NOZ'])
+	
+	#print(f.dtype.names)
+	hgsy = np.histogram(fs[wgoods]['YFOCAL'],bins=hgy[1])
+	hasy = np.histogram(fs[walls]['YFOCAL'],bins=hgy[1])	
+	hgwsy = np.histogram(fs[wgoods]['YFOCAL'],bins=hgy[1],weights=fs[wgoods]['WEIGHT_NOZ'])
+
+	yl = np.zeros(nbin)
+	for i in range(0,len(yl)):
+		yl[i] = (hgy[1][i]+hgy[1][i+1])/2.
+	
+	#plt.plot(xl,(hg[0]+hgs[0])/(ha[0]+has[0]))
+	nty = (hay[0]+hasy[0])
+	erry = (nty*frac)**.5/nty
+	plt.errorbar(yl,(hgwy[0]+hgwsy[0])/nty,erry,fmt=pt,color=pc,label=r'with $w_{\rm noz}$')
+	plt.plot(yl,(hgy[0]+hgsy[0])/(hay[0]+hasy[0]),'--',color='gray',label=r'without $w_{\rm noz}$')
+	plt.legend()
+	plt.plot(yl,np.ones(len(yl)),'k:')
+	plt.ylim(ylim[0],ylim[1])
+	plt.xlabel('focal plane y position (mm)')
+	plt.ylabel(ylab)
+	chi2y = np.sum(((hgwy[0]+hgwsy[0])/nty-1.)**2./erry**2.)
+	print('chi2 for y focal null is '+str(chi2y))
+
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/n'+samp+'vsyfoc.png')
+
+	#plt.plot(xl,(hgw[0]+hgws[0])/(ha[0]+has[0]))
+
+	plt.show()
+	
 
 def zsysplotsQSO(ver='7_1',frac=0.05,ylim=(0.9,1.05)):
 	pt = '^'
@@ -11844,14 +12232,15 @@ if __name__ == '__main__':
 	#print(covf)
 	
 	#data
-	xibaoNS('QSO',0.8,2.2,version='7_1',wm='fkp',bs=5,md='dataJH',covmd='me',tempmd='',damp='0.44.03.08.015.00',rmin=50,rmax=150)
-	xibaoNS('QSO',0.8,2.2,version='7_2',wm='fkp',bs=5,md='dataJH',covmd='me',tempmd='',damp='0.44.03.08.015.00',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,version='7_1',wm='fkp',bs=5,md='dataJH',covmd='me',tempmd='',damp='0.44.03.08.015.00',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,version='7_2',wm='fkp',bs=5,md='dataJH',covmd='me',tempmd='',damp='0.44.03.08.015.00',rmin=50,rmax=150)
+	#xibaoNS('QSO',0.8,2.2,version='7_2',wm='fkp',bs=5,md='dataJH',covmd='me',tempmd='',damp='0.44.03.08.015.00',rmin=50,rmax=150,mb='nobao')
 	#2D LRG
 	#xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,minz=0.6,maxz=1.,ver='4',af='',wm='fkp',rec='',damp='',spat=0.003,spar=0.006,mina=.8,maxa=1.2,covm='JB',Bp=0.4)
 	#2D quasars, with varying damping terms
 	#fiducial from Richard, Sigma_|| = 8, Sigma_perp = 3, Sigma_s = 4
 #	print('Sigma_|| = 8, Sigma_perp = 3, Sigma_s = 4')
-#	xi2DBAONS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.03.08.015.00',rec='',ver='7_1',ezver='7',min=50,max=150,Bp=0.4,covm='me')
+#	xi2DBAONS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.03.08.015.00',rec='',ver='7_2',ezver='7',min=50,max=150,Bp=0.4,covm='me')
 # 	#xi2DBAONandS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.42.04915.00',rec='',ver='7',ezver='7',min=50,max=150,Bp=0.4,covm='me')
 # 	print('Sigma_|| = 11, Sigma_perp = 3, Sigma_s = 4')
 # 	xi2DBAONS(md='dataJH',covf=1.,samp='QSO',minz=0.8,maxz=2.2,bs=5,damp='0.44.03.011.015.00',rec='',ver='7',ezver='7',min=50,max=150,Bp=0.4,covm='me')
@@ -11939,8 +12328,8 @@ if __name__ == '__main__':
 # 	xibaoNS('ELG',.6,1.1,'7',mupow=1,rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
 # 	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.7, damp = 35')
 # 	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
-#	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35')
-#	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
+	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35')
+	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
 #	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35, no bias prior')
 #	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0,Bp=100)
 #	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35, no An')
