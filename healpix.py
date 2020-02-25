@@ -1,5 +1,6 @@
 from math import *
 from legendre import legendre
+from Cosmo import *
 twopi = 2.*pi
 piover2 = .5*pi
 ns_max = 8192
@@ -330,7 +331,7 @@ def stars2healpix(nside=1024):
 		px = int(h.ang2pix_nest(nside,th,phi))
 		pixl[px] += 1.
 	f.close()
-	print 'file done'
+	print('file done')
 	for i in range(0,len(pixl)):
 		fp.write(str(pixl[i])+'\n')
 	fp.close()
@@ -403,7 +404,7 @@ def pixl2odensNS(file,res=256,t=.74,seec=100,skyc=100,redc=100,stm=10000,md='n',
 	aveS = aveS/ntS
 	aveN = aveN/ntN
 	aver = ng/np
-	print np,ng,aveN,aveS,aver
+	print(np,ng,aveN,aveS,aver)
 	if redc == 100:
 		ro = ''
 	else:
@@ -456,7 +457,7 @@ def pixl2odensNS(file,res=256,t=.74,seec=100,skyc=100,redc=100,stm=10000,md='n',
 			sump += p
 	foN.close()
 	foS.close()
-	print sump
+	print(sump)
 	return True
 
 
@@ -477,7 +478,7 @@ def pixl2odens_simp(file,res=1024,t=.9,md='g'):
 	
 	aver = ng/nt
 	ave = ng/np
-	print np,ng,ave,aver
+	print(np,ng,ave,aver)
 	f = open(file+'hpix'+str(res)+'.dat')
 	if res != '1024':
 		fo = open(file+str(res)+'hodens64.dat','w')
@@ -498,7 +499,7 @@ def pixl2odens_simp(file,res=1024,t=.9,md='g'):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump
+	print(sump)
 	return True
 
 def pixl2abs_simp(file,res=1024,t=.9,md='g'):
@@ -518,7 +519,7 @@ def pixl2abs_simp(file,res=1024,t=.9,md='g'):
 	
 	aver = ng/nt
 	ave = ng/np
-	print np,ng,ave,aver
+	print(np,ng,ave,aver)
 	f = open(file+'hpix'+str(res)+'.dat')
 	if res != '1024':
 		fo = open(file+str(res)+'hodens64.dat','w')
@@ -537,7 +538,7 @@ def pixl2abs_simp(file,res=1024,t=.9,md='g'):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump
+	print(sump)
 	return True
 
 
@@ -597,7 +598,7 @@ def pixl2odens(file,res=256,t=.74,seec=100,skymin=0,skyc=100,redc=100,stm=10000,
 			#	print see,sky,red,st,sch,b
 	#ave = ave/nt
 	ave = ng/np
-	print np,ng,ave
+	print(np,ng,ave)
 	if redc == 100:
 		ro = ''
 	else:
@@ -676,7 +677,7 @@ def pixl2odens(file,res=256,t=.74,seec=100,skymin=0,skyc=100,redc=100,stm=10000,
 			sump += p
 		i += 1
 	fo.close()
-	print sump
+	print(sump)
 	return True
 
 def pixl2odensstar(file,res=256,t=.74,seec=100,skyc=100,redc=100,stm=100):
@@ -704,7 +705,7 @@ def pixl2odensstar(file,res=256,t=.74,seec=100,skyc=100,redc=100,stm=100):
 	
 	ave = ave/nt
 	aver = ng/np
-	print np,ng,ave,aver
+	print(np,ng,ave,aver)
 	if redc == 100:
 		ro = ''
 	else:
@@ -751,7 +752,7 @@ def pixl2odensstar(file,res=256,t=.74,seec=100,skyc=100,redc=100,stm=100):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+'\n')
 			sump += p
 	fo.close()
-	print sump,
+	print(sump, end=' ')
 	return True
 
 def pixl2odens_ext(res=256,t=.2,seec=100,skyc=100,redc=100,stm=10000):
@@ -814,10 +815,10 @@ def pixl2odens_ext(res=256,t=.2,seec=100,skyc=100,redc=100,stm=10000):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump,
- 	from pcsourcezw import pcsourcezw
- 	a = pcsourcezw.createSourcesLE_zw('pc2pt/exthodens64.dat')
- 	for i in range(0,20):
+	print(sump, end=' ')
+	from pcsourcezw import pcsourcezw
+	a = pcsourcezw.createSourcesLE_zw('pc2pt/exthodens64.dat')
+	for i in range(0,20):
  		a = pcsourcezw.createSourcesLE_jackzw('pc2pt/exthodens64.dat',i,jackt=20)
 	return True
 	
@@ -885,10 +886,10 @@ def pixl2odens_sky(res=256,t=.2,seec=100,skymin=0,skyc=100,redc=100,stm=10000):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump,
- 	from pcsourcezw import pcsourcezw
- 	a = pcsourcezw.createSourcesLE_zw('pc2pt/skyhodens64.dat')
- 	for i in range(0,20):
+	print(sump, end=' ')
+	from pcsourcezw import pcsourcezw
+	a = pcsourcezw.createSourcesLE_zw('pc2pt/skyhodens64.dat')
+	for i in range(0,20):
  		a = pcsourcezw.createSourcesLE_jackzw('pc2pt/skyhodens64.dat',i,jackt=20)
 	return True
 
@@ -958,10 +959,10 @@ def pixl2odens_skyS(res=256,t=.2,seec=100,skymin=0,skyc=100,redc=100,stm=10000):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump,
- 	from pcsourcezw import pcsourcezw
- 	a = pcsourcezw.createSourcesLE_zw('pc2pt/skyhSodens64.dat')
- 	for i in range(0,20):
+	print(sump, end=' ')
+	from pcsourcezw import pcsourcezw
+	a = pcsourcezw.createSourcesLE_zw('pc2pt/skyhSodens64.dat')
+	for i in range(0,20):
  		a = pcsourcezw.createSourcesLE_jackzw('pc2pt/skyhSodens64.dat',i,jackt=20)
 	return True
 
@@ -1034,10 +1035,10 @@ def pixl2odens_air(res=256,t=.2,seec=100,skymin=0,skyc=100,redc=100,stm=10000):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump,
- 	from pcsourcezw import pcsourcezw
- 	a = pcsourcezw.createSourcesLE_zw('pc2pt/airhodens64.dat')
- 	for i in range(0,20):
+	print(sump, end=' ')
+	from pcsourcezw import pcsourcezw
+	a = pcsourcezw.createSourcesLE_zw('pc2pt/airhodens64.dat')
+	for i in range(0,20):
  		a = pcsourcezw.createSourcesLE_jackzw('pc2pt/airhodens64.dat',i,jackt=20)
 	return True
 
@@ -1066,7 +1067,7 @@ def pixl2odens_sch(res=256,t=.2,seec=100,skymin=0,skyc=100,redc=100,stm=10000,sc
 				ng += sch*p
 				nt += 1.*p
 	ave = ng/nt
-	print np,ng,ave
+	print(np,ng,ave)
 	if redc == 100:
 		ro = ''
 	else:
@@ -1112,7 +1113,7 @@ def pixl2odens_sch(res=256,t=.2,seec=100,skymin=0,skyc=100,redc=100,stm=10000,sc
 				fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 				sump += p
 	fo.close()
-	print sump
+	print(sump)
 	from pcsourcezw import pcsourcezw
 	a = pcsourcezw.createSourcesLE_zw('pc2pt/sch'+schC+'hodens64.dat')
 	for i in range(0,20):
@@ -1180,10 +1181,10 @@ def pixl2odens_see(res=256,t=.74,seec=100,skyc=100,redc=100,stm=10000):
 			fo.write(ln[0]+' '+ln[1]+' '+str(od)+' '+str(p)+'\n')
 			sump += p
 	fo.close()
-	print sump,
- 	from pcsourcezw import pcsourcezw
- 	a = pcsourcezw.createSourcesLE_zw('pc2pt/seehodens64.dat')
- 	for i in range(0,20):
+	print(sump, end=' ')
+	from pcsourcezw import pcsourcezw
+	a = pcsourcezw.createSourcesLE_zw('pc2pt/seehodens64.dat')
+	for i in range(0,20):
  		a = pcsourcezw.createSourcesLE_jackzw('pc2pt/seehodens64.dat',i,jackt=20)
 	return True
 
@@ -1200,7 +1201,7 @@ def filestripDR8h1(file,t=.9,md='csv'):
 			if float(ln[j]) > 0:
 				ml[bpix] = float(ln[j])
 		i += 1
-	print 'north masked'
+	print('north masked')
 	f = open('/Users/ashleyr/boss/shirleyhpixSouth1024.dat')
 	i = 0
 	for line in f:
@@ -1210,7 +1211,7 @@ def filestripDR8h1(file,t=.9,md='csv'):
 			if float(ln[j]) > 0:
 				ml[bpix] = float(ln[j])
 		i += 1
-	print 'south masked'
+	print('south masked')
 	if md == 'n':
 		f = open(file+'.dat')
 	if md == 'csv':
@@ -1261,7 +1262,7 @@ def maskfracDR8h(file,bres=1024,ores=256,tb=.9,to=0,reg='NS'):
 						opix = int(h.ang2pix_nest(ores,th,phi))
 						ml2[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 	if reg == 'NS' or reg == 'S':
 		f = open('/Users/ashleyr/boss/shirleyhpixSouth1024.dat')
 		i = 0
@@ -1278,8 +1279,8 @@ def maskfracDR8h(file,bres=1024,ores=256,tb=.9,to=0,reg='NS'):
 						opix = int(h.ang2pix_nest(ores,th,phi))
 						ml2[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
-	print np,wsum
+		print('south masked')
+	print(np,wsum)
 	if ores == 1024:
 		return np/(12.*1024*1024)
 	sum = 0
@@ -1318,7 +1319,7 @@ def filestripDR8h(file,bres=1024,ores=256,t=.9,cpc=0,mm=0,md='n',rc=0,reg='NS'):
 						opix = int(h.ang2pix_nest(ores,th,phi))
 						ml2[opix] += 1.*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 	if reg == 'NS' or reg == 'S':
 		f = open('/Users/ashleyr/boss/shirleyhpixSouth1024.dat')
 		i = 0
@@ -1335,7 +1336,7 @@ def filestripDR8h(file,bres=1024,ores=256,t=.9,cpc=0,mm=0,md='n',rc=0,reg='NS'):
 						opix = int(h.ang2pix_nest(ores,th,phi))
 						ml2[opix] += 1.*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	if mm == 1:
 		fm = open('hmaskDR8'+str(ores)+'.dat','w')
 		for i in range(0,len(ml2)):
@@ -1357,7 +1358,7 @@ def filestripDR8h(file,bres=1024,ores=256,t=.9,cpc=0,mm=0,md='n',rc=0,reg='NS'):
 			#cp = float(ln[cpcol])
 			p = int(h.ang2pix_nest(bres,th,phi))
 			if p > len(ml):
-				print len(ml),p,th,phi,h.ang2pix_nest(bres,th,phi)
+				print(len(ml),p,th,phi,h.ang2pix_nest(bres,th,phi))
 			if ml[p] > t:# and cp > cpc:
 				for k in range(0,len(ln)-1):
 					fo.write(ln[k]+' ')
@@ -1382,7 +1383,7 @@ def mkrandomsDR8(N,tol):
 			if float(ln[j]) > 0:
 				ml[bpix] = float(ln[j])
 		i += 1
-	print 'north masked'
+	print('north masked')
 	f = open('shirleyhpixSouth1024.dat')
 	i = 0
 	for line in f:
@@ -1392,7 +1393,7 @@ def mkrandomsDR8(N,tol):
 			if float(ln[j]) > 0:
 				ml[bpix] = float(ln[j])
 		i += 1
-	print 'south masked'
+	print('south masked')
 
 	fo = open('randomshDR8.dat','w')
 	Nrandoms = 0
@@ -1419,7 +1420,7 @@ def mkrandomsDR8(N,tol):
 def mkrandomsDR83D(zmin,zmax,N,tol=.9):
 	#this module put N objects randomly distributed in lamda/eta, without any masking
 	from random import random
-	from Cosmo import *
+	
 	d = distance(.25,.75)
 	ml = []
 	for i in range(0,12*1024*1024):
@@ -1433,7 +1434,7 @@ def mkrandomsDR83D(zmin,zmax,N,tol=.9):
 			if float(ln[j]) > tol:
 				ml[bpix] = 1
 		i += 1
-	print 'north masked'
+	print('north masked')
 	f = open('/Users/ashleyr/BOSS/shirleyhpixSouth1024.dat')
 	i = 0
 	for line in f:
@@ -1443,7 +1444,7 @@ def mkrandomsDR83D(zmin,zmax,N,tol=.9):
 			if float(ln[j]) > tol:
 				ml[bpix] = 1
 		i += 1
-	print 'south masked'
+	print('south masked')
 
 	fo = open('randomshDR8z'+str(zmin)+str(zmax)+'.dat','w')
 	Nrandoms = 0
@@ -1455,7 +1456,7 @@ def mkrandomsDR83D(zmin,zmax,N,tol=.9):
 		nz = float(fz[i].split()[1])
 		if nz > zmax:
 			zmax = nz
-	print zmax
+	print(zmax)
 	sl = []
 	for i in range(0,12*256*256):
 		sl.append(0)
@@ -1513,7 +1514,7 @@ def mkrandomsDR83D(zmin,zmax,N,tol=.9):
 				dp = d.dc(z)
 				fo.write(str(ra)+' '+str(dec)+' '+str(dp)+' '+str(zw)+'\n')
 				Nrandoms += 1.
-	print nb
+	print(nb)
 	fo.close()
 	return True
 
@@ -1566,7 +1567,7 @@ def filestripM7h(file,res=1024,rc=0,dc=1,md='n'):
 			px = i*1024+j
 			ml[px] = float(ln[j])
 		i += 1
-	print 'masked'
+	print('masked')
 	if md == 'n':
 		f = open(file+'.dat')
 	if md == 'csv':
@@ -1586,7 +1587,7 @@ def filestripM7h(file,res=1024,rc=0,dc=1,md='n'):
 					fo.write(ln[i]+' ')
 				fo.write(ln[-1].strip('\n')+'\n')
 		except:
-			print line
+			print(line)
 	fo.close()
 	return True
 
@@ -1616,7 +1617,7 @@ def mkM7healpixl(file,bres=1024,ores=1024,rc=0,dc=1,md='n',mm=0):
 			fmo.write(str(ml[i])+'\n')
 		fmo.close()
 	
-	print 'masked'
+	print('masked')
 	if md == 'n':
 		f = open(file+'.dat')
 	if md == 'csv':
@@ -1660,7 +1661,7 @@ def mkM7healpixlsg(file,bres=1024,ores=1024,rc=0,dc=1,sgcol=-1):
 		else:
 			ml[i] = float(line)*(ores/float(bres))**2.
 		i += 1
-	print 'masked'
+	print('masked')
 	f = open(file+'.dat')
 	for line in f:
 		ln = line.split()
@@ -1752,7 +1753,7 @@ def mkhealpixl_simp(file,res=256,rc=0,dc=1,zc=2,md='csv'):
 				n += 1
 			except:
 				pass
-	print n
+	print(n)
 	fo = open(file+'hpixall'+str(res)+'.dat','w')
 	for i in range(0,npo):
 		th,phi = h.pix2ang_nest(res,i)
@@ -1819,7 +1820,7 @@ def mkDR8healmaskN(bres=1024,ores=256,rc=0,dc=1,zc=2):
 				opix = int(h.ang2pix_nest(ores,th,phi))
 				ml[opix] += w*(ores/float(bres))**2
 		i += 1
-	print 'north masked'
+	print('north masked')
 	for i in range(0,npo):
 		fo.write(str(ml[i])+'\n')
 	fo.close()
@@ -1882,7 +1883,7 @@ def densDR8_NS(file,NS,md='.dat',bres=1024,rc=0,dc=1,zc=2,tol=.9):
 					ml[bpix] = 1.
 					mt += 1.
 			i += 1
-		print 'north masked'
+		print('north masked')
 	if NS == 'S':
 		f = open('/Users/ashleyross/BOSS/shirleyhpixSouth1024.dat')
 		i = 0
@@ -1895,7 +1896,7 @@ def densDR8_NS(file,NS,md='.dat',bres=1024,rc=0,dc=1,zc=2,tol=.9):
 					ml[bpix] += 1.
 					mt += 1.
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+md)
 	ng = 0
 	for line in f:
@@ -1941,7 +1942,7 @@ def mkDR8healpixl(file,bres=1024,ores=256,rc=0,dc=1,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -1954,7 +1955,7 @@ def mkDR8healpixl(file,bres=1024,ores=256,rc=0,dc=1,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		ln = line.split()
@@ -2012,7 +2013,7 @@ def mkDR8healpixl_weight(file,bres=1024,ores=256,rc=0,dc=1,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -2025,7 +2026,7 @@ def mkDR8healpixl_weight(file,bres=1024,ores=256,rc=0,dc=1,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		if line[0] != '#':
@@ -2068,14 +2069,14 @@ def mkDR8healpixlsg(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2):
 	mm = 0
 	try:
 		mf = 'hmaskDR8'+str(ores)+'.dat'
-		print mf
+		print(mf)
 		f = open(mf)
 		i = 0
 		for line in f:
 			ml[i] = float(line)
 			i += 1
 	except:
-		print 'exception',i,len(ml)
+		print('exception',i,len(ml))
 		mm = 1	
 		f = open('shirleyhpixNorth1024.dat')
 		i = 0
@@ -2089,7 +2090,7 @@ def mkDR8healpixlsg(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -2102,7 +2103,7 @@ def mkDR8healpixlsg(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		if line[0] == '#':
@@ -2150,14 +2151,14 @@ def mkDR8healpixlsgwst(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2,ast=4.74):
 	mm = 0
 	try:
 		mf = '/Users/ashleyr/BOSS/hmaskDR8'+str(ores)+'.dat'
-		print mf
+		print(mf)
 		f = open(mf)
 		i = 0
 		for line in f:
 			ml[i] = float(line)
 			i += 1
 	except:
-		print 'exception',i,len(ml)
+		print('exception',i,len(ml))
 		mm = 1	
 		f = open('/Users/ashleyr/BOSS/shirleyhpixNorth1024.dat')
 		i = 0
@@ -2171,7 +2172,7 @@ def mkDR8healpixlsgwst(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2,ast=4.74):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('/Users/ashleyr/BOSS/shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -2184,7 +2185,7 @@ def mkDR8healpixlsgwst(file,bres=1024,ores=256,rc=0,dc=1,sgc=4,zc=2,ast=4.74):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		if line[0] == '#':
@@ -2242,14 +2243,14 @@ def mkDR8healpixlsgzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 	mm = 0
 	try:
 		mf = 'hmaskDR8'+str(ores)+'.dat'
-		print mf
+		print(mf)
 		f = open(mf)
 		i = 0
 		for line in f:
 			ml[i] = float(line)
 			i += 1
 	except:
-		print 'exception',i,len(ml)
+		print('exception',i,len(ml))
 		mm = 1	
 		f = open('shirleyhpixNorth1024.dat')
 		i = 0
@@ -2263,7 +2264,7 @@ def mkDR8healpixlsgzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -2276,7 +2277,7 @@ def mkDR8healpixlsgzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		ln = line.split()
@@ -2318,14 +2319,14 @@ def mkDR8healpixlzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 	mm = 0
 	try:
 		mf = 'hmaskDR8'+str(ores)+'.dat'
-		print mf
+		print(mf)
 		f = open(mf)
 		i = 0
 		for line in f:
 			ml[i] = float(line)
 			i += 1
 	except:
-		print 'exception',i,len(ml)
+		print('exception',i,len(ml))
 		mm = 1	
 		f = open('shirleyhpixNorth1024.dat')
 		i = 0
@@ -2339,7 +2340,7 @@ def mkDR8healpixlzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'north masked'
+		print('north masked')
 		f = open('shirleyhpixSouth1024.dat')
 		i = 0
 		for line in f:
@@ -2352,7 +2353,7 @@ def mkDR8healpixlzp(file,zbinc,bres=1024,ores=256,rc=0,dc=1,sgc=4):
 					opix = int(h.ang2pix_nest(ores,th,phi))
 					ml[opix] += w*(ores/float(bres))**2
 			i += 1
-		print 'south masked'
+		print('south masked')
 	f = open(file+'.dat')
 	for line in f:
 		ln = line.split()
@@ -2442,17 +2443,17 @@ def thphi2le(theta,phi):
 	node = deg2Rad*(surveyCenterRA - 90.0)
 	
 	x = cos(rarad-node)*cos(decrad)
-  	y = sin(rarad-node)*cos(decrad)
-  	z = sin(decrad)
+	y = sin(rarad-node)*cos(decrad)
+	z = sin(decrad)
 
-  	lam = -1.0*asin(x)/deg2Rad
-  	eta = (atan2(z,y) - etaPole)/deg2Rad
-  	if eta < -180.0:
-  		eta += 360.0
-  	if eta > 180.0:
-  		eta -= 360.0
-  	
-  	return (lam,eta)
+	lam = -1.0*asin(x)/deg2Rad
+	eta = (atan2(z,y) - etaPole)/deg2Rad
+	if eta < -180.0:
+		eta += 360.0
+	if eta > 180.0:
+		eta -= 360.0
+
+	return (lam,eta)
 
 def le2thetaphi(lam,eta):
 	deg2Rad = pi/180.0
@@ -2534,7 +2535,7 @@ def alm(file,l,m,res=256):
 		tot += Ylmcon*w
 	alm = alm*strp
 	tot = tot*strp
-	print tot
+	print(tot)
 	return alm
 
 
@@ -2613,7 +2614,7 @@ class healpix:
 		iy_hi  = iy/128
 	
 		ipf = (self.x2pix[ix_hi]+self.y2pix[iy_hi]) * (128 * 128)+ (self.x2pix[ix_low]+self.y2pix[iy_low]);
-		ipf = (long)(ipf / pow(ns_max/nside,2))#;     /* in {0, nside**2 - 1} */
+		ipf = (int)(ipf / pow(ns_max/nside,2))#;     /* in {0, nside**2 - 1} */
 		return int( ipf + face_num*pow(nside,2))#; /* in {0, 12*nside**2 - 1} */
 	
 	def mk_xy2pix(self):

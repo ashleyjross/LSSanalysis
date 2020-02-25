@@ -10644,8 +10644,9 @@ def getnzMockLRG(reg='SGC',nbin = 55,zmin=0,zmax=1.1):
 			zer += 	'0'
 		if i < 1000:
 			zer += 	'0'
-		di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
-		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax))
+		#di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
+		di = fitsio.read('/global/cscratch1/sd/jbautist/eboss/EZmocks/EZmock_LRG_v7.0_syst/eBOSS_LRG/EZmock_eBOSS_LRG_'+reg+'_v7_'+zer+str(i)+'.dat.fits ')
+		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax),weights=di['WEIGHT_NOZ']*di['WEIGHT_CP'])
 		zt += zh[0]
 	zt = zt/1000./vl
 	print(zt)
@@ -10660,8 +10661,10 @@ def getnzMockLRG(reg='SGC',nbin = 55,zmin=0,zmax=1.1):
 			zer += 	'0'
 		if i < 1000:
 			zer += 	'0'
-		di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
-		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax))
+		#di = fitsio.read('/project/projectdirs/eboss/czhao/EZmock/LRG_v5/eBOSS_'+reg+'/EZmock_eBOSS_LRG_'+reg+'_v5_'+zer+str(i)+'.fits.gz')
+		di = fitsio.read('/global/cscratch1/sd/jbautist/eboss/EZmocks/EZmock_LRG_v7.0_syst/eBOSS_LRG/EZmock_eBOSS_LRG_'+reg+'_v7_'+zer+str(i)+'.dat.fits ')
+
+		zh = np.histogram(di['Z'],bins=nbin,range=(zmin,zmax),weights=di['WEIGHT_NOZ']*di['WEIGHT_CP'])
 		zi = zh[0]/vl
 		for j in range(0,nbin):
 			for k in range(0,nbin):
@@ -10711,7 +10714,81 @@ def getnzdataLRG(nbin = 30,zmin=.5,zmax=1.1):
 	plt.show()
 
 
-def plotnzLRG(smooth=2):
+def getnzdataLRG_syssplit(sys,reg,nbin = 20,zmin=.6,zmax=1.,fkpp=1.2):
+	from healpix import radec2thphi
+	import healpy as hp
+	#from Cosmo import distance
+	if sys == 'star':
+		res = 256
+		ms = np.loadtxt(ebossdir+'allstars17.519.9Healpixall256.dat')
+		print(len(ms))
+		nest = True
+	else:
+		res = 512
+		nest = False
+		ms  = fitsio.read(ebossdir+'SDSSimageprop_Nside512.fits')[sys]
+	f = fitsio.read(ebossdir+'eBOSS_LRG_clustering_'+reg+'_v7_2.dat.fits')
+	thphi = radec2thphi(f['RA'],f['DEC'])	
+	pix = hp.ang2pix(res,thphi[0],thphi[1],nest=nest)
+	sysg = np.zeros(len(f))
+	nb = 0
+	for i in range(0,len(f)):
+		px = pix[i]
+		sysv = ms[int(px)]
+		if sysv*0 == 0:
+			sysg[i] = sysv
+		else:
+			nb += 1	
+	medsys = np.median(sysg)
+	print(medsys,nb)
+	#plt.hist(sysg)
+	#plt.show()
+	fr = fitsio.read(ebossdir+'eBOSS_LRG_clustering_'+reg+'_v7_2.ran.fits')
+	thphi = radec2thphi(fr['RA'],fr['DEC'])	
+	pixr = hp.ang2pix(res,thphi[0],thphi[1],nest=nest)
+	sysr = np.zeros(len(fr))
+	nb = 0
+	for i in range(0,len(fr)):
+		px = pixr[i]
+		sysv = ms[int(px)]
+		if sysv*0 == 0:
+			sysr[i] = sysv
+		else:
+			nb += 1
+	print(nb)	
+	wr = sysr > medsys
+	norml = sum(fr[~wr]['WEIGHT_SYSTOT'])
+	normh = sum(fr[wr]['WEIGHT_SYSTOT'])
+	print(norml,normh)
+	wg = sysg > medsys
+	print(sum(f[wg]['WEIGHT_CP']*f[wg]['WEIGHT_NOZ']*f[wg]['WEIGHT_SYSTOT'])/normh,sum(f[~wg]['WEIGHT_CP']*f[~wg]['WEIGHT_NOZ']*f[~wg]['WEIGHT_SYSTOT'])/norml)
+
+	nh = np.histogram(f[wg]['Z'],bins=nbin,weights=f[wg]['WEIGHT_CP']*f[wg]['WEIGHT_NOZ']*f[wg]['WEIGHT_SYSTOT'])
+	nl = np.histogram(f[~wg]['Z'],bins=nbin,weights=f[~wg]['WEIGHT_CP']*f[~wg]['WEIGHT_NOZ']*f[~wg]['WEIGHT_SYSTOT'])
+	fkph = np.histogram(f[wg]['Z'],bins=nbin,weights=f[wg]['WEIGHT_CP']*f[wg]['WEIGHT_NOZ']*f[wg]['WEIGHT_SYSTOT']*f[wg]['WEIGHT_FKP'])
+	fkpl = np.histogram(f[~wg]['Z'],bins=nbin,weights=f[~wg]['WEIGHT_CP']*f[~wg]['WEIGHT_NOZ']*f[~wg]['WEIGHT_SYSTOT']*f[~wg]['WEIGHT_FKP'])
+	fkph = fkph[0]/nh[0]
+	fkpl = fkpl[0]/nl[0]
+	eh = np.sqrt(nh[0])/fkph**fkpp
+	el = np.sqrt(nl[0])/fkpl**fkpp
+	zl = []
+	for i in range(0,nbin):
+		zl.append((nh[1][i]+nh[1][i+1])/2.)
+	nh = nh[0]/normh
+	eh = eh/normh
+	nl = nl[0]/norml
+	el = el/norml
+
+	plt.errorbar(zl,nh,eh,fmt='r-,',label='high '+sys.split('_')[0])
+	plt.errorbar(zl,nl,el,fmt='b-,',label='low '+sys.split('_')[0])
+	plt.legend()
+	plt.show()
+	chi2 = np.sum((nh-nl)**2./(eh**2.+el**2.))
+	print(chi2)
+	return True
+
+
+def plotnzLRG(smooth=2,fkpp=1.2):
 	ds = np.loadtxt(ebossdir+'nbar_eBOSS_LRG_SGC_v7.dat').transpose()
 	dn = np.loadtxt(ebossdir+'nbar_eBOSS_LRG_NGC_v7.dat').transpose()
 	#ds4 = np.loadtxt(dir+'nbar-eboss_v1.84-QSO-S-eboss_v1.84.dat').transpose()
@@ -10755,10 +10832,12 @@ def plotnzLRG(smooth=2):
 			z = z/float(smooth)
 			ns = ns/float(smooth)
 			nn = nn/float(smooth)
-			
-			es = sqrt(nts)/vs
-			en = sqrt(ntn)/vn
-			print(ns,nts/vs,es,es/(nts/vs),nts,sqrt(nts)/nts)
+			fkpws = 1./(1.+1.e4*nts/vs)
+			fkpwn = 1./(1.+1.e4*ntn/vn)
+			print(z,fkpwn)
+			es = sqrt(nts)/vs/fkpws**fkpp
+			en = sqrt(ntn)/vn/fkpwn**fkpp
+			#print(ns,nts/vs,es,es/(nts/vs),nts,sqrt(nts)/nts)
 			#ns4 = ns4/float(smooth)
 			#nn4 = nn4/float(smooth)
 			zl.append(z)
@@ -10818,11 +10897,19 @@ def plotnzLRG(smooth=2):
 	for i in range(0,20):
 		chi2d += dns[i]**2./covt[i][i]
 	print(chi2d)
-	plt.plot(zl[:len(elsm)],elsm)
-	plt.plot(zl,els)
+	plt.plot(zl[:len(elsm)],elsm,label='mocks')
+	plt.plot(zl,els,label='Poisson with FKW factor')
 	plt.xlim(0.5,1.1)
 	plt.ylim(0,1e-5)
+	plt.legend()
 	plt.show()	
+	plt.plot(zl[:len(elsm)],elnm,label='mocks')
+	plt.plot(zl,eln,label='Poisson with FKW factor')
+	plt.xlim(0.5,1.1)
+	plt.ylim(0,1e-5)
+	plt.legend()
+	plt.show()	
+
 	return True
 
 def plotnzLRGpCMASS(smooth=2):
