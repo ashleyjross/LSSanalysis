@@ -27,10 +27,10 @@ key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02,8]
 			  'BOSSLZDR11':['tomato', 'MintCream', '<', 'BOSS\nDR11 LowZ', 0.2,.93,8],
 			  'LyaXDR11'   :['Dodgerblue', 'lightblue', 'o', 'BOSS\nDR11-Ly$\\alpha$X\n($D_H$)', 1.85,1.05,8],
 			  'LyADR11'   :['DarkTurquoise', 'powderblue', 'd', 'BOSS\nDR11-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
-			  'MGS'        :['hotpink', 'salmon', '>', 'SDSS-MGS', 0.08,1.09,8],
-			  'BOSSDR12_1' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
-			  'BOSSDR12_2' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
-			  'BOSSDR12_3' :['k', '.8', 's', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'MGS'        :['k', 'white', '>', 'SDSS\nMGS', 0.08,.98,8],
+			  'BOSSDR12_1' :['maroon', 'lightpink', 'p', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'BOSSDR12_2' :['maroon', 'lightpink', 'p', 'BOSS\nDR12 LRG', 0.35,.95,8],
+			  'BOSSDR12_3' :['maroon', 'lightpink', 'p', 'BOSS\nDR12 LRG', 0.35,.95,8],
 			  'LyADR12':['DarkTurquoise', 'skyblue', 'd', 'BOSS\nDR12-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
 			  'LyADR12C':['DarkTurquoise', 'skyblue', 'd', 'BOSS\nDR12-Ly$\\alpha$\n($D_H$)', 1.85,1.05,8],
 			  'QSODR14'     :['g', 'gold', '^', 'eBOSS\nDR14-QSO', 1.4,1.04,8],
@@ -39,10 +39,10 @@ key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02,8]
 			  'LyADR14':['Dodgerblue', 'powderblue', 'o', 'DR14-Ly$\\alpha-{\\rm auto}$',2.,1.02,8],
 			  'LyADR14X':['DarkTurquoise', 'powderblue', 'd', 'DR14-Ly$\\alpha-{\\rm cross}$',2.,1.02,8],
 			  'LyADR14C':['Dodgerblue', 'powderblue', 'o', 'eBOSS\nDR14 Ly$\\alpha$\n($D_H$)',1.85,1.05,8],
-			  'QSODR16'   :['orange', 'gold', '*', 'eBOSS\nDR16 QSO', 1.35,1.05,14],
-			  'ELGDR16'   :['steelblue', 'w', '*', 'eBOSS\n DR16 ELG', 0.8,.93,14],
-			  'LRGDR16'   :['firebrick', 'indianred', '*', 'eBOSS+BOSS\n DR16 LRG', 0.6,1.04,14],
-			  'LyADR16C'   :['DarkTurquoise', 'powderblue', '*', 'eBOSS\nDR16 Ly$\\alpha$\n($D_H$)',1.85,1.05,14]}
+			  'QSODR16'   :['forestgreen', 'yellow', 's', 'eBOSS\nDR16 QSO', 1.35,1.05,8],
+			  'ELGDR16'   :['darkblue', 'dodgerblue', '^', 'eBOSS\n DR16 ELG', 0.8,.93,8],
+			  'LRGDR16'   :['firebrick', 'salmon', 'o', 'eBOSS+BOSS\n DR16 LRG', 0.6,1.04,8],
+			  'LyADR16C'   :['purple', 'thistle', '*', 'eBOSS\nDR16 Ly$\\alpha$\n($D_H$)',1.85,1.05,14]}
 
 #set up fiducial cosmology and different CMB cosmologies
 
@@ -147,6 +147,7 @@ for z in szl:
 	p15dvfidl.append(dp15cos.dV(z)/dp15cos.rs/dvrsfidc)
 	p13dvfidl.append(dp13cos.dV(z)/dp13cos.rs/dvrsfidc)
 zl = np.array(zl)
+szl = np.array(szl)
 dvdvl = np.array(dvdvl)
 sdvdvl = np.array(sdvdvl)
 yearl = np.array(yearl)
@@ -275,6 +276,43 @@ def plotBAOrelBOSSfid_dv_eboss():
 	plt.title('Spherically averaged or best constrained, after eBOSS')
 	
 	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAOaftereBOSS.png')	
+	plt.show()
+	return True		
+
+def plotBAOrelBOSSfid_dv_sdss():
+	labels = ['MGS','BOSSDR12_1','BOSSDR12_2','LRGDR16','ELGDR16','QSODR16','LyADR16C']
+	sf = (1/(1.+zl))
+	for i in range(0,len(dvdvl)):
+		key = keyl[i]
+		if np.isin(key,labels):
+			plt.errorbar(sf[i],dvdvl[i]/pdvfidl[i],sdvdvl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5)
+			#if key != 'BOSSDR12_1' and key != 'BOSSDR12_2' and key != 'LRGDR16' and key != 'ELGDR16':
+			#	plt.text(key_dict[key][4], key_dict[key][5], key_dict[key][3], color=key_dict[key][0])
+			#if key == 'BOSSDR12_1':
+			#	plt.text(.3, .96, key_dict[key][3], color=key_dict[key][0])	
+			#if key == 'LRGDR16':
+			#	plt.text(.33, 1.02, 'eBOSS\n+BOSS\n DR16 LRG', color=key_dict[key][0])	
+			#if key == 'ELGDR16':
+			#	plt.text(.88, 1.01, key_dict[key][3], color=key_dict[key][0])	
+	#plt.plot(szl,pdvfidl,'k-',label='Planck 2018')
+	
+	
+	plt.plot(1/(1.+szl),np.ones(len(szl)),'k--')
+	#plt.plot(szl,np.ones(len(szl)),'k--')
+	#plt.xscale('log')
+	#plt.legend(loc='lower right')
+	plt.ylim(.81,1.19)
+	#plt.xlim(-.4,2.9)
+	plt.xlim(.95,.23)
+	plt.xticks([.87,.645,.5,.333],('0.15','0.5','1','2'))
+	plt.xlabel('redshift')
+	#plt.xlabel('scale factor (1/(1+z))')
+	plt.ylabel('BAO Measurement/Planck 2018 $\\Lambda$CDM ')
+	plt.title('SDSS BAO Distance Ladder')
+	
+	plt.savefig('/Users/ashleyross/DR16plots2/plots/SDSSBAOladder.png')	
 	plt.show()
 	return True		
 		
@@ -1376,3 +1414,5 @@ def BAOrelPlanckNear(wo='Near',xmax=2.5,Lya=True,BOSS=False,BOSSDR12e=True,MGS=T
 	return True
 
 	
+if __name__ == "__main__":
+	plotBAOrelBOSSfid_dv_sdss()

@@ -5900,7 +5900,7 @@ def faccalc(nm,nb,nd):
 	return mv,md		
 
 
-def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0',covmd='QSO',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',tempmd='',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1,mupow=0,covfac=1.,npar=3):
+def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',ns='',mom='0',covmd='QSO',rmin=35,rmax=180.,rmaxb=50.,m=1.,mb='',Bp=0.4,v='n',mockn='',angfac=0,damp='6.0',tempmd='',Nmock=1000,template='Challenge_matterpower',rec='',covv='',mumin=0,mumax=1,mupow=0,covfac=1.,npar=3):
 	#does baofits, set mb='nobao' to do no BAO fit
 	from baofit_pubtest import doxi_isolike
 	from Cosmo import distance
@@ -5986,8 +5986,8 @@ def xibaoNS(sample,zmin,zmax,version='4',wm='fkp',bs=8,start=0,md='data',mom='0'
 			zw += 'zmin'+str(zmin)
 		
 
-		dn = np.loadtxt(dirH+'xiave0NGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
-		ds = np.loadtxt(dirH+'xiave0SGC'+zw+sample+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
+		dn = np.loadtxt(dirH+'xiave0NGC'+zw+sample+ns+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
+		ds = np.loadtxt(dirH+'xiave0SGC'+zw+sample+ns+'_v'+str(ezver)+'_EZ'+rec+muw+bsst+'.dat').transpose()#[1][:maxind]
 
 	if md == 'ORmockave':
 		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
@@ -6494,13 +6494,14 @@ def xi2DBAONS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=0,m
 		d0S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[1][:maxind]
 		d2S = np.loadtxt(dirH+'xi024geboss'+samp+'_SGC'+ver+rd+'_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[2][:maxind]
 	if md == 'dataJB':
-		dir = '/Users/ashleyross/Dropbox/eboss/' #change to wherever the data is
+		dir = '/Users/ashleyross/DR16plots2/LRG/data/' #change to wherever the data is
 		dirout = '/Users/ashleyross/Dropbox/eboss/' 
 		dirH = '/Users/ashleyross/Dropbox/eboss/'
 		#rl = np.loadtxt(dir+'xi024geboss'+samp+'_SGC4_mz'+str(minz)+'xz'+str(maxz)+wm+str(bs)+'st'+str(binc)+'.dat').transpose()[0][:max]
 		rd = ''
 		if rec == 'rec':
 			rd = '_rec'
+		
 		d0N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
 		d2N = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[2][:maxind]
 		d0S = np.loadtxt(dir+'eBOSS_LRGpCMASS_clustering_COMB_v'+ver+'_rec_5mpc_shift0.mul').transpose()[1][:maxind]
@@ -6964,8 +6965,9 @@ def xi2DBAONandS(md='data',samp='LRGpCMASS',min=50.,max=150.,maxb=80.,bs=8,binc=
 	return True
 
 
-def mkinvcJB(min=50,max=150,bs=5,shift=0,dir=ebossdir):
-	d = np.loadtxt(dir+'eBOSS_LRGpCMASS_COMB_v5_recon_average_'+str(bs)+'mpc_shift'+str(shift)+'.cov').transpose()
+def mkinvcJB(min=50,max=150,bs=5,shift=0):
+	dir = '/Users/ashleyross/DR16plots2/LRG/data/'
+	d = np.loadtxt(dir+'EZmock_eBOSS_LRGpCMASS_COMB_v7_recon_average_'+str(bs)+'mpc.cov').transpose()
 	siz = int((max-min)//bs*2)
 	print(siz)
 	cov = np.zeros((siz,siz))
@@ -9877,7 +9879,7 @@ def plotxiprepostcompEZ(mom=0,samp='ELG',bs='5st0',v='7',mini=4,maxi=40,wm='fkp'
 	return True
 
 
-def plotxicompEZOR(mom=0,reg='SGC',samp='ELG',bs='5st0',v='7',mini=4,maxi=30,rec='',wm='fkp',mumin=0,mumax=1,bfs=1.,bfn=1.,covv='v7',zr='0.6xz1.1',mur='',angfac=0):
+def plotxicompEZOR(mom=0,reg='SGC',samp='ELG',bs='5st0',v='7',mini=4,maxi=30,rec='_rec',wm='fkp',mumin=0,mumax=1,bfs=1.,bfn=1.,covv='v7',zr='0.6xz1.1',mur='',angfac=0):
 	#Plots comparison between NGC and SGC clustering and to theory for QSOs, no depth density correction
 	from matplotlib import pyplot as plt
 	from matplotlib.backends.backend_pdf import PdfPages
@@ -9897,6 +9899,7 @@ def plotxicompEZOR(mom=0,reg='SGC',samp='ELG',bs='5st0',v='7',mini=4,maxi=30,rec
 
 	aveez = np.loadtxt(ebossdir+'xiave'+str(mom)+reg+samp+'_'+covv+'_EZ'+rec+bs+'.dat').transpose()
 	aveor = np.loadtxt(ebossdir+'xiave024'+samp+'ORmock'+reg+rec+bs+'.dat').transpose()[1+mom//2]
+	s, m0, e0, m2, e2, m4, e4, xi0, xi2, xi4 = np.load(ebossdir+'2PCF_EZmock_eBOSS_ELG_rec_comp.npz', allow_pickle=True)['data']
 
 	facn = 1.
 	facs = 1.
@@ -9907,6 +9910,7 @@ def plotxicompEZOR(mom=0,reg='SGC',samp='ELG',bs='5st0',v='7',mini=4,maxi=30,rec
 	if mom == 0:
 		plt.plot(rl,rl**2.*aveez[1][mini:maxi]*norm**2.,'-',color=colors[0],label='EZmocks')
 		plt.plot(rl*0.942,(rl*.942)**2.*aveor[mini:maxi]*norm**2.,'--',color=colors[1],label='OuterRim')
+		plt.plot(rl,rl**2.*m0[1][mini:maxi]*norm**2.,':',color=colors[0],label='EZmocks, no sys')
 	
 	#plt.xlim(rl[0]-2.,rl[-1]+2.)
 	#ylim0 = [-60,50]
@@ -10546,7 +10550,29 @@ def plotbox(cnr,lw=1):
 	plt.plot([cnr[0][1],cnr[0][1]],[cnr[1][0],cnr[1][1]],'k-')
 	plt.plot([cnr[0][0],cnr[0][1]],[cnr[1][1],cnr[1][1]],'k-')
 
-def plotnzQSO(smooth=4):
+def Nzalleboss():
+	bossf = fitsio.read('/Users/ashleyross/Dropbox/BOSS/galaxy_DR12v5_CMASSLOWZTOT_North.fits.gz')
+	boss1 = (bossf['IMATCH'] == 1) & (bossf['Z'] > 0.43)
+	lrgf = fitsio.read('/Users/ashleyross/Dropbox/eBOSS/eBOSS_LRG_full_ALLdata-vDR16.fits')
+	lrg1 = (lrgf['IMATCH'] == 1) & (lrgf['Z'] > 0.01)  
+	qsof = fitsio.read('/Users/ashleyross/Dropbox/eBOSS/eBOSS_QSO_full_ALL_v4.dat.fits')
+	qsoc = (qsof['IMATCH'] == 1) & (qsof['Z'] > 0.01) & (qsof['Z'] < 4)
+	qsol = (qsof['IMATCH'] == 2) & (qsof['Z'] > 0.01) & (qsof['Z'] < 4)
+	elgf = fitsio.read('/Users/ashleyross/Dropbox/eBOSS/eBOSS_ELG_full_ALL_v4.dat_really_masked_cutted.fits')
+	elg1 = elgf['IMATCH'] == 1
+	plt.hist(bossf[boss1]['Z'],histtype='step',color='orange',bins=30,range=(0,3.5),log=True)
+	plt.hist(lrgf[lrg1]['Z'],histtype='step',color='red',bins=30,range=(0,3.5),log=True)
+	plt.hist(elgf[elg1]['Z'],histtype='step',color='blue',bins=30,range=(0,3.5),log=True)
+	plt.hist(qsof[qsoc]['Z'],histtype='step',color='rebeccapurple',bins=30,range=(0,3.5),log=True)
+	plt.hist(qsof[qsol]['Z'],histtype='step',color='mediumturquoise',bins=30,range=(0,3.5),log=True)
+	plt.legend(['BOSS Galaxies','eBOSS LRGs','eBOSS ELGs','eBOSS Quasars','SDSS I/II/III Quasars'])
+	plt.xlabel('Redshift')
+	plt.ylabel('Number of redshifts')
+	plt.ylim(100,1.5e6)
+	plt.savefig('/Users/ashleyross/Dropbox/eBOSS/Nz4DR16unnorm.png')
+	plt.show()
+
+def plotnzQSO(smooth=4,sf=1.1):
 	ds = np.loadtxt(ebossdir+'nbar_eBOSS_QSO_SGC_v7.dat').transpose()
 	dn = np.loadtxt(ebossdir+'nbar_eBOSS_QSO_NGC_v7.dat').transpose()
 	#ds4 = np.loadtxt(dir+'nbar-eboss_v1.84-QSO-S-eboss_v1.84.dat').transpose()
@@ -10562,12 +10588,18 @@ def plotnzQSO(smooth=4):
 	Scol = 'g'
 	Ncol = 'gold'
 	colors = ['g','goldenrod']
+	esl = []
+	enl = []
 	for i in range(0,len(ds[0]),smooth):
 		z = 0
 		ns = 0
 		nn = 0
 		ns4 = 0
 		nn4 = 0
+		vs = 0
+		vn = 0
+		nts = 0
+		ntn = 0
 		if i+smooth < len(ds[0]):
 			for j in range(0,smooth):
 				z += ds[0][i+j]
@@ -10575,23 +10607,34 @@ def plotnzQSO(smooth=4):
 				nn += dn[3][i+j]
 				#ns4 += ds4[3][i+j]
 				#nn4 += dn4[3][i+j]
+				nts += ds[-1][i+j]
+				vs += ds[-2][i+j]
+				ntn += dn[-1][i+j]
+				vn += dn[-2][i+j]
 			z = z/float(smooth)
 			ns = ns/float(smooth)
 			nn = nn/float(smooth)
-			#ns4 = ns4/float(smooth)
-			#nn4 = nn4/float(smooth)
+			#fkpws = 1./(1.+1.e4*nts/vs)
+			#fkpwn = 1./(1.+1.e4*ntn/vn)
+			#print(z,fkpwn)
+			es = sqrt(nts)/vs
+			en = sqrt(ntn)/vn
+			esl.append(es)
+			enl.append(en)
+
 			zl.append(z)
 			nsl.append(ns)
 			nnl.append(nn)
-			#nsl4.append(ns4)
-			#nnl4.append(nn4)
 	zl = np.array(zl)
 	nsl = np.array(nsl)
 	nnl = np.array(nnl)
-	#nsl4 = np.array(nsl4)
-	#nnl4 = np.array(nnl4)
+	esl = np.array(esl)
+	enl = np.array(enl)
 	plt.plot(zl,nsl*1e5,'-',color=colors[1],linewidth=2,label='SGC')
+	plt.plot(zl,nsl*1e5*sf,':',color=colors[1],linewidth=2)
+	plt.errorbar(zl,nsl*1e5,esl*1e5,fmt=',',color=colors[1],linewidth=2)
 	plt.plot(zl,nnl*1e5,'--',color=colors[0],linewidth=2,label='NGC')
+	plt.errorbar(zl,nnl*1e5,enl*1e5,fmt=',',color=colors[0],linewidth=2)
 	#plt.plot(zl,nsl4*1e5,'--',color='paleturquoise',linewidth=2)
 	#plt.plot(zl,nnl4*1e5,'--',color='lightcoral',linewidth=2)
 	plt.xlim(0.5,2.5)
@@ -10614,8 +10657,16 @@ def plotnzQSO(smooth=4):
 	plt.ylabel(r'$10^{5}$ $n$ ($h^{3}$Mpc$^{-3}$)',size=16)
 	plt.xlabel('quasar redshift',size=16)
 
-	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nzquasarDR16.png')
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nzquasarDR16werr.png')
+	plt.show()
 	#pp.close()
+	w = (zl > 0.8) & (zl < 2.2)
+	chi2 = sum((nsl[w]-nnl[w])**2./(esl[w]**2.+enl[w]**2.))
+	
+	chi2f = sum((nsl[w]*sf-nnl[w])**2./(esl[w]**2.+enl[w]**2.))
+	print('chi2,chi2 sgc x'+str(sf)+', nbin')
+	print(chi2,chi2f,len(nsl[w]))
+
 	return True
 
 def getnzMockLRG(reg='SGC',nbin = 55,zmin=0,zmax=1.1):
@@ -10986,7 +11037,7 @@ def plotnzLRGpCMASS(smooth=2):
 	#plt.plot(zl,nsl*1e4,'-',color=colors[1],linewidth=2,label='SGC')
 	plt.plot(zl,nnl*1e4,'--',color=colors[1],linewidth=2,label='eBOSS LRGs')
 	plt.plot(zl[:len(nncl)],nncl*1e4,':',color=colors[2],linewidth=2,label='BOSS CMASS')
-	plt.plot(zl[:len(nncl)],(nnl[:len(nncl)]+nncl)*1e4,'-',color=colors[0],linewidth=2,label='CMASS+LRGs')
+	plt.plot(zl[:len(nncl)],(nnl[:len(nncl)]+nncl)*1e4,'-',color=colors[0],linewidth=2,label='CMASS+eBOSS LRGs')
 	#plt.plot(zl,nsl4*1e5,'--',color='paleturquoise',linewidth=2)
 	#plt.plot(zl,nnl4*1e5,'--',color='lightcoral',linewidth=2)
 	plt.xlim(0.5,1.1)
@@ -11012,6 +11063,80 @@ def plotnzLRGpCMASS(smooth=2):
 	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nzLRGpCMASSDR16.png')
 	#pp.close()
 	return True
+
+def mkcombNbar_LRGcmass(reg):
+	nl = np.loadtxt(ebossdir+'nbar_eBOSS_LRG_'+reg+'_v7_2.dat').transpose()
+	if reg == 'NGC':
+		cr = 'North'
+	else:
+		cr = 'South'
+	nc = np.loadtxt(ebossdir+'nbar_DR12v5_CMASS_'+cr+'_om0p31_Pfkp10000.dat').transpose()
+	w = nl[0] < 1.
+	ntl = []
+	for i in range(0,len(nl[0][w])):
+		vcc = nc[-2][i*2]+nc[-2][i*2+1]
+		ncc = nc[-1][i*2]+nc[-1][i*2+1]
+		nbc = ncc/vcc
+		nt = nl[3][i] +nbc
+		ntl.append(nt)
+	fo = open(ebossdir+'nbar_eBOSS_LRGpCMASS_'+reg+'_v7_2.dat','w')
+	for i in range(0,len(ntl)):
+		fo.write(str(nl[0][i])+' '+str(nl[1][i])+' '+str(nl[2][i])+' '+str(ntl[i])+'\n')	
+	fo.close()
+
+def convert_ELGnbar():
+	areas = [117.5,240,237.5,131.9]
+	nn = np.loadtxt(ebossdir+'nbar_eBOSS_ELG_v7.dat').transpose()
+	nl = []
+	nh = []
+	nm = []
+	nzs = []
+	nzn = []
+	for i in range(1,len(nn[0])-1,2):
+		nl.append((i-1)/2*0.01)
+		nh.append((i-1)/2*0.01+0.01)
+		nm.append((i-1)/2*0.01+0.005)
+		nzsb = ((areas[0]*nn[1][i]+areas[1]*nn[3][i])/(areas[0]+areas[1])+(areas[0]*nn[1][i+1]+areas[1]*nn[3][i+1])/(areas[0]+areas[1]))/2.
+		nzs.append(nzsb)
+		nznb = ((areas[2]*nn[5][i]+areas[3]*nn[7][i])/(areas[2]+areas[3])+(areas[2]*nn[5][i+1]+areas[3]*nn[7][i+1])/(areas[2]+areas[3]))/2.
+		nzn.append(nznb)
+	fon = open(ebossdir+'nbar_eBOSS_ELG_NGC_v7.dat','w')	
+	fos = open(ebossdir+'nbar_eBOSS_ELG_SGC_v7.dat','w')
+	for i in range(0,len(nzn)):
+		fon.write(str(nm[i])+' '+str(nl[i])+' '+str(nh[i])+' '+str(nzn[i])+'\n')
+		fos.write(str(nm[i])+' '+str(nl[i])+' '+str(nh[i])+' '+str(nzs[i])+'\n')
+	fon.close()
+	fos.close()
+	
+def getveff(f1,f2,P1,P2,zmin,zmax,area,omega_matter=.31):
+	from Cosmo import distance
+	d = distance(omega_matter,1.-omega_matter)
+	d1 = np.loadtxt(ebossdir+'nbar_eBOSS_'+f1+'.dat').transpose()
+	d2 = np.loadtxt(ebossdir+'nbar_eBOSS_'+f2+'.dat').transpose()
+	w = (d1[0]>zmin) & (d1[0]<zmax)
+	w2 = (d2[0]>zmin) & (d2[0]<zmax)
+	if len(d1[0][w]) != len(d2[0][w2]):
+		return "ERROR, will not work if zbinning is different"
+	vtot = 0
+	veff = 0
+	for i in range(0,len(d1[0][w])):
+		vi = area/(360.*360./pi)*4.*pi/3.*(d.dc(d1[2][w][i])**3.-d.dc(d1[1][w][i])**3.)
+		vtot += vi
+		veff += vi*(d1[3][w][i]*P1)/(1.+d1[3][w][i]*P1)*(d2[3][w2][i]*P2)/(1.+d2[3][w2][i]*P2)
+	return veff,vtot	
+
+def getveff1(f1,P1,zmin,zmax,area,omega_matter=.31):
+	from Cosmo import distance
+	d = distance(omega_matter,1.-omega_matter)
+	d1 = np.loadtxt(ebossdir+'nbar'+f1+'.dat').transpose()
+	w = (d1[0]>zmin) & (d1[0]<zmax)
+	vtot = 0
+	veff = 0
+	for i in range(0,len(d1[0][w])):
+		vi = area/(360.*360./pi)*4.*pi/3.*(d.dc(d1[2][w][i])**3.-d.dc(d1[1][w][i])**3.)
+		vtot += vi
+		veff += vi*(d1[3][w][i]*P1)/(1.+d1[3][w][i]*P1)**2.
+	return veff,vtot	
 
 
 def plotfootsizevscomp(sp=0.02):
@@ -11045,7 +11170,7 @@ def plotfootsizevscomp(sp=0.02):
 	xl = [.5,.5]
 	yl = [0,10000]
 	plt.plot(xl,yl,'k:')
-	plt.ylim(0,6000)	
+	plt.ylim(2500,6000)	
 	plt.xlabel('Completeness cut')
 	plt.ylabel('area (square degrees)')
 	plt.savefig(ebossdir+'areavscomp.png')
@@ -11054,6 +11179,48 @@ def plotfootsizevscomp(sp=0.02):
 	#pp.savefig()
 	#pp.close()
 	return True
+
+def plotfootsizevsssr(sp=0.02):
+	fqn = fitsio.read(ebossdir+'eboss_QSO_full_NGC_v7_1.ran.fits')
+	fqs = fitsio.read(ebossdir+'eboss_QSO_full_sGC_v7_1.ran.fits')
+	fln = fitsio.read(ebossdir+'eboss_LRG_full_NGC_v7.ran.fits')
+	fls = fitsio.read(ebossdir+'eboss_LRG_full_sGC_v7.ran.fits')
+	cmp = 0
+	cmpl = []
+	aql = []
+	all = []
+	while cmp < 1:
+		wqn = fqn['sector_SSR'] >= cmp
+		nqn = len(fqn[wqn])
+		wqs = fqs['sector_SSR'] >= cmp
+		nqs = len(fqs[wqs])
+		aq = (nqn+nqs)/5000.
+		wln = fln['sector_SSR'] >= cmp
+		nln = len(fln[wln])
+		wls = fls['sector_SSR'] >= cmp
+		nls = len(fls[wls])
+		al = (nln+nls)/5000.
+		print(cmp,aq,al)
+		cmpl.append(cmp)
+		aql.append(aq)
+		all.append(al)
+		cmp += sp
+	plt.plot(cmpl,aql,'-',color='forestgreen',label='quasars')
+	plt.plot(cmpl,all,'--',color='firebrick',label = 'LRGs')
+	plt.legend()
+	xl = [.5,.5]
+	yl = [0,10000]
+	plt.plot(xl,yl,'k:')
+	plt.ylim(2500,6000)	
+	plt.xlabel('Redshift Success cut')
+	plt.ylabel('area (square degrees)')
+	plt.savefig(ebossdir+'areavsssr.png')
+	plt.show()
+	#plt.show()
+	#pp.savefig()
+	#pp.close()
+	return True
+
 
 def getebpcstats(ver='7_2'):
 	samp = 'LRGpCMASS'
@@ -11280,7 +11447,7 @@ def zsysplotsQSO(ver='7_1',frac=0.05,ylim=(0.9,1.05)):
 	nwt = nvsn[1]+nvss[1]
 	nnwt = nvsn[3]+nvss[3]
 	nt = nvsn[2]+nvss[2]
-	err = (nt*frac)**.5/nt
+	err = (nt*nnwt/nt*(1.-nnwt/nt))**.5/nt
 	normw = sum(nt)/sum(nwt)
 	plt.errorbar(nvsn[0],nwt/nt,err,fmt=pt,color=pc,label=r'with $w_{\rm noz}$')
 	chi2 = sum((1.-normw*nwt/nt)**2./err**2.)	
@@ -11290,10 +11457,10 @@ def zsysplotsQSO(ver='7_1',frac=0.05,ylim=(0.9,1.05)):
 	plt.plot(nvsn[0],nnwt/nt,'--',color='gray',label=r'without $w_{\rm noz}$')
 	plt.legend()
 	plt.plot(nvsn[0],np.ones(len(nvsn[0])),'k:')
-	plt.xlabel('Spectrograph S/N in the i-band')
+	plt.xlabel(r'Spectrograph $(S/N)^2$ in the i-band')
 	plt.ylabel(r'quasar spectra:  $N_{\rm good}/N_{\rm total}$ ')
 	plt.ylim(ylim[0],ylim[1])
-	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nQSOvsSNI.png')
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/MNRAS_revision/nQSOvsSNI.png')
 	plt.show()
 	
 	nvsn = np.loadtxt(ebossdir+'nvsIDQSONGC'+ver+'.dat').transpose()
@@ -11301,7 +11468,8 @@ def zsysplotsQSO(ver='7_1',frac=0.05,ylim=(0.9,1.05)):
 	nwt = nvsn[1]+nvss[1]
 	nnwt = nvsn[3]+nvss[3]
 	nt = nvsn[2]+nvss[2]
-	err = (nt*frac)**.5/nt
+	#err = (nt*frac)**.5/nt
+	err = (nt*nnwt/nt*(1.-nnwt/nt))**.5/nt
 	normw = sum(nt)/sum(nwt)
 	plt.errorbar(nvsn[0],nwt/nt,err,fmt=pt,color=pc,label=r'with $w_{\rm noz}$')
 	chi2 = sum((1.-normw*nwt/nt)**2./err**2.)	
@@ -11313,11 +11481,14 @@ def zsysplotsQSO(ver='7_1',frac=0.05,ylim=(0.9,1.05)):
 	plt.xlabel('Fiber ID')
 	plt.ylabel(r'quasar spectra:  $N_{\rm good}/N_{\rm total}$ ')
 	plt.ylim(ylim[0],ylim[1])
-	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nQSOvsID.png')
+	xl = [499,499]
+	yl = [0,2]
+	plt.plot(xl,yl,'k:')
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/MNRAS_revision/nQSOvsID.png')
 	plt.show()
 	return True
 
-def zsysplotsLRG(ver='7',frac=0.02,ylim=(0.9,1.05)):
+def zsysplotsLRG(ver='7_2',frac=0.02,ylim=(0.9,1.05)):
 	pt = 'o'
 	pc = 'firebrick'
 	
@@ -11326,7 +11497,8 @@ def zsysplotsLRG(ver='7',frac=0.02,ylim=(0.9,1.05)):
 	nwt = nvsn[1]+nvss[1]
 	nnwt = nvsn[3]+nvss[3]
 	nt = nvsn[2]+nvss[2]
-	err = (nt*frac)**.5/nt
+	#err = (nt*frac)**.5/nt
+	err = (nt*nnwt/nt*(1.-nnwt/nt))**.5/nt
 	w = (err == 0)
 	err[w] = 1.
 	normw = sum(nt)/sum(nwt)
@@ -11338,10 +11510,10 @@ def zsysplotsLRG(ver='7',frac=0.02,ylim=(0.9,1.05)):
 	plt.plot(nvsn[0][~w],nnwt[~w]/nt[~w],'--',color='gray',label=r'without $w_{\rm noz}$')
 	plt.legend()
 	plt.plot(nvsn[0],np.ones(len(nvsn[0])),'k:')
-	plt.xlabel('Spectrograph S/N in the i-band')
+	plt.xlabel(r'Spectrograph $(S/N)^2$ in the i-band')
 	plt.ylabel(r'LRG spectra:  $N_{\rm good}/N_{\rm total}$')
 	plt.ylim(ylim[0],ylim[1])
-	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nLRGvsSNI.png')
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/MNRAS_revision/nLRGvsSNI.png')
 	
 	plt.show()
 	
@@ -11350,7 +11522,8 @@ def zsysplotsLRG(ver='7',frac=0.02,ylim=(0.9,1.05)):
 	nwt = nvsn[1]+nvss[1]
 	nnwt = nvsn[3]+nvss[3]
 	nt = nvsn[2]+nvss[2]
-	err = (nt*frac)**.5/nt
+	#err = (nt*frac)**.5/nt
+	err = (nt*nnwt/nt*(1.-nnwt/nt))**.5/nt
 	normw = sum(nt)/sum(nwt)
 	plt.errorbar(nvsn[0],nwt/nt,err,fmt=pt,color=pc,label=r'with $w_{\rm noz}$')
 	chi2 = sum((1.-normw*nwt/nt)**2./err**2.)	
@@ -11362,7 +11535,11 @@ def zsysplotsLRG(ver='7',frac=0.02,ylim=(0.9,1.05)):
 	plt.xlabel('Fiber ID')
 	plt.ylabel(r'LRG spectra:  $N_{\rm good}/N_{\rm total}$')
 	plt.ylim(ylim[0],ylim[1])
-	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/nLRGvsID.png')
+	xl = [499,499]
+	yl = [0,2]
+	plt.plot(xl,yl,'k:')
+
+	plt.savefig('/Users/ashleyross/eBOSSCatalogPaper/MNRAS_revision/nLRGvsID.png')
 	plt.show()
 	return True
 	
@@ -11903,7 +12080,7 @@ def plotObsdata(reg='NGC',mjdmin=56659,ver='7',elgper=0.05):
 	plt.show()
 	return True
 
-def plotObsdata_sindec(reg='NGC',mjdmin=56659,ver='7',elgper=0.05):
+def plotObsdata_sindec(reg='NGC',mjdmin=56659,ver='7',elgper=0.2):
 	#cdir = '/uufs/chpc.utah.edu/common/home/sdss02/ebosswork/eboss/sandbox/lss/catalogs/input/'
 	cmgaln = fitsio.read(ebossdir+'galaxy_DR12v5_CMASS_North.fits.gz')
 	
@@ -11965,8 +12142,8 @@ def plotObsdata_sindec(reg='NGC',mjdmin=56659,ver='7',elgper=0.05):
 	plt.plot(rae[weobs],decl,'b,')
 	plt.ylim(np.sin(-12*np.pi/180.),np.sin(75*np.pi/180.))
 	plt.xlim(-60,300)
-	plt.xlabel('right ascension (J2000)',size=16,labelpad=-.75)
-	plt.ylabel('declination (J2000)',size=16)
+	plt.xlabel('right ascension J2000 (degrees)',size=16,labelpad=-.75)
+	plt.ylabel('declination J2000 (degrees)',size=16)
 	plt.yticks([])
 	latl = [np.sin(60*pi/180.),np.sin(40*pi/180.),np.sin(20*pi/180.),0]
 	xl = [-60,350]
@@ -12297,7 +12474,7 @@ if __name__ == '__main__':
 	#fl = ''
 	#ind = int(sys.argv[1])
 	#LRGpCMASS post-rec 2D
-	#xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='DR16',min=50,max=150,Bp=0.4,af='angfac0')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
+	xi2DBAONS(md='dataJB',bs=5,damp='0.44.02.54.015.01.0',rec='rec',ver='7',covm = 'JB',min=50,max=150,Bp=0.4,af='angfac0')#,spat=0.001,spar=0.001,mina=.95,maxa=1.05)
 	#pre-rec
 	#xi2DBAONS(md='data',bs=5,damp='0.406.010.015.00',rec='',ver='5_1')
 	
@@ -12415,8 +12592,8 @@ if __name__ == '__main__':
 # 	xibaoNS('ELG',.6,1.1,'7',mupow=1,rec='_rec',covv='',md='data',covmd='me',damp='0.59304.07.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=55,start=0)
 # 	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.7, damp = 35')
 # 	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
-	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35')
-	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
+#	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35')
+#	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0)
 #	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35, no bias prior')
 #	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',md='data',covmd='me',damp='0.59303.05.015.01.0',bs=5,rmin=50,rmax=150,rmaxb=58,start=0,Bp=100)
 #	print('POST RECON data, rmin = 50, bs = 5, start=0, zmin=0.6, damp = 35, no An')
@@ -12544,6 +12721,16 @@ if __name__ == '__main__':
 # 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
 # 	print('mockave POST RECON, rmin =50, zmin 0.6, damp 35 bin size'+str(bs))
 # 	xibaoNS('ELG',.6,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59303.05.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+
+# 	bs = 5
+# 	print('mockave POST RECON, rmin =50, zmin 0.6, damp 58 bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',ns='_nosys',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59305.08.515.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+# 
+# 	print('mockave POST RECON, rmin =50, zmin 0.6, damp 47 bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',ns='_nosys',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+# 	print('mockave POST RECON, rmin =50, zmin 0.6, damp 35 bin size'+str(bs))
+# 	xibaoNS('ELG',.6,1.1,'7',ns='_nosys',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59303.05.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
+
 
 # 	print('mockave POST RECON, rmin =50, zmin 0.7, damp 47 bin size'+str(bs))
 # 	xibaoNS('ELG',.7,1.1,'7',rec='_rec',covv='',covmd='me',md = 'EZmockave',damp='0.59304.07.015.01.0',bs=bs,rmin=50,rmax=150,rmaxb=55,covfac=1.)
