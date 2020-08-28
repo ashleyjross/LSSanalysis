@@ -13,7 +13,7 @@ sfs = glob.glob(dirsweeps+'sweep*')
 sfn = glob.glob(dirsweepn+'sweep*')
 
 def starsel_sweep(f,gfluxmin):
-    w = f['TYPE'] == b'PSF '
+    w = f['TYPE'] == 'PSF '
     gflux = f['FLUX_G']/f['MW_TRANSMISSION_G']
     w &= gflux > gfluxmin
     return w
