@@ -74,7 +74,7 @@ def alph(z,omf,hf,obhhf,om,h,obhh):
 	Hrs = dn.Hz(z)*dn.rs
 	DAfrs = dfid.da(z)/dfid.rs
 	DArs = dn.da(z)/dn.rs
-	return Dvrs/Dvrs_fid,Hrs/Hfrs,DArs/DAfrs
+	return Dvrs/Dvrs_fid,Hrs/Hfrs,DArs/DAfrs,dn.dV(z)/dfid.dV(z),dn.dc(z)/dfid.dc(z),(dfid.rs*hf)/(dn.rs*h)
 
 def alphtheta(z,omf,hf,obhhf,om,h,obhh):
 	dfid = distance(omf,1.-omf,h=hf,obhh=obhhf)
