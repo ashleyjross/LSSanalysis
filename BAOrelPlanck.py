@@ -36,13 +36,14 @@ key_dict = {'DR7Per':['Darkgoldenrod', 'goldenrod', '>', 'SDSS-DR7',0.22,1.02,8]
 			  'QSODR14'     :['g', 'gold', '^', 'eBOSS\nDR14-QSO', 1.4,1.04,8],
 			  'LRGDR14':['firebrick', 'firebrick', 'H', 'eBOSS\nDR14 LRG',0.6,.907,8],
 			  'DESY1'     :['purple', 'plum', '>', 'DESY1\n($D_M$)',0.8,1.035,8],
+			  'DESY3'     :['orange', 'white', '*', 'DESY3\n($D_M$)',0.8,1.035,14],
 			  'LyADR14':['Dodgerblue', 'powderblue', 'o', 'DR14-Ly$\\alpha-{\\rm auto}$',2.,1.02,8],
 			  'LyADR14X':['DarkTurquoise', 'powderblue', 'd', 'DR14-Ly$\\alpha-{\\rm cross}$',2.,1.02,8],
 			  'LyADR14C':['Dodgerblue', 'powderblue', 'o', 'eBOSS\nDR14 Ly$\\alpha$\n($D_H$)',1.85,1.05,8],
 			  'QSODR16'   :['forestgreen', 'yellow', 's', 'eBOSS\nDR16 QSO', 1.35,1.05,8],
 			  'ELGDR16'   :['darkblue', 'dodgerblue', '^', 'eBOSS\n DR16 ELG', 0.8,.93,8],
 			  'LRGDR16'   :['firebrick', 'salmon', 'o', 'eBOSS+BOSS\n DR16 LRG', 0.6,1.04,8],
-			  'LyADR16C'   :['purple', 'thistle', '*', 'eBOSS\nDR16 Ly$\\alpha$\n($D_H$)',1.85,1.05,14]}
+			  'LyADR16C'   :['purple', 'thistle', '>', 'eBOSS\nDR16 Ly$\\alpha$\n($D_H$)',1.85,1.05,8]}
 
 #set up fiducial cosmology and different CMB cosmologies
 
@@ -562,11 +563,17 @@ def plotBAOrelBOSSfid_dm_eboss():
 			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
 									 color=key_dict[key][0], mec=key_dict[key][0],
 									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
-		if key == 'DESY1':
-			plt.text(0.85,.955,'DESY1',fontsize=14,color=key_dict[key][0])	
+		if key == 'ELGDR16':
+			plt.text(0.875,.98,'eBOSS',fontsize=14,color=key_dict[key][0])	
+			plt.text(0.875,.97,'DR16 ELGs (inc. RSD)',fontsize=14,color=key_dict[key][0])
 			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
 									 color=key_dict[key][0], mec=key_dict[key][0],
 									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
+		if key == 'DESY3':
+			plt.text(0.46,.925,'DESY3',fontsize=14,color=key_dict[key][0])	
+			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
+									 color=key_dict[key][0], mec=key_dict[key][0],
+									 mfc=key_dict[key][1],capsize=4,mew=1.5,zorder=1000)		
 
 		if key == 'QSODR16':
 			plt.text(1.4,1.07,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
@@ -575,8 +582,8 @@ def plotBAOrelBOSSfid_dm_eboss():
 									 color=key_dict[key][0], mec=key_dict[key][0],
 									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
 		if key == 'LyADR16C':
-			plt.text(1.75,.97,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
-			plt.text(1.75,.96,r'Lyman-$\alpha$',fontsize=14,color=key_dict[key][0])
+			plt.text(1.75,.95,'eBOSS DR16',fontsize=14,color=key_dict[key][0])	
+			plt.text(1.75,.94,r'Lyman-$\alpha$',fontsize=14,color=key_dict[key][0])
 			plt.errorbar(zl[i],dMl[i],sdMl[i],fmt=key_dict[key][2],ms=key_dict[key][-1],elinewidth=1.75,
 									 color=key_dict[key][0], mec=key_dict[key][0],
 									 mfc=key_dict[key][1],capsize=4,mew=1.5)		
@@ -587,13 +594,13 @@ def plotBAOrelBOSSfid_dm_eboss():
 		dvrsfidc = dcosfid.dc(z)/rsfidcamb
 		pdmfidl.append(dpcos.dc(z)/prs/dvrsfidc)
 	plt.plot(szl,pdmfidl,'k-',label='Planck 2018')
-	plt.legend(loc='lower left')
+	plt.legend(loc='upper left')
 	plt.ylim(.901,1.109)
 	plt.xlabel('redshift')
 	plt.ylabel('BAO Measurement/$\\Lambda$CDM reference')
-	plt.title('Co-moving angular-diameter, after DR16')
+	plt.title('Co-moving angular-diameter, after DESY3')
 		
-	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAO_DMaftereBOSS.png')
+	plt.savefig('/Users/ashleyross/Dropbox/BAOwebossDR16/BAO_DMaftereBOSSDESY3.png')
 	plt.show()
 
 def plotBAOrelBOSSfid_dm_boss():
