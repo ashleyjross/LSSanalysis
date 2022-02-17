@@ -17,8 +17,8 @@ ds = distance(.31,.69) #eboss fiducial cosmo
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected",default='QSO')
-parser.add_argument("--basedir", help="where to find catalogs",default='$CSCRATCH/ebosscat/')
-parser.add_argument("--outdir", help="where to output results",default='$CSCRATCH/ebossxi/')
+parser.add_argument("--basedir", help="where to find catalogs",default='/global/cscratch1/sd/ajross/ebosscat/')
+parser.add_argument("--outdir", help="where to output results",default='/global/cscratch1/sd/ajross/ebossxi/')
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
