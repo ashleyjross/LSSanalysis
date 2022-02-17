@@ -107,7 +107,7 @@ if ttype == 'QSO':
 for reg in regl:
 	print(reg)
 	#(sep, xiell), wang = compute_correlation_function('multi', bs, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-	fnroot = tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype
+	fnroot = tw+'eboss'+reg+'_'+str(zmin)+str(zmax)+'DR16'+'_'+args.bintype
 	pfn = dirxi+'paircounts_'+fnroot+'.npy'
 	result = compute_correlation_function('multi', tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads,fnroot=fnroot)
 	for bs in bsl:
