@@ -65,7 +65,7 @@ def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.
             edges = (bins,np.linspace(0,40.,41)) #if you want wp, only go out to pi = 40; consider setting pi_max as argument
     def get_positions_weights(catalog):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-        print('Using {:d} rows for {}'.format(mask.sum(),name))
+        print('Using {:d} rows '.format(mask.sum()))
         positions = [catalog['RA'][mask], catalog['DEC'][mask], ds.dc(catalog['Z'][mask])]
         #if weight_type is None:
         #    weights = None
