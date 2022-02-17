@@ -50,7 +50,7 @@ def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.
     shifted = None
 
     randoms_fn = os.path.join(dirname, 'eBOSS_{}_clustering_random-{}-vDR16.fits'.format(tracer, region)) 
-    randoms = Table.read(fn) 
+    randoms = Table.read(randoms_fn) 
   
     corrmode = mode
     if mode == 'wp':
