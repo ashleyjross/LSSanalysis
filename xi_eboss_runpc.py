@@ -41,7 +41,7 @@ if args.bintype == 'lin':
 dirxi = args.outdir
 
 
-dirname = lssdir + version
+dirname = lssdir 
 
 def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.inf), nthreads=8, dtype='f8', wang=None,fnroot=''):
     data_fn = os.path.join(dirname, 'eBOSS_{}_clustering_data-{}-vDR16.fits'.format(tracer, region))
