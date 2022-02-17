@@ -66,7 +66,11 @@ def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.
     def get_positions_weights(catalog):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
         print('Using {:d} rows '.format(mask.sum()))
-        positions = [catalog['RA'][mask], catalog['DEC'][mask], ds.dc(catalog['Z'][mask])]
+        disl = []
+        for z in catalog['Z'][mask]:
+            disl.append(ds.dc(z))
+        disl = np.array(disl)    
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], disl)]
         #if weight_type is None:
         #    weights = None
         #else:
