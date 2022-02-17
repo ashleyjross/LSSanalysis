@@ -40,7 +40,7 @@ if args.bintype == 'lin':
 
 dirxi = args.outdir
 
-lssdir = basedir+'/'+survey+'/LSS/'+specrel+'/LSScats/'
+
 dirname = lssdir + version
 
 def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.inf), nthreads=8, dtype='f8', wang=None,fnroot=''):
