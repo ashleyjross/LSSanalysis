@@ -16,7 +16,7 @@ from Cosmo import distance
 ds = distance(.31,.69) #eboss fiducial cosmo
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--type", help="tracer type to be selected")
+parser.add_argument("--type", help="tracer type to be selected",default='QSO')
 parser.add_argument("--basedir", help="where to find catalogs",default='$CSCRATCH/ebosscat/')
 parser.add_argument("--outdir", help="where to output results",default='$CSCRATCH/ebossxi/')
 parser.add_argument("--bintype",help="log or lin",default='lin')
