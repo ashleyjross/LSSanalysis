@@ -70,7 +70,7 @@ def compute_correlation_function(mode, tracer='QSO', region='NGC', zlim=(0., np.
         for z in catalog['Z'][mask]:
             disl.append(ds.dc(z))
         disl = np.array(disl)    
-        positions = [catalog['RA'][mask], catalog['DEC'][mask], disl)]
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], disl]
         #if weight_type is None:
         #    weights = None
         #else:
