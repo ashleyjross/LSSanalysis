@@ -10,7 +10,7 @@
 /* compile with
  gcc -Wall -c utila.c
  gcc -Wall -c pp2pt_Dmufb.c
- gcc -Wall -o pp2pt_Dmufb pp2pt_Dmufb.o utila.o
+ gcc -Wall -o pp2pt_Dmufb pp2pt_Dmufb.o utila.o -lm
 
  */
 
