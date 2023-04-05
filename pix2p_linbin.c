@@ -62,7 +62,7 @@ main(int argc, char *argv[]) {
 	double minang = 0*pi/180.;
 	double binsize = bsd*angm*pi/180.;
 	double maxang = angm*maxd*pi/180.;
-	int nbin = (maxang-minang)/binsize;
+	int nbin = (maxang-minang)*1.0001/binsize;
 	double binl[nbin];
     double angl[nbin];
 	double binlpix[nbin];
@@ -81,7 +81,7 @@ main(int argc, char *argv[]) {
         if (bn<nbin) {
             angl[bn] =angb;
         }
-		//printf("%lf %lf %lf\n",angle,binedges[bn],cos(angle));
+		printf("%lf %lf %lf\n",angle,binedges[bn],cos(angle));
 	}
     char fxi_name[200];
     char s1[200];
